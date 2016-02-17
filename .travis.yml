@@ -1,0 +1,37 @@
+# Config file for automatic testing at travis-ci.org
+# This file will be regenerated if you run travis_pypi_setup.py
+
+language: python
+sudo: false
+python:
+  - "2.7"
+
+# command to install dependencies
+install:
+- pip install -r requirements.txt
+- pip install python-coveralls
+- pip install coveralls
+
+# command to run tests
+script:
+- nosetests --with-coverage
+
+after_success:
+  - coveralls
+
+# slack integration
+# notifications:
+#  slack: 'ssipyga:rsfBkdbTePHcJUsegfsmkWuB'
+
+# After you create the Github repo and add it to Travis, run the
+# travis_pypi_setup.py script to finish PyPI deployment setup
+# deploy:
+#   provider: pypi
+#   distributions: sdist bdist_wheel
+#   user: gobabiertoAR
+#   password:
+#     secure: PLEASE_REPLACE_ME
+#   on:
+#     tags: true
+#     repo: gobabiertoAR/data-cleaner
+#     condition: $TOXENV == py27

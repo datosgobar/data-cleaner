@@ -23,6 +23,17 @@ class DataCleaner(object):
         pass
 
     def nombre_propio(self, field):
+        """Regla para todos los nombres propios.
+
+        Capitaliza los nombres de países, ciudades, personas, instituciones y
+        similares.
+
+        Args:
+            field (str): Campo a limpiar
+
+        Returns:
+            pandas.Series: Serie de strings limpios
+        """
         pass
 
     def string(self, field):
@@ -39,11 +50,12 @@ class DataCleaner(object):
         """
         pass
 
-    def fecha_completa(self, field):
+    def fecha_completa(self, field, time_format):
         """Regla para fechas completas que están en un sólo campo.
 
         Args:
-            field (str): Campo a limpiar
+            field (str): Campo a limpiar.
+            time_format (str): Formato temporal del campo.
 
         Returns:
             pandas.Series: Serie de strings limpios

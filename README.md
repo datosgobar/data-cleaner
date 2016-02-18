@@ -1,9 +1,21 @@
-# data-cleaner
+data-cleaner
+===
+
+[![Coverage Status](https://coveralls.io/repos/gobabiertoAR/data-cleaner/badge.svg?branch=master)](https://coveralls.io/r/gobabiertoAR/data-cleaner?branch=master)
+[![Build Status](https://travis-ci.org/gobabiertoAR/data-cleaner.svg?branch=master)](https://travis-ci.org/gobabiertoAR/data-cleaner)
+[![PyPI](https://badge.fury.io/py/data-cleaner.svg)](http://badge.fury.io/py/data-cleaner)
+
 Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina
 
 *Nota: Este paquete aún se encuentra en etapa de desarrollo y no tiene ninguna versión estable utilizable. Sólo para uso de desarrolladores de la SSIPyGA.*
 
 ## Instalación
+
+Para desarrollo:
+```
+cd package_directory
+pip install -e .
+```
 
 ## Uso
 

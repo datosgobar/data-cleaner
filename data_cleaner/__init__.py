@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
+from data_cleaner import DataCleaner
+
 __author__ = 'Gobierno Abierto Argentina'
-__email__ = 'aroy@alum.mit.edu'
-__version__ = '0.1.0'

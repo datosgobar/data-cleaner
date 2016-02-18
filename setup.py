@@ -29,13 +29,14 @@ setup(
     description="Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina",
     long_description=readme + '\n\n' + history,
     author="Gobierno Abierto Argentina",
-    author_email='aroy@alum.mit.edu',
+    author_email='',
     url='https://github.com/gobabiertoAR/data-cleaner',
     packages=[
         'data_cleaner',
+        'tests'
     ],
-    package_dir={'data-cleaner':
-                 'data-cleaner'},
+    package_dir={'data-cleaner': 'data-cleaner',
+                 'tests': 'tests'},
     include_package_data=True,
     install_requires=requirements,
     license="ISCL",

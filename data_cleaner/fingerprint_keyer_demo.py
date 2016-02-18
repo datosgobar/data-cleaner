@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 from pprint import pprint
+import pandas as pd
 
-from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings, GetBestReplacements, ReplaceByKey
+from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings
+from fingerprint_keyer import GetBestReplacements, ReplaceByKey
 
 testStrings = [
     u" - juan     peRes",
@@ -17,47 +18,48 @@ testStrings = [
     u"   Juan\t \tPeres",
 ]
 
-def demo1() :
-    print "="*80
+
+def demo1():
+    print "=" * 80
     print "Demo 1"
-    print "="*80
+    print "=" * 80
 
     testStrings = [
-            ("schön","schon"),  
-            #("Ære Øre Åre", "are aere ore"),
-            #("Straße","strasse"),
-            ("\tABC \t DEF ","abc def"), # test leading and trailing whitespace
-            ("bbb\taaa","aaa bbb"),
-            ("müller","muller"),
-            #("müller","mueller"), # another possible interpretation
-            #("ﬁﬂĳ","fiflij"),
-            #("ﭏ","אל"),
-            #("œ ӕ","ae oe"),
-            ("",""),
+        ("schön", "schon"),
+        #("Ære Øre Åre", "are aere ore"),
+        #("Straße","strasse"),
+        ("\tABC \t DEF ", "abc def"),  # test leading and trailing whitespace
+        ("bbb\taaa", "aaa bbb"),
+        ("müller", "muller"),
+        #("müller","mueller"), # another possible interpretation
+        #("ﬁﬂĳ","fiflij"),
+        #("ﭏ","אל"),
+        #("œ ӕ","ae oe"),
+        ("", ""),
     ]
 
-    for (inp, out_exp) in testStrings :
+    for (inp, out_exp) in testStrings:
         r = FingerprintKeyer(inp)
         print "inp=%s" % inp
         print "out_exp=%s" % out_exp
         print "r=%s" % r
         print "FingerprintKeyer(%s)" % inp
-        print "result=%s" % (r==out_exp)
+        print "result=%s" % (r == out_exp)
         print ""
 
 
 def demo2():
-    print "="*80
+    print "=" * 80
     print "Demo 2"
-    print "="*80
-    
+    print "=" * 80
+
     print "Strings originales"
-    for s in testStrings :
+    for s in testStrings:
         print s
     print ""
 
-    #df = pd.read_csv("audiencias-raw.csv")
-    #testStrings = df.lugar
+    # df = pd.read_csv("audiencias-raw.csv")
+    # testStrings = df.lugar
 
     clusters, counts = GroupFingerprintStrings(testStrings)
     print "Clusters encontrados"
@@ -76,10 +78,10 @@ def demo2():
 
     # Reemplazo las keys que matchean el fingerprint una version
     print "Output:"
-    for s in ReplaceByKey(d, testStrings) :
+    for s in ReplaceByKey(d, testStrings):
         print s
     print ""
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
     demo1()
     demo2()

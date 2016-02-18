@@ -154,3 +154,52 @@ Si se desea guardar el pandas.DataFrame tal como está, probablemente luego de a
 ```python
 dc.save(output_path)
 ```
+
+## Reglas disponibles
+
+* **remover_columnas**: Remueve columnas.
+    - "remover_columnas": ["remover_columna_1", "remover_columna_2"]
+* **nombre_propio**: Capitaliza todas las palabras.
+    - "nombre_propio": ["capitalizar_columna_1", "capitalizar_columna_2"]
+* **string**: NO IMPLEMENTADO
+* **reemplazar**: Reemplaza listas de strings por un valor.
+    - "reemplazar": [["columna", {"Nuevo1": ["Viejo"],
+                                     "Nuevo2": ["ViejoA", "ViejoB"]}]]
+* **fecha_completa**: Estandariza un campo con fecha y hora.
+    - "fecha_completa": [["columna", "DD-MM-YYYY HH:mm"]]
+* **fecha_simple**: Estandariza un campo sin hora, día o mes.
+    - "fecha_simple": [["columna1", "DD-MM-YYYY"], ["columna2", "MM-YYYY"]]
+* **fecha_separada**: Estandariza campos con fecha y hora separados.
+    - "fecha_separada": [
+            [[["fecha", "DD-MM-YYYY"], ["hora", "HH:mm"]], 
+            "sufijo_nuevo_campo"
+            ] 
+* **string_simple_split**: Separa campos mediante separadores simples.
+    - "string_simple_split": [
+            ["campo", ["separador_A", "separador_B"], 
+            ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
+        ]
+* **string_regex_split**: NO IMPLEMENTADO
+* **string_peg_split**: Utiliza parsing expression grammars para separar un campo.
+    - "string_peg_split": [
+            ["campo",
+             """
+            allowed_char = anything:x ?(x not in '1234567890() ')
+            nombre = ~('DNI') <allowed_char+>:n ws -> n.strip()
+            number = <digit+>:num -> int(num)
+
+            nom_comp = <nombre+>:nc -> nc.strip()
+            cargo = '(' <nombre+>:c ')' -> c.strip()
+            dni = ','? ws 'DNI' ws number:num -> num
+
+            values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
+            """,
+            ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2", "sufijo_nuevo_campo_3"]
+             ]
+        ]
+
+## TODO
+
+* filtros
+* clustering
+

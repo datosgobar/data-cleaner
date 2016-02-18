@@ -39,6 +39,25 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
     def nan_safe_list(iterable):
         return [i if pd.notnull(i) else None for i in iterable]
 
+    def test_cleaning_fields(self):
+        input_path = self.get_input("fields")
+        output_path = self.get_output("fields")
+
+        dc = DataCleaner(input_path)
+        df = pd.read_csv(output_path)
+
+        self.assertEqual(list(dc.df.columns), list(df.columns))
+
+    def test_remover_columnas(self):
+        input_path = self.get_input("nombre_propio")
+        field = "dependencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        df = dc.remover_columnas(field)
+
+        self.assertNotIn(field, df.columns)
+
     def test_nombre_propio(self):
         input_path = self.get_input("nombre_propio")
         output_path = self.get_output("nombre_propio")
@@ -72,6 +91,23 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(res, exp)
 
+    def test_reemplazar(self):
+        input_path = self.get_input("reemplazar")
+        output_path = self.get_output("reemplazar")
+        field = "tipo"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.reemplazar(field, {"Servicios": ["Serv"],
+                                       "Otros": ["Otro", "Loc"]})
+        res = list(series)
+
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path)
+        exp = list(df[field])
+
+        self.assertEqual(res, exp)
+
     def test_fecha_completa(self):
         input_path = self.get_input("fecha_completa")
         output_path = self.get_output("fecha_completa")
@@ -85,6 +121,38 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
         exp = list(df["isodatetime_" + field])
+
+        self.assertEqual(res, exp)
+
+    def test_fecha_simple_sin_hora(self):
+        input_path = self.get_input("fecha_sin_hora")
+        output_path = self.get_output("fecha_sin_hora")
+        field = "fecha_audiencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.fecha_simple(field, "DD-MM-YYYY")
+        res = list(series)
+
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path)
+        exp = list(df["isodate_" + field])
+
+        self.assertEqual(res, exp)
+
+    def test_fecha_simple_mes(self):
+        input_path = self.get_input("fecha_mes")
+        output_path = self.get_output("fecha_mes")
+        field = "fecha_audiencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.fecha_simple(field, "MM-YYYY")
+        res = list(series)
+
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path)
+        exp = list(df["isodate_" + field])
 
         self.assertEqual(res, exp)
 
@@ -135,14 +203,14 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
     def test_string_regex_split(self):
         pass
 
-    @unittest.skip("skip")
+    # @unittest.skip("skip")
     def test_string_peg_split(self):
         input_path = self.get_input("string_separable_complejo")
         output_path = self.get_output("string_separable_complejo")
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
-        series = dc.string_peg_split(
+        parsed_df = dc.string_peg_split(
             "solicitante",
             """
             allowed_char = anything:x ?(x not in '1234567890() ')
@@ -157,15 +225,15 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
             """,
             ["nombre", "cargo", "dni"]
         )
-        res_1 = list(series[0])
-        res_2 = list(series[1])
-        res_3 = list(series[2])
+        res_1 = self.nan_safe_list(parsed_df["solicitante_nombre"])
+        res_2 = self.nan_safe_list(parsed_df["solicitante_cargo"])
+        res_3 = self.nan_safe_list(parsed_df["solicitante_dni"])
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp_1 = list(df["solicitante_nombre"])
-        exp_2 = list(df["solicitante_cargo"])
-        exp_3 = list(df["solicitante_dni"])
+        exp_1 = self.nan_safe_list(df["solicitante_nombre"])
+        exp_2 = self.nan_safe_list(df["solicitante_cargo"])
+        exp_3 = self.nan_safe_list(df["solicitante_dni"])
 
         self.assertEqual(res_1, exp_1)
         self.assertEqual(res_2, exp_2)

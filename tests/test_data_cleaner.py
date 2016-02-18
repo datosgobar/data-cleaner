@@ -37,13 +37,13 @@ class DataCleanerTestCase(unittest.TestCase):
 
     def test_nombre_propio(self):
         input_path = self.get_input("nombre_propio")
-        output_path = self.get_input("nombre_propio")
+        output_path = self.get_output("nombre_propio")
         field = "dependencia"
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
         series = dc.nombre_propio(field)
-        res = list(series[0])
+        res = list(series)
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
@@ -53,7 +53,7 @@ class DataCleanerTestCase(unittest.TestCase):
 
     def test_string_normal(self):
         input_path = self.get_input("string_normal")
-        output_path = self.get_input("string_normal")
+        output_path = self.get_output("string_normal")
         field = "lugar_audiencia"
 
         # obtengo el resultado de limpiar el csv
@@ -69,23 +69,23 @@ class DataCleanerTestCase(unittest.TestCase):
 
     def test_fecha_completa(self):
         input_path = self.get_input("fecha_completa")
-        output_path = self.get_input("fecha_completa")
+        output_path = self.get_output("fecha_completa")
         field = "fecha_completa_audiencia"
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
         series = dc.fecha_completa(field, "DD-MM-YYYY HH:mm")
-        res = list(series[0])
+        res = list(series)
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp = list(df[field])
+        exp = list(df["isodatetime_" + field])
 
         self.assertEqual(res, exp)
 
     def test_fecha_separada(self):
         input_path = self.get_input("fecha_separada")
-        output_path = self.get_input("fecha_separada")
+        output_path = self.get_output("fecha_separada")
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
@@ -94,7 +94,7 @@ class DataCleanerTestCase(unittest.TestCase):
             ["hora_audiencia", "HH:mm"]
         ],
             "audiencia")
-        res = list(series[0])
+        res = list(series)
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
@@ -104,7 +104,7 @@ class DataCleanerTestCase(unittest.TestCase):
 
     def test_string_simple_split(self):
         input_path = self.get_input("string_separable_simple")
-        output_path = self.get_input("string_separable_simple")
+        output_path = self.get_output("string_separable_simple")
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
@@ -130,7 +130,7 @@ class DataCleanerTestCase(unittest.TestCase):
 
     def test_string_peg_split(self):
         input_path = self.get_input("string_separable_complejo")
-        output_path = self.get_input("string_separable_complejo")
+        output_path = self.get_output("string_separable_complejo")
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)

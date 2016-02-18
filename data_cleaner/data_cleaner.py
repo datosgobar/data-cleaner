@@ -11,6 +11,8 @@ from __future__ import print_function
 from __future__ import with_statement
 import os
 import pandas as pd
+from dateutil import tz
+import arrow
 
 
 class DataCleaner(object):
@@ -22,7 +24,7 @@ class DataCleaner(object):
     def clean_file(self, rules, output_path):
         pass
 
-    def nombre_propio(self, field):
+    def nombre_propio(self, field, inplace=False):
         """Regla para todos los nombres propios.
 
         Capitaliza los nombres de países, ciudades, personas, instituciones y
@@ -34,9 +36,16 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        pass
+        decoded_series = self.df[field].str.decode("utf-8")
+        capitalized = decoded_series.str.title()
+        encoded_series = capitalized.str.encode("utf-8")
 
-    def string(self, field):
+        if inplace:
+            self.df[field] = encoded_series
+
+        return encoded_series
+
+    def string(self, field, inplace=False):
         """Regla para todos los strings.
 
         Aplica un algoritimo de clustering para normalizar strings que son
@@ -48,9 +57,11 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        # TODO: ya hay un módulo para conseguir la fingerprint key de un string
+        # ahora hay que implementar el clustering usando eso
         pass
 
-    def fecha_completa(self, field, time_format):
+    def fecha_completa(self, field, time_format, inplace=False):
         """Regla para fechas completas que están en un sólo campo.
 
         Args:
@@ -60,9 +71,23 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        pass
+        decoded_series = self.df[field].str.decode("utf-8")
+        parsed_series = decoded_series.apply(self._parse_datetime,
+                                             args=(time_format,))
+        if inplace:
+            self.df["isodatetime_" + field] = parsed_series
 
-    def fecha_separada(self, fields, new_field_name):
+        return parsed_series
+
+    @staticmethod
+    def _parse_datetime(value, time_format):
+        try:
+            datetime = arrow.get(value, time_format, tzinfo=tz.tzlocal())
+            return datetime.isoformat()
+        except:
+            return pd.np.NaN
+
+    def fecha_separada(self, fields, new_field_name, inplace=False):
         """Regla para fechas completas que están separadas en varios campos.
 
         Args:
@@ -72,9 +97,24 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        pass
+        field_names = [field[0] for field in fields]
+        time_format = " ".join([field[1] for field in fields])
 
-    def string_simple_split(self, field, separators, new_field_names):
+        concat_series = self.df[field_names].apply(
+            lambda x: ' '.join(x.map(str)),
+            axis=1
+        )
+
+        parsed_series = concat_series.apply(self._parse_datetime,
+                                            args=(time_format,))
+
+        if inplace:
+            self.df["isodatetime_" + field] = parsed_series
+
+        return parsed_series
+
+    def string_simple_split(self, field, separators, new_field_names,
+                            inplace=False):
         """Regla para separar un campo a partir de separadores simples.
 
         Args:
@@ -86,9 +126,25 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        # decoded_series = self.df[field].str.decode("utf-8")
+
+        # if inplace:
+        #     pass
+
+        # return parsed_series
         pass
 
-    def string_regex_split(self, field, pattern, new_field_names):
+    @staticmethod
+    def _split(value, separators):
+        values = None
+        for separator in separators:
+            if separator in value:
+                values = value.split(separator)
+                break
+        return [value.strip() for value in values]
+
+    def string_regex_split(self, field, pattern, new_field_names,
+                           inplace=False):
         """Regla para separar un campo a partir de una expresión regular.
 
         Args:
@@ -102,7 +158,7 @@ class DataCleaner(object):
         """
         pass
 
-    def string_peg_split(self, field, grammar, new_field_names):
+    def string_peg_split(self, field, grammar, new_field_names, inplace=False):
         """Regla para separar un campo a partir parsing expression grammars.
 
         Args:

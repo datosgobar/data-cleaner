@@ -20,9 +20,31 @@ class DataCleaner(object):
 
     def __init__(self, input_path):
         self.df = pd.read_csv(input_path)
+        self.no_args_rules = ["nombre_propio", "string"]
 
     def clean_file(self, rules, output_path):
-        pass
+        for rule_item in rules:
+            for rule in rule_item:
+                rule_method = getattr(self, rule)
+
+                if rule in self.no_args_rules:
+                    fields = rule_item[rule]
+                    for field in fields:
+                        rule_method(field, inplace=True)
+
+                else:
+                    for args in rule_item[rule]:
+                        rule_method(*args, inplace=True)
+
+        self.save(output_path)
+
+    def save(self, output_path):
+        """Guarda el DataFrame en un csv.
+
+        Args:
+            output_path (str): Ruta donde guardar un archivo csv.
+        """
+        self.df.set_index(self.df.columns[0]).to_csv(output_path)
 
     def nombre_propio(self, field, inplace=False):
         """Regla para todos los nombres propios.
@@ -47,6 +69,8 @@ class DataCleaner(object):
 
     def string(self, field, inplace=False):
         """Regla para todos los strings.
+
+        TODO: Este método aún no fue implementado!!!
 
         Aplica un algoritimo de clustering para normalizar strings que son
         demasiado parecidos, sin pérdida de información.
@@ -135,7 +159,7 @@ class DataCleaner(object):
         )
 
         if inplace:
-            self.df + parsed_df
+            self.df = pd.concat([self.df, parsed_df], axis=1)
 
         return parsed_df
 
@@ -154,6 +178,8 @@ class DataCleaner(object):
                            inplace=False):
         """Regla para separar un campo a partir de una expresión regular.
 
+        TODO: Este método aún no fue implementado!!!
+
         Args:
             field (str): Campo a limpiar.
             pattern (str): Expresión regular.
@@ -167,6 +193,8 @@ class DataCleaner(object):
 
     def string_peg_split(self, field, grammar, new_field_names, inplace=False):
         """Regla para separar un campo a partir parsing expression grammars.
+
+        TODO: Este método aún no fue implementado!!!
 
         Args:
             field (str): Campo a limpiar.

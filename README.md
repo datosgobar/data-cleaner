@@ -1,3 +1,4 @@
+
 data-cleaner
 ===
 
@@ -8,6 +9,20 @@ data-cleaner
 Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina
 
 *Nota: Este paquete aún se encuentra en etapa de desarrollo y no tiene ninguna versión estable utilizable. Sólo para uso de desarrolladores de la SSIPyGA.*
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [data-cleaner](#data-cleaner)
+  - [Instalación](#instalaci%C3%B3n)
+  - [Uso](#uso)
+    - [Ejemplo de uso integrador](#ejemplo-de-uso-integrador)
+    - [Ejemplos de uso individuales](#ejemplos-de-uso-individuales)
+  - [Reglas disponibles](#reglas-disponibles)
+  - [TODO](#todo)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Instalación
 

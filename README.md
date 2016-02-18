@@ -26,6 +26,8 @@ pip install data_cleaner
 
 ### Ejemplo de uso integrador
 
+*Nota: las reglas `string`, `string_regex_split` y `string_peg_split` todavía no fueron implementadas y por lo tanton no están disponibles para su uso.*
+
 Cómo usar el paquete para limpiar un CSV completo utilizando un set de reglas.
 
 ```python

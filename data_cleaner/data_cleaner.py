@@ -106,7 +106,9 @@ class DataCleaner(object):
     @staticmethod
     def _parse_datetime(value, time_format):
         try:
-            datetime = arrow.get(value, time_format, tzinfo=tz.tzlocal())
+            datetime = arrow.get(
+                value, time_format,
+                tzinfo=tz.gettz("America/Argentina/Buenos Aires"))
             return datetime.isoformat()
         except:
             return pd.np.NaN

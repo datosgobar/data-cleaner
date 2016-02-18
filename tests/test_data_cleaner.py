@@ -35,6 +35,10 @@ class DataCleanerTestCase(unittest.TestCase):
         file_name = "clean_" + case_name + ".csv"
         return os.path.join(self.output_dir, file_name)
 
+    @staticmethod
+    def nan_safe_list(iterable):
+        return [i if pd.notnull(i) else None for i in iterable]
+
     def test_nombre_propio(self):
         input_path = self.get_input("nombre_propio")
         output_path = self.get_output("nombre_propio")
@@ -108,18 +112,20 @@ class DataCleanerTestCase(unittest.TestCase):
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
-        series = dc.string_simple_split(
+        parsed_df = dc.string_simple_split(
             "sujeto_obligado",
             [", Cargo:", "Cargo:"],
             ["nombre", "cargo"]
         )
-        res_1 = list(series[0])
-        res_2 = list(series[1])
+        res_1 = self.nan_safe_list(parsed_df["sujeto_obligado_nombre"])
+        res_2 = self.nan_safe_list(parsed_df["sujeto_obligado_cargo"])
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp_1 = list(df["sujeto_obligado_nombre"])
-        exp_2 = list(df["sujeto_obligado_cargo"])
+        exp_1 = self.nan_safe_list(df["sujeto_obligado_nombre"])
+        exp_2 = self.nan_safe_list(df["sujeto_obligado_cargo"])
+
+        print(res_1, exp_1)
 
         self.assertEqual(res_1, exp_1)
         self.assertEqual(res_2, exp_2)

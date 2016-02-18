@@ -77,7 +77,7 @@ class DataCleaner(object):
         if inplace:
             self.df["isodatetime_" + field] = parsed_series
 
-        return parsed_series
+        return parsed_series.str.encode("utf-8")
 
     @staticmethod
     def _parse_datetime(value, time_format):
@@ -111,7 +111,7 @@ class DataCleaner(object):
         if inplace:
             self.df["isodatetime_" + field] = parsed_series
 
-        return parsed_series
+        return parsed_series.str.encode("utf-8")
 
     def string_simple_split(self, field, separators, new_field_names,
                             inplace=False):
@@ -126,22 +126,29 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        # decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode("utf-8")
+        parsed_df = decoded_series.apply(self._split, args=(separators,))
+        parsed_df.rename(
+            columns={key: field + "_" + value
+                     for key, value in enumerate(new_field_names)},
+            inplace=True
+        )
 
-        # if inplace:
-        #     pass
+        if inplace:
+            self.df + parsed_df
 
-        # return parsed_series
-        pass
+        return parsed_df
 
     @staticmethod
     def _split(value, separators):
-        values = None
+        values = []
         for separator in separators:
-            if separator in value:
+            if separator in str(value):
                 values = value.split(separator)
                 break
-        return [value.strip() for value in values]
+
+        return pd.Series([str(value).strip() for value in values
+                          if pd.notnull(value)])
 
     def string_regex_split(self, field, pattern, new_field_names,
                            inplace=False):

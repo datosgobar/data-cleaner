@@ -17,6 +17,11 @@ cd package_directory
 pip install -e .
 ```
 
+Para uso simple:
+```
+pip install data_cleaner
+```
+
 ## Uso
 
 ### Ejemplo de uso integrador

@@ -25,7 +25,7 @@ test_requirements = [
 
 setup(
     name='data-cleaner',
-    version='0.1.0',
+    version='0.1.1',
     description="Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina",
     long_description=readme + '\n\n' + history,
     author="Gobierno Abierto Argentina",
@@ -48,7 +48,6 @@ setup(
         'License :: OSI Approved :: ISC License (ISCL)',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
     ],
     test_suite='tests',

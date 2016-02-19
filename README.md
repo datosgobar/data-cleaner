@@ -162,17 +162,23 @@ Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos 
 Renombra columnas de la tabla de datos. 
 
 **Especificación:**
+
+```python
 {"renombrar_columnas": [
     ["columna_actual_1", "columna_nueva_1"],
     ["columna_actual_2", "columna_nueva_2"],
     ["columna_actual_3", "columna_nueva_3"]
 ]}
+```
 
 **Ejemplo:**
+
+```python
 {"renombrar_columnas": [
     ["aut_dependencia", "dependencia"],
     ["sujeto_obligado_audiencia", "sujeto_obligado"]
 ]}
+```
 
 ### Renombrar columnas (*renombrar_columnas*)
 Re campos de la tabla de datos. 
@@ -180,10 +186,16 @@ Re campos de la tabla de datos.
 Entre otras cosas, se puede utilizar para remover los campos originales -no recomendado- que dieron origen a múltiples campos nuevos cuando se utilizó alguna regla de *split*.
 
 **Especificación:**
+
+```python
 {"remover_columnas": ["columna_a_remover_1", "columna_a_remover_2"]}
+```
 
 **Ejemplo:**
+
+```python
 {"remover_columnas": ["dependencia", "fecha_completa_audiencia"]}
+```
 
 ### Capitalizar nombres propios (*nombre_propio*)
 Normaliza todas las palabras que encuentra poniéndolas en minúsculas y capitalizando la primera letra de cada una.
@@ -191,10 +203,16 @@ Normaliza todas las palabras que encuentra poniéndolas en minúsculas y capital
 Se aplica a todos aquellos campos de datos que tengan nombres de personas. En el caso de direcciones, ciudades, países, organismos e instituciones debe aplicarse con mucha cautela, existen casos donde esta regla de limpieza hace más mal que bien (ej.: las instituciones pueden tener siglas, que no corresponde capitalizar).
 
 **Especificación:**
+
+```python
 {"nombre_propio": ["columna_1", "columna_2"]}
+```
 
 **Ejemplo:**
+
+```python
 {"nombre_propio": ["dependencia"]}
+```
 
 ### Normalizar strings (*string*)
 Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido, normalizando capitalización, acentos, caracteres especiales, orden de las palabras, etc. 
@@ -202,24 +220,36 @@ Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el
 Este algoritmo busca unificar la forma de escribir strings que contienen idénticas palabras (cadenas de caracteres alfanuméricos separados por espacios) pero difieren en otros aspectos. [Para más detalle ver Key Collision Methods de OpenRefine](https://github.com/OpenRefine/OpenRefine/wiki/Clustering-In-Depth#key-collision-methods). La implementación que se utiliza es una adaptación de [esta](https://github.com/tweirick/okstate_bioinformatics_command_line_programs/blob/master/misc_programs/FingerprintKeyer.py), publicada en Github por Tyler Weirick.
 
 **Especificación:**
+
+```python
 {"string": ["columna_1", "columna_2"]}
+```
 
 **Ejemplo:**
+
+```python
 {"string": ["dependencia", "lugar_audiencia", "sujeto_obligado", 
             "solicitante"]}
+```
 
 ### Reemplazar listas de strings por valores predefinidos (*reemplazar*)
 Reemplaza listas de strings por un valor predefinido que el usuario decide que representa a todas.
 
 **Especificación:**
+
+```python
 {"reemplazar": [
     ["columna", {"Nuevo1": ["Viejo"], "Nuevo2": ["ViejoA", "ViejoB"]}]
 ]}
+```
 
 **Ejemplo:**
+
+```python
 {"reemplazar": [
     ["tipo", {"Servicios": ["Serv"], "Otros": ["Otro", "Loc"]}]
 ]}
+```
 
 ### Normalizar fecha completa (*fecha_completa*)
 Estandariza un campo **con fecha y hora** a su representación en el estándar ISO 8601 (**YYYY-MM-DDTHH:MM:SS[.mmmmmm][+HH:MM]**). 
@@ -229,14 +259,20 @@ Ej.: **05-02-2016 14:53** a **2016-02-05T14:53:00-03:00**
 Para el parsing de fechas se utiliza la librería [*arrow*](http://crsmithdev.com/arrow/). En la regla debe especificarse el formato temporal en que la fecha está expresada en la tabla de datos original. El resultado siempre se convertirá a ISO 8601 cuando sea posible, ante cualquier error se dejará la celda vacía.
 
 **Especificación:**
+
+```python
 {"fecha_completa": [
     ["columna", "DD-MM-YYYY HH:mm"]
 ]}
+```
 
 **Ejemplo:**
+
+```python
 {"fecha_completa": [
     ["fecha_completa_audiencia", "DD-MM-YYYY HH:mm"]
 ]}
+```
 
 ### Normalizar fecha simple (*fecha_simple*)
 Estandariza un campo sin hora, día o mes a su representación en el estándar ISO 8601, obviando aquella parte de la representación ISO para la que no se cuenta con datos suficientes.
@@ -245,42 +281,60 @@ Ej.: **05-02-2016** a **2016-02-05**
 Ej.: **02-2016** a **2016-02**
 
 **Especificación:**
+
+```python
 {"fecha_simple": [
     ["columna1", "DD-MM-YYYY"], 
     ["columna2", "MM-YYYY"]
 ]}
+```
 
 **Ejemplo:**
+
+```python
 {"fecha_simple": [
     ["fecha", "DD-MM-YYYY"], 
     ["mes", "MM-YYYY"]
 ]}
+```
 
 ### Normalizar fecha separada en múltiples campos (*fecha_separada*)
 Estandariza una fecha completa donde distintos componentes de la misma están separados en varios campos, a su representación en el estándar ISO 8601.
 
 **Especificación:**
+
+```python
 {"fecha_separada": [
     [[["campo1", "DD-MM-YYYY"], ["campo2", "HH:mm"]], "audiencia"]
 ]}
+```
 
 **Ejemplo:**
+
+```python
 {"fecha_separada": [
     [[["fecha_audiencia", "DD-MM-YYYY"], ["hora_audiencia", "HH:mm"]], "audiencia"]
 ]}
+```
 
 ### Separar campos mediante un separador simple (*string_simple_split*)
 Separa strings de un campo en múltiples campos, mediante separadores simples.
 
 **Especificación:**
+
+```python
 {"string_simple_split": [
     ["campo", ["separador_A", "separador_B"], ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
 ]}
+```
 
 **Ejemplo:**
+
+```python
 {"string_simple_split": [
     ["sujeto_obligado", [", Cargo:", "Cargo:"], ["nombre", "cargo"]]
 ]}
+```
 
 ### Separar campos mediante una expresión regular (*string_regex_split*)
 (NO IMPLEMENTADO)
@@ -291,11 +345,16 @@ Utiliza parsing expression grammars para separar un strings de un campo en múlt
 Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html).
 
 **Especificación:**
+
+```python
 {"string_peg_split": [
     ["campo", "grammar", ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
 ]}
+```
 
 **Ejemplo:**
+
+```python
 {"string_peg_split": [
     [
     "solicitante",
@@ -313,6 +372,7 @@ Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que 
     ["nombre", "cargo", "dni"]
     ]
 ]}
+```
 
 ## TODO
 

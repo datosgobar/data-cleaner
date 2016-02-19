@@ -74,7 +74,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(res, exp)
 
-    @unittest.skip("skip")
+    # @unittest.skip("skip")
     def test_string_normal(self):
         input_path = self.get_input("string_normal")
         output_path = self.get_output("string_normal")

@@ -15,6 +15,9 @@ import arrow
 import parsley
 from unidecode import unidecode
 
+from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings
+from fingerprint_keyer import GetBestReplacements, ReplaceByKey
+
 
 class DataCleaner(object):
     """Limpia csvs a partir de reglas de limpieza."""
@@ -118,7 +121,13 @@ class DataCleaner(object):
         """
         # TODO: ya hay un módulo para conseguir la fingerprint key de un string
         # ahora hay que implementar el clustering usando eso
-        pass
+        decoded_series = self.df[field].str.decode("utf-8")
+
+        clusters, counts = GroupFingerprintStrings(decoded_series)
+        d = GetBestReplacements(clusters, counts)
+        parsed_series = pd.Series(ReplaceByKey(d, decoded_series))
+
+        return parsed_series.str.encode("utf-8")
 
     def reemplazar(self, field, values_map, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.

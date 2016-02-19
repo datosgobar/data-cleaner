@@ -45,19 +45,18 @@ class DataCleaner(object):
         self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
 
     def _normalize_fields(self, fields):
-        normalized_fields = []
-        for field in fields:
-            # reemplaza caracteres que no sean unicode
-            norm_field = unidecode(field.decode(self.encoding))
+        return [self._normalize_field(field) for field in fields]
 
-            norm_field = norm_field.lower().replace(" ", "_").replace("-", "_")
+    def _normalize_field(self, field):
+        # reemplaza caracteres que no sean unicode
+        norm_field = unidecode(field.decode(self.encoding))
 
-            # remueve caracteres que no sean alfanuméricos o "_"
-            norm_field = ''.join(char for char in norm_field
-                                 if char.isalnum() or char == "_")
-            normalized_fields.append(norm_field)
+        norm_field = norm_field.lower().replace(" ", "_").replace("-", "_")
 
-        return normalized_fields
+        # remueve caracteres que no sean alfanuméricos o "_"
+        norm_field = ''.join(char for char in norm_field
+                             if char.isalnum() or char == "_")
+        return norm_field
 
     def clean(self, rules):
         """Aplica las reglas de limpieza al objeto en memoria.
@@ -103,6 +102,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         removed_df = self.df.drop(field, axis=1)
 
         if inplace:
@@ -122,6 +122,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
         capitalized = decoded_series.str.title()
         encoded_series = capitalized.str.encode(self.OUTPUT_ENCODING)
@@ -143,6 +144,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
 
         clusters, counts = GroupFingerprintStrings(decoded_series)
@@ -161,6 +163,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
 
         for new_value, old_values in values_map.iteritems():
@@ -183,6 +186,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
         parsed_series = decoded_series.apply(self._parse_datetime,
                                              args=(time_format,))
@@ -201,6 +205,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
         parsed_series = decoded_series.apply(self._parse_date,
                                              args=(time_format,))
@@ -246,7 +251,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        field_names = [field[0] for field in fields]
+        field_names = [self._normalize_field(field[0]) for field in fields]
         time_format = " ".join([field[1] for field in fields])
 
         concat_series = self.df[field_names].apply(
@@ -275,6 +280,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
         parsed_df = decoded_series.apply(self._split, args=(separators,))
         parsed_df.rename(
@@ -303,8 +309,6 @@ class DataCleaner(object):
                            inplace=False):
         """Regla para separar un campo a partir de una expresión regular.
 
-        TODO: Este método aún no fue implementado!!!
-
         Args:
             field (str): Campo a limpiar.
             pattern (str): Expresión regular.
@@ -314,6 +318,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         pass
 
     def string_peg_split(self, field, grammar, new_field_names, inplace=False):
@@ -328,15 +333,14 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
-        parsed_df = decoded_series.apply(self._split_with_peg,
-                                         args=(grammar,))
+        parsed_df = decoded_series.apply(self._split_with_peg, args=(grammar,))
         parsed_df.rename(
             columns={key: field + "_" + value
                      for key, value in enumerate(new_field_names)},
             inplace=True
         )
-        print(parsed_df)
 
         if inplace:
             self.df = pd.concat([self.df, parsed_df], axis=1)

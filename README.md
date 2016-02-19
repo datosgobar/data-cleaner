@@ -63,6 +63,13 @@ dc = DataCleaner(input_path)
 dc.clean_file(rules, output_path)
 ```
 
+También se pueden limpiar los datos sin guardar el csv, para analizarlos en memoria.
+
+```python
+dc.clean(rules)
+dc.df  # accede al DataFrame donde están los datos
+```
+
 ### Métodos de limpieza
 
 Las reglas de limpieza del cleaner también se pueden utilizar como métodos individuales que devuelven una pandas.DataSeries o un pandas.DataFrame (en el caso en que el método genere múltiples columnas nuevas).
@@ -125,7 +132,7 @@ dc.save(output_path)
 
 El método `DataCleaner.save()` redirige al método `pandas.DataFrame.to_csv()`, y por lo tanto tienen los mismos argumentos.
 
-### Encoding
+### Encoding del input, y otros
 
 Se asume que el input es un csv encodeado en *utf-8*, separado por comas y que usa comillas dobles para el enclosing. Si alguno de estos parámetros (especialmente el enconding) es diferente, debe especificarse.
 
@@ -133,7 +140,21 @@ Se asume que el input es un csv encodeado en *utf-8*, separado por comas y que u
 dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
 ```
 
-## Reglas disponibles
+## Limpieza automática
+
+### Formato del archivo limpio
+
+Luego de la limpieza los datos se guardan siempre en un archivo *CSV*, encodeado en *utf-8* separado por *","* y usando *'"'* como caracter de citas.
+
+### Nombres de los campos
+
+Los nombres de los campos se normalizan automáticamente. Sólo el uso de caracteres alfanuméricos ASCII y "_" está permitido. Los campos deben nombrarse con palabras en minúsculas separadas por guión bajo. Para esto el objeto:
+
+* Reemplaza espacios y "-" por "_"
+* Reemplaza todos los caracteres alfanuméricos por su versión ASCII más próxima
+* Remueve todos los caracteres especiales que no sean "_"
+
+## Reglas de limpieza
 
 * **remover_columnas**: Remueve columnas.
     - "remover_columnas": ["remover_columna_1", "remover_columna_2"]
@@ -179,11 +200,10 @@ dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
 
 ## TODO
 
-* adivinar encoding si es posible
-* evitar stopwords en las reglas que lidian con strings
 * reescribir README en secciones más explicativas por regla
-* normalizar los campos que definen las reglas para permitir que el usuario los escriba como aparecen originalmente
-* agregar regla con filtros
-* escribir test de integración
+* evitar stopwords en las reglas que lidian con strings
+* adivinar encoding si es posible
 * corregir estilo de fingerprint, escribir docstrings y tests
+* agregar regla para filtros
+* escribir test de integración
 * agregar herramienta para correr desde la línea de comandos

@@ -22,18 +22,33 @@ from fingerprint_keyer import GetBestReplacements, ReplaceByKey
 class DataCleaner(object):
     """Limpia csvs a partir de reglas de limpieza."""
 
-    def __init__(self, input_path):
-        self.df = pd.read_csv(input_path)
+    OUTPUT_ENCODING = "utf-8"
+    OUTPUT_SEPARATOR = ","
+    OUTPUT_QUOTECHAR = '"'
+    INPUT_DEFAULT_ENCODING = "utf-8"
+    INPUT_DEFAULT_SEPARATOR = ","
+    INPUT_DEFAULT_QUOTECHAR = '"'
+
+    NO_ARGS_RULES = ["nombre_propio", "string", "remover_columnas"]
+
+    def __init__(self, input_path, encoding=None, sep=None, quotechar=None):
+        self.encoding = encoding or self.INPUT_DEFAULT_ENCODING
+        sep = sep or self.INPUT_DEFAULT_SEPARATOR
+        quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
+
+        self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
+                              quotechar=quotechar)
         self.df.columns = self._normalize_fields(self.df.columns)
 
-        self.no_args_rules = ["nombre_propio", "string", "remover_columnas"]
         self.grammars = {}
+
+        self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
 
     def _normalize_fields(self, fields):
         normalized_fields = []
         for field in fields:
             # reemplaza caracteres que no sean unicode
-            norm_field = unidecode(field.decode("utf-8"))
+            norm_field = unidecode(field.decode(self.encoding))
 
             norm_field = norm_field.lower().replace(" ", "_").replace("-", "_")
 
@@ -44,12 +59,17 @@ class DataCleaner(object):
 
         return normalized_fields
 
-    def clean_file(self, rules, output_path):
+    def clean(self, rules):
+        """Aplica las reglas de limpieza al objeto en memoria.
+
+        Args:
+            rules (list): Lista de reglas de limpieza.
+        """
         for rule_item in rules:
             for rule in rule_item:
                 rule_method = getattr(self, rule)
 
-                if rule in self.no_args_rules:
+                if rule in self.NO_ARGS_RULES:
                     fields = rule_item[rule]
                     for field in fields:
                         rule_method(field, inplace=True)
@@ -58,15 +78,21 @@ class DataCleaner(object):
                     for args in rule_item[rule]:
                         rule_method(*args, inplace=True)
 
-        self.save(output_path)
-
-    def save(self, output_path):
-        """Guarda el DataFrame en un csv.
+    def clean_file(self, rules, output_path):
+        """Aplica las reglas de limpieza y guarda los datos en un csv.
 
         Args:
-            output_path (str): Ruta donde guardar un archivo csv.
+            rules (list): Lista de reglas de limpieza.
         """
-        self.df.set_index(self.df.columns[0]).to_csv(output_path)
+        self.clean(rules)
+        self.save(output_path, encoding=self.OUTPUT_ENCODING,
+                  separator=self.OUTPUT_SEPARATOR,
+                  quotechar=self.OUTPUT_QUOTECHAR)
+
+    def save(self, output_path, *args, **kwargs):
+        """Redirige al método DataFrame.to_csv()."""
+        self.df.set_index(self.df.columns[0]).to_csv(
+            output_path, *args, **kwargs)
 
     def remover_columnas(self, field, inplace=False):
         """Remueve columnas.
@@ -96,9 +122,9 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode(self.encoding)
         capitalized = decoded_series.str.title()
-        encoded_series = capitalized.str.encode("utf-8")
+        encoded_series = capitalized.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
             self.df[field] = encoded_series
@@ -117,13 +143,13 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode(self.encoding)
 
         clusters, counts = GroupFingerprintStrings(decoded_series)
         d = GetBestReplacements(clusters, counts)
         parsed_series = pd.Series(ReplaceByKey(d, decoded_series))
 
-        return parsed_series.str.encode("utf-8")
+        return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     def reemplazar(self, field, values_map, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.
@@ -135,12 +161,12 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode(self.encoding)
 
         for new_value, old_values in values_map.iteritems():
             decoded_series = decoded_series.replace(old_values, new_value)
 
-        encoded_series = decoded_series.str.encode("utf-8")
+        encoded_series = decoded_series.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
             self.df[field] = encoded_series
@@ -157,13 +183,13 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode(self.encoding)
         parsed_series = decoded_series.apply(self._parse_datetime,
                                              args=(time_format,))
         if inplace:
             self.df["isodatetime_" + field] = parsed_series
 
-        return parsed_series.str.encode("utf-8")
+        return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     def fecha_simple(self, field, time_format, inplace=False):
         """Regla para fechas sin hora, sin día o sin mes.
@@ -175,13 +201,13 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode(self.encoding)
         parsed_series = decoded_series.apply(self._parse_date,
                                              args=(time_format,))
         if inplace:
             self.df["isodate_" + field] = parsed_series
 
-        return parsed_series.str.encode("utf-8")
+        return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     @staticmethod
     def _parse_datetime(value, time_format):
@@ -234,7 +260,7 @@ class DataCleaner(object):
         if inplace:
             self.df["isodatetime_" + field] = parsed_series
 
-        return parsed_series.str.encode("utf-8")
+        return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     def string_simple_split(self, field, separators, new_field_names,
                             inplace=False):
@@ -249,7 +275,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode(self.encoding)
         parsed_df = decoded_series.apply(self._split, args=(separators,))
         parsed_df.rename(
             columns={key: field + "_" + value
@@ -302,7 +328,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        decoded_series = self.df[field].str.decode("utf-8")
+        decoded_series = self.df[field].str.decode(self.encoding)
         parsed_df = decoded_series.apply(self._split_with_peg,
                                          args=(grammar,))
         parsed_df.rename(

@@ -41,7 +41,7 @@ pip install data_cleaner
 
 ### Ejemplo de uso integrador
 
-*Nota: las reglas `string`, `string_regex_split` y `string_peg_split` todavía no fueron implementadas y por lo tanton no están disponibles para su uso.*
+*Nota: la regla `string_regex_split` todavía no fue implementada y por lo tanto no está disponible para su uso.*
 
 Cómo usar el paquete para limpiar un CSV completo utilizando un set de reglas.
 
@@ -79,9 +79,6 @@ rules = [
         "string_simple_split": [
             ["sujeto_obligado", [", Cargo:", "Cargo:"], ["nombre", "cargo"]]
         ]
-    },
-    {
-        "string_regex_split": []
     },
     {
         "string_peg_split": [
@@ -176,7 +173,8 @@ dc.save(output_path)
     - "remover_columnas": ["remover_columna_1", "remover_columna_2"]
 * **nombre_propio**: Capitaliza todas las palabras.
     - "nombre_propio": ["capitalizar_columna_1", "capitalizar_columna_2"]
-* **string**: NO IMPLEMENTADO
+* **string**: Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido
+    - "string": ["columna_1", "columna_2"]
 * **reemplazar**: Reemplaza listas de strings por un valor.
     - "reemplazar": [["columna", {"Nuevo1": ["Viejo"],
                                      "Nuevo2": ["ViejoA", "ViejoB"]}]]
@@ -198,7 +196,7 @@ dc.save(output_path)
 * **string_peg_split**: Utiliza parsing expression grammars para separar un campo.
     - "string_peg_split": [
             ["campo",
-             """
+            "
             allowed_char = anything:x ?(x not in '1234567890() ')
             nombre = ~('DNI') <allowed_char+>:n ws -> n.strip()
             number = <digit+>:num -> int(num)
@@ -208,13 +206,17 @@ dc.save(output_path)
             dni = ','? ws 'DNI' ws number:num -> num
 
             values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
-            """,
+            ",
             ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2", "sufijo_nuevo_campo_3"]
              ]
         ]
 
 ## TODO
 
-* filtros
-* clustering
-
+* agregar parámetro de encoding
+* adivinar encoding si es posible
+* reescribir README en secciones más explicativas por regla
+* normalizar los campos que definen las reglas para permitir que el usuario los escriba como aparecen originalmente
+* agregar regla con filtros
+* escribir test de integración
+* corregir estilo de fingerprint, escribir docstrings y tests

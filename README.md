@@ -6,25 +6,29 @@ data-cleaner
 [![Build Status](https://travis-ci.org/gobabiertoAR/data-cleaner.svg?branch=master)](https://travis-ci.org/gobabiertoAR/data-cleaner)
 [![PyPI](https://badge.fury.io/py/data-cleaner.svg)](http://badge.fury.io/py/data-cleaner)
 
-Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina
+Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/gobabiertoAR/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
 
-*Nota: Este paquete aún se encuentra en etapa de desarrollo y no tiene ninguna versión estable utilizable. Sólo para uso de desarrolladores de la SSIPyGA.*
+*Nota: Este paquete aún se encuentra en etapa temprana de desarrollo y la interface podría sufrir modificaciones significativas.*
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [data-cleaner](#data-cleaner)
-  - [Instalación](#instalaci%C3%B3n)
-  - [Uso](#uso)
-    - [Ejemplo de uso integrador](#ejemplo-de-uso-integrador)
-    - [Ejemplos de uso individuales](#ejemplos-de-uso-individuales)
-  - [Reglas disponibles](#reglas-disponibles)
-  - [TODO](#todo)
+- [Instalación](#instalaci%C3%B3n)
+- [Uso](#uso)
+  - [Ejemplo de uso integrador](#ejemplo-de-uso-integrador)
+  - [Ejemplos de uso individuales](#ejemplos-de-uso-individuales)
+- [Reglas disponibles](#reglas-disponibles)
+- [TODO](#todo)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Instalación
+
+Para uso simple:
+```
+pip install data_cleaner
+```
 
 Para desarrollo:
 ```
@@ -32,70 +36,25 @@ cd package_directory
 pip install -e .
 ```
 
-Para uso simple:
-```
-pip install data_cleaner
-```
-
 ## Uso
 
-### Ejemplo de uso integrador
+### Lista de reglas
 
-*Nota: la regla `string_regex_split` todavía no fue implementada y por lo tanto no está disponible para su uso.*
-
-Cómo usar el paquete para limpiar un CSV completo utilizando un set de reglas.
+Se puede limpiar un CSV a través de una lista de reglas. El siguiente ejemplo toma un csv
 
 ```python
 from data_cleaner import DataCleaner
-# from tests.rules.integration import rules
 
-input_path = "tests/input/to_clean_integration.csv"
-output_path = "tests/output/temp_clean_integration.csv"
+input_path = "samples/example.csv"
+output_path = "samples/clean_example.csv"
 
 rules = [
     {
         "nombre_propio": ["dependencia"]
     },
     {
-        "string": [
-            "dependencia",
-            "lugar_audiencia",
-            "sujeto_obligado",
-            "solicitante"
-        ]
-    },
-    {
         "fecha_completa": [
             ["fecha_completa_audiencia", "DD-MM-YYYY HH:mm"]
-        ]
-    },
-    {
-        "fecha_separada": [
-            [[["fecha_audiencia", "DD-MM-YYYY"], ["hora_audiencia", "HH:mm"]], 
-            "audiencia"]
-        ]
-    },
-    {
-        "string_simple_split": [
-            ["sujeto_obligado", [", Cargo:", "Cargo:"], ["nombre", "cargo"]]
-        ]
-    },
-    {
-        "string_peg_split": [
-            ["solicitante",
-             """
-            allowed_char = anything:x ?(x not in '1234567890() ')
-            nombre = ~('DNI') <allowed_char+>:n ws -> n.strip()
-            number = <digit+>:num -> int(num)
-
-            nom_comp = <nombre+>:nc -> nc.strip()
-            cargo = '(' <nombre+>:c ')' -> c.strip()
-            dni = ','? ws 'DNI' ws number:num -> num
-
-            values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
-            """,
-            ["nombre", "cargo", "dni"]
-             ]
         ]
     }
 ]
@@ -220,3 +179,5 @@ dc.save(output_path)
 * agregar regla con filtros
 * escribir test de integración
 * corregir estilo de fingerprint, escribir docstrings y tests
+* agregar herramienta para correr desde la línea de comandos
+* evitar stopwords en las reglas que lidian con strings

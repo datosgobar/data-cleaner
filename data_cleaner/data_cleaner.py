@@ -108,8 +108,6 @@ class DataCleaner(object):
     def string(self, field, inplace=False):
         """Regla para todos los strings.
 
-        TODO: Este método aún no fue implementado!!!
-
         Aplica un algoritimo de clustering para normalizar strings que son
         demasiado parecidos, sin pérdida de información.
 
@@ -119,8 +117,6 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
-        # TODO: ya hay un módulo para conseguir la fingerprint key de un string
-        # ahora hay que implementar el clustering usando eso
         decoded_series = self.df[field].str.decode("utf-8")
 
         clusters, counts = GroupFingerprintStrings(decoded_series)

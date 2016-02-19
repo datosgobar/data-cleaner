@@ -16,9 +16,8 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 
 - [Instalación](#instalaci%C3%B3n)
 - [Uso](#uso)
-  - [Ejemplo de uso integrador](#ejemplo-de-uso-integrador)
-  - [Ejemplos de uso individuales](#ejemplos-de-uso-individuales)
-- [Reglas disponibles](#reglas-disponibles)
+- [Limpieza automática](#limpieza-autom%C3%A1tica)
+- [Reglas de limpieza](#reglas-de-limpieza)
 - [TODO](#todo)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -340,9 +339,11 @@ Separa strings de un campo en múltiples campos, mediante separadores simples.
 (NO IMPLEMENTADO)
 
 ### Separar campos mediante una parsing expression grammar (*string_peg_split*)
-Utiliza parsing expression grammars para separar un strings de un campo en múltiples campos.
+Utiliza parsing expression grammars para separar strings de un campo en múltiples campos.
 
-Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html).
+Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html). 
+
+Todas las PEG que se escriban para este paquete, deben contener una regla `values` cuyo output sea una lista de los valores que se quiere extraer. Cuando la PEG utilizada falle, el paquete dejará un valor nulo para esa celda.
 
 **Especificación:**
 
@@ -376,9 +377,8 @@ Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que 
 
 ## TODO
 
-* reescribir README en secciones más explicativas por regla
 * evitar stopwords en las reglas que lidian con strings
-* adivinar encoding si es posible
+* adivinar encoding, si es posible
 * corregir estilo de fingerprint, escribir docstrings y tests
 * agregar regla para filtros
 * escribir test de integración

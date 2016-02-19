@@ -58,6 +58,17 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertNotIn(field, df.columns)
 
+    def test_renombrar_columnas(self):
+        input_path = self.get_input("nombre_propio")
+        field = "dependencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        df = dc.renombrar_columnas(field, "dependencia2")
+
+        self.assertNotIn(field, df.columns)
+        self.assertIn("dependencia2", df.columns)
+
     def test_nombre_propio(self):
         input_path = self.get_input("nombre_propio")
         output_path = self.get_output("nombre_propio")

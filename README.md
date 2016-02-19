@@ -158,8 +158,24 @@ Los nombres de los campos se normalizan automáticamente. Sólo el uso de caract
 
 Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son (a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o (b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
 
-### Remover columnas (*remover_columnas*)
-Remueve campos de la tabla de datos. 
+### Remover columnas (*renombrar_columnas*)
+Renombra columnas de la tabla de datos. 
+
+**Especificación:**
+{"renombrar_columnas": [
+    ["columna_actual_1", "columna_nueva_1"],
+    ["columna_actual_2", "columna_nueva_2"],
+    ["columna_actual_3", "columna_nueva_3"]
+]}
+
+**Ejemplo:**
+{"renombrar_columnas": [
+    ["aut_dependencia", "dependencia"],
+    ["sujeto_obligado_audiencia", "sujeto_obligado"]
+]}
+
+### Renombrar columnas (*renombrar_columnas*)
+Re campos de la tabla de datos. 
 
 Entre otras cosas, se puede utilizar para remover los campos originales -no recomendado- que dieron origen a múltiples campos nuevos cuando se utilizó alguna regla de *split*.
 

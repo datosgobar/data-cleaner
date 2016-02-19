@@ -100,7 +100,7 @@ class DataCleaner(object):
             field (str): Campo a limpiar
 
         Returns:
-            pandas.Series: Serie de strings limpios
+            pandas.DataFrame: Data frame con las columnas removidas.
         """
         field = self._normalize_field(field)
         removed_df = self.df.drop(field, axis=1)
@@ -109,6 +109,25 @@ class DataCleaner(object):
             self.df = removed_df
 
         return removed_df
+
+    def renombrar_columnas(self, field, new_field, inplace=False):
+        """Renombra una columna.
+
+        Args:
+            field (str): Campo a renombrar.
+            field (str): Nuevo nombre
+
+        Returns:
+            pandas.DataFrame: Data frame con las columnas renombradas.
+        """
+        field = self._normalize_field(field)
+        new_field = self._normalize_field(new_field)
+        renamed_df = self.df.rename(columns={field: new_field})
+
+        if inplace:
+            self.df = renamed_df
+
+        return renamed_df
 
     def nombre_propio(self, field, inplace=False):
         """Regla para todos los nombres propios.

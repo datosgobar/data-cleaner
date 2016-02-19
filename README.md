@@ -153,50 +153,226 @@ Los nombres de los campos se normalizan automáticamente. Sólo el uso de caract
 * Reemplaza espacios y "-" por "_"
 * Reemplaza todos los caracteres alfanuméricos por su versión ASCII más próxima
 * Remueve todos los caracteres especiales que no sean "_"
-
+    
 ## Reglas de limpieza
 
-* **remover_columnas**: Remueve columnas.
-    - "remover_columnas": ["remover_columna_1", "remover_columna_2"]
-* **nombre_propio**: Capitaliza todas las palabras.
-    - "nombre_propio": ["capitalizar_columna_1", "capitalizar_columna_2"]
-* **string**: Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido
-    - "string": ["columna_1", "columna_2"]
-* **reemplazar**: Reemplaza listas de strings por un valor.
-    - "reemplazar": [["columna", {"Nuevo1": ["Viejo"],
-                                     "Nuevo2": ["ViejoA", "ViejoB"]}]]
-* **fecha_completa**: Estandariza un campo con fecha y hora.
-    - "fecha_completa": [["columna", "DD-MM-YYYY HH:mm"]]
-* **fecha_simple**: Estandariza un campo sin hora, día o mes.
-    - "fecha_simple": [["columna1", "DD-MM-YYYY"], ["columna2", "MM-YYYY"]]
-* **fecha_separada**: Estandariza campos con fecha y hora separados.
-    - "fecha_separada": [
-            [[["fecha", "DD-MM-YYYY"], ["hora", "HH:mm"]], 
-            "sufijo_nuevo_campo"
-            ] 
-* **string_simple_split**: Separa campos mediante separadores simples.
-    - "string_simple_split": [
-            ["campo", ["separador_A", "separador_B"], 
-            ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
-        ]
-* **string_regex_split**: NO IMPLEMENTADO
-* **string_peg_split**: Utiliza parsing expression grammars para separar un campo.
-    - "string_peg_split": [
-            ["campo",
-            "
-            allowed_char = anything:x ?(x not in '1234567890() ')
-            nombre = ~('DNI') <allowed_char+>:n ws -> n.strip()
-            number = <digit+>:num -> int(num)
+Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son (a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o (b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
 
-            nom_comp = <nombre+>:nc -> nc.strip()
-            cargo = '(' <nombre+>:c ')' -> c.strip()
-            dni = ','? ws 'DNI' ws number:num -> num
+### Remover columnas (*renombrar_columnas*)
+Renombra columnas de la tabla de datos. 
 
-            values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
-            ",
-            ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2", "sufijo_nuevo_campo_3"]
-             ]
-        ]
+**Especificación:**
+
+```python
+{"renombrar_columnas": [
+    ["columna_actual_1", "columna_nueva_1"],
+    ["columna_actual_2", "columna_nueva_2"],
+    ["columna_actual_3", "columna_nueva_3"]
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"renombrar_columnas": [
+    ["aut_dependencia", "dependencia"],
+    ["sujeto_obligado_audiencia", "sujeto_obligado"]
+]}
+```
+
+### Renombrar columnas (*renombrar_columnas*)
+Re campos de la tabla de datos. 
+
+Entre otras cosas, se puede utilizar para remover los campos originales -no recomendado- que dieron origen a múltiples campos nuevos cuando se utilizó alguna regla de *split*.
+
+**Especificación:**
+
+```python
+{"remover_columnas": ["columna_a_remover_1", "columna_a_remover_2"]}
+```
+
+**Ejemplo:**
+
+```python
+{"remover_columnas": ["dependencia", "fecha_completa_audiencia"]}
+```
+
+### Capitalizar nombres propios (*nombre_propio*)
+Normaliza todas las palabras que encuentra poniéndolas en minúsculas y capitalizando la primera letra de cada una.
+
+Se aplica a todos aquellos campos de datos que tengan nombres de personas. En el caso de direcciones, ciudades, países, organismos e instituciones debe aplicarse con mucha cautela, existen casos donde esta regla de limpieza hace más mal que bien (ej.: las instituciones pueden tener siglas, que no corresponde capitalizar).
+
+**Especificación:**
+
+```python
+{"nombre_propio": ["columna_1", "columna_2"]}
+```
+
+**Ejemplo:**
+
+```python
+{"nombre_propio": ["dependencia"]}
+```
+
+### Normalizar strings (*string*)
+Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido, normalizando capitalización, acentos, caracteres especiales, orden de las palabras, etc. 
+
+Este algoritmo busca unificar la forma de escribir strings que contienen idénticas palabras (cadenas de caracteres alfanuméricos separados por espacios) pero difieren en otros aspectos. [Para más detalle ver Key Collision Methods de OpenRefine](https://github.com/OpenRefine/OpenRefine/wiki/Clustering-In-Depth#key-collision-methods). La implementación que se utiliza es una adaptación de [esta](https://github.com/tweirick/okstate_bioinformatics_command_line_programs/blob/master/misc_programs/FingerprintKeyer.py), publicada en Github por Tyler Weirick.
+
+**Especificación:**
+
+```python
+{"string": ["columna_1", "columna_2"]}
+```
+
+**Ejemplo:**
+
+```python
+{"string": ["dependencia", "lugar_audiencia", "sujeto_obligado", 
+            "solicitante"]}
+```
+
+### Reemplazar listas de strings por valores predefinidos (*reemplazar*)
+Reemplaza listas de strings por un valor predefinido que el usuario decide que representa a todas.
+
+**Especificación:**
+
+```python
+{"reemplazar": [
+    ["columna", {"Nuevo1": ["Viejo"], "Nuevo2": ["ViejoA", "ViejoB"]}]
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"reemplazar": [
+    ["tipo", {"Servicios": ["Serv"], "Otros": ["Otro", "Loc"]}]
+]}
+```
+
+### Normalizar fecha completa (*fecha_completa*)
+Estandariza un campo **con fecha y hora** a su representación en el estándar ISO 8601 (**YYYY-MM-DDTHH:MM:SS[.mmmmmm][+HH:MM]**). 
+
+Ej.: **05-02-2016 14:53** a **2016-02-05T14:53:00-03:00**
+
+Para el parsing de fechas se utiliza la librería [*arrow*](http://crsmithdev.com/arrow/). En la regla debe especificarse el formato temporal en que la fecha está expresada en la tabla de datos original. El resultado siempre se convertirá a ISO 8601 cuando sea posible, ante cualquier error se dejará la celda vacía.
+
+**Especificación:**
+
+```python
+{"fecha_completa": [
+    ["columna", "DD-MM-YYYY HH:mm"]
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"fecha_completa": [
+    ["fecha_completa_audiencia", "DD-MM-YYYY HH:mm"]
+]}
+```
+
+### Normalizar fecha simple (*fecha_simple*)
+Estandariza un campo sin hora, día o mes a su representación en el estándar ISO 8601, obviando aquella parte de la representación ISO para la que no se cuenta con datos suficientes.
+
+Ej.: **05-02-2016** a **2016-02-05**
+Ej.: **02-2016** a **2016-02**
+
+**Especificación:**
+
+```python
+{"fecha_simple": [
+    ["columna1", "DD-MM-YYYY"], 
+    ["columna2", "MM-YYYY"]
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"fecha_simple": [
+    ["fecha", "DD-MM-YYYY"], 
+    ["mes", "MM-YYYY"]
+]}
+```
+
+### Normalizar fecha separada en múltiples campos (*fecha_separada*)
+Estandariza una fecha completa donde distintos componentes de la misma están separados en varios campos, a su representación en el estándar ISO 8601.
+
+**Especificación:**
+
+```python
+{"fecha_separada": [
+    [[["campo1", "DD-MM-YYYY"], ["campo2", "HH:mm"]], "audiencia"]
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"fecha_separada": [
+    [[["fecha_audiencia", "DD-MM-YYYY"], ["hora_audiencia", "HH:mm"]], "audiencia"]
+]}
+```
+
+### Separar campos mediante un separador simple (*string_simple_split*)
+Separa strings de un campo en múltiples campos, mediante separadores simples.
+
+**Especificación:**
+
+```python
+{"string_simple_split": [
+    ["campo", ["separador_A", "separador_B"], ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"string_simple_split": [
+    ["sujeto_obligado", [", Cargo:", "Cargo:"], ["nombre", "cargo"]]
+]}
+```
+
+### Separar campos mediante una expresión regular (*string_regex_split*)
+(NO IMPLEMENTADO)
+
+### Separar campos mediante una parsing expression grammar (*string_peg_split*)
+Utiliza parsing expression grammars para separar un strings de un campo en múltiples campos.
+
+Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html).
+
+**Especificación:**
+
+```python
+{"string_peg_split": [
+    ["campo", "grammar", ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"string_peg_split": [
+    [
+    "solicitante",
+    """
+    allowed_char = anything:x ?(x not in '1234567890() ')
+    nombre = ~('DNI') <allowed_char+>:n ws -> n.strip()
+    number = <digit+>:num -> int(num)
+
+    nom_comp = <nombre+>:nc -> nc.strip()
+    cargo = '(' <nombre+>:c ')' -> c.strip()
+    dni = ','? ws 'DNI' ws number:num -> num
+
+    values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
+    """,
+    ["nombre", "cargo", "dni"]
+    ]
+]}
+```
 
 ## TODO
 

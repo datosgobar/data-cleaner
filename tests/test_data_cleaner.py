@@ -24,6 +24,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
     """Testea métodos individuales de limpieza del DataCleaner."""
 
     def setUp(self):
+        """Carga los directorios donde están los ejemplos."""
         self.input_dir = os.path.join(BASE_DIR, "input")
         self.output_dir = os.path.join(BASE_DIR, "output")
 

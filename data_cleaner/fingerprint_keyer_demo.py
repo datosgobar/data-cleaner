@@ -4,8 +4,8 @@
 from pprint import pprint
 import pandas as pd
 
-from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings
-from fingerprint_keyer import GetBestReplacements, ReplaceByKey
+from fingerprint_keyer import fingerprint_keyer, group_fingerprint_strings
+from fingerprint_keyer import get_best_replacements, replace_by_key
 
 testStrings = [
     u" - juan     peRes",

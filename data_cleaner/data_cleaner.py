@@ -15,8 +15,8 @@ import arrow
 import parsley
 from unidecode import unidecode
 
-from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings
-from fingerprint_keyer import GetBestReplacements, ReplaceByKey
+from fingerprint_keyer import group_fingerprint_strings
+from fingerprint_keyer import get_best_replacements, replace_by_key
 
 
 class DataCleaner(object):
@@ -166,9 +166,9 @@ class DataCleaner(object):
         field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
 
-        clusters, counts = GroupFingerprintStrings(decoded_series)
-        d = GetBestReplacements(clusters, counts)
-        parsed_series = pd.Series(ReplaceByKey(d, decoded_series))
+        clusters, counts = group_fingerprint_strings(decoded_series)
+        d = get_best_replacements(clusters, counts)
+        parsed_series = pd.Series(replace_by_key(d, decoded_series))
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 

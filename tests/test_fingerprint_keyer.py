@@ -15,10 +15,30 @@ import nose
 from data_cleaner.fingerprint_keyer import fingerprint_keyer
 from data_cleaner.fingerprint_keyer import group_fingerprint_strings
 from data_cleaner.fingerprint_keyer import get_best_replacements
+from data_cleaner.fingerprint_keyer import replace_by_key
+
+
+class FingerprintKeyerIntegrationTestCase(unittest.TestCase):
+    """Testea el funcionamiento conjunto de de fingerprint."""
+
+    def test_fingerprint_methods_together(self):
+        """Testea todos los métodos de fingerprint juntos."""
+        inp_strings = ["DIGCE - Esmeralda 1212 - Piso 6° Of. 604",
+                       "DIGCE - Esmeralda 1212 - Piso 6° Of. 604",
+                       "DIGCE - Esmeralda 1212 - Piso 6° Of. 604",
+                       "DIGCE - Esmeralda 1212 Piso 6° Of. 604",
+                       "DIGCE - Esmeralda 1212 Piso 6° Of. 604"]
+
+        clusters, counts = group_fingerprint_strings(inp_strings)
+        replacements = get_best_replacements(clusters, counts)
+        clean_strings = replace_by_key(replacements, inp_strings)
+        exp_strings = ["DIGCE - Esmeralda 1212 - Piso 6° Of. 604"] * 5
+
+        self.assertEqual(clean_strings, exp_strings)
 
 
 class FingerprintKeyerTestCase(unittest.TestCase):
-    """Tests for FingerprintKeyer class."""
+    """Unit tests for fingerprint_keyer."""
 
     def test_fingerprint_keyer(self):
         """Testea la creación de una key fingerprint."""

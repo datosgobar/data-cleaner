@@ -22,12 +22,12 @@ from fingerprint_keyer import get_best_replacements, replace_by_key
 class DataCleaner(object):
     """Limpia csvs a partir de reglas de limpieza."""
 
-    OUTPUT_ENCODING = "utf-8"
-    OUTPUT_SEPARATOR = ","
-    OUTPUT_QUOTECHAR = '"'
-    INPUT_DEFAULT_ENCODING = "utf-8"
-    INPUT_DEFAULT_SEPARATOR = ","
-    INPUT_DEFAULT_QUOTECHAR = '"'
+    OUTPUT_ENCODING = str("utf-8")
+    OUTPUT_SEPARATOR = str(",")
+    OUTPUT_QUOTECHAR = str('"')
+    INPUT_DEFAULT_ENCODING = str("utf-8")
+    INPUT_DEFAULT_SEPARATOR = str(",")
+    INPUT_DEFAULT_QUOTECHAR = str('"')
 
     NO_ARGS_RULES = ["nombre_propio", "string", "remover_columnas"]
 
@@ -282,7 +282,7 @@ class DataCleaner(object):
                                             args=(time_format,))
 
         if inplace:
-            self.df["isodatetime_" + field] = parsed_series
+            self.df["isodatetime_" + new_field_name] = parsed_series
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 

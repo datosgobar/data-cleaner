@@ -28,4 +28,4 @@ matrix:
   - python: pypy
   
 notifications:
- slack: ssipyga:yyz0hyWmiaoGGnprhjqDX
+ slack: ssipyga:yyz0hyWmiaoGGnprhjqDXUwk

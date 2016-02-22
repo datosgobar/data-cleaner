@@ -169,8 +169,12 @@ class DataCleaner(object):
         clusters, counts = group_fingerprint_strings(decoded_series)
         d = get_best_replacements(clusters, counts)
         parsed_series = pd.Series(replace_by_key(d, decoded_series))
+        encoded_series = parsed_series.str.encode(self.OUTPUT_ENCODING)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        if inplace:
+            self.df[field] = encoded_series
+
+        return encoded_series
 
     def reemplazar(self, field, values_map, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.

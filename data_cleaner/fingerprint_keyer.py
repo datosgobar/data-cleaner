@@ -83,8 +83,8 @@ def get_best_replacements(clusters, counts):
         dict: {fingerprint: string_mas_usada_para_esa_fingerprint}
     """
     res = {}
-    for (fingerprint, key_stings) in clusters.items():
-        res[fingerprint] = max(key_stings, key=lambda s: counts[s])
+    for (fingerprint, key_strings) in clusters.items():
+        res[fingerprint] = max(key_strings, key=lambda s: counts[s])
     return res
 
 

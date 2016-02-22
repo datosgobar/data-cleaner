@@ -49,7 +49,9 @@ class DataCleanerIntegrationTestCase(unittest.TestCase):
 
         self.assertEqual(set(df.columns), set(df_exp.columns))
         for col in df.columns:
-            self.assertEqual(list(df[col]), list(df_exp[col]))
+            self.assertEqual(
+                nan_safe_list(df[col]), nan_safe_list(df_exp[col])
+            )
 
 
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):

@@ -55,11 +55,21 @@ class DataCleaner(object):
     def _normalize_fields(self, fields):
         return [self._normalize_field(field) for field in fields]
 
-    def _normalize_field(self, field):
+    def _normalize_field(self, field, sep="_"):
+        """Normaliza un string para ser nombre de campo o sufijo de dataset.
+
+        Args:
+            field (str): Nombre original del campo o sufijo de datset.
+            sep (str): Separador para el nombre normalizado.
+
+        Returns:
+            str: Nombre de campo o sufijo de datset normalizado.
+        """
         # reemplaza caracteres que no sean unicode
         norm_field = unidecode(field.decode(self.encoding))
 
-        norm_field = norm_field.lower().replace(" ", "_").replace("-", "_")
+        norm_field = norm_field.lower().replace(" ", sep)
+        norm_field = norm_field.replace("-", sep).replace("_", sep)
 
         # remueve caracteres que no sean alfanuméricos o "_"
         norm_field = ''.join(char for char in norm_field

@@ -32,6 +32,14 @@ class DataCleaner(object):
     NO_ARGS_RULES = ["nombre_propio", "string", "remover_columnas"]
 
     def __init__(self, input_path, encoding=None, sep=None, quotechar=None):
+        """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
+
+        Args:
+            input_path (str): Ruta al CSV que se va a limpiar.
+            encoding (str): Encoding del CSV a limpiar (default: utf-8)
+            sep (str): Separador del CSV a limpiar (default: ",")
+            quotechar (str): Enclosing character del CSV (default: '"')
+        """
         self.encoding = encoding or self.INPUT_DEFAULT_ENCODING
         sep = sep or self.INPUT_DEFAULT_SEPARATOR
         quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
@@ -58,6 +66,7 @@ class DataCleaner(object):
                              if char.isalnum() or char == "_")
         return norm_field
 
+    # Métodos GLOBALES
     def clean(self, rules):
         """Aplica las reglas de limpieza al objeto en memoria.
 
@@ -93,6 +102,7 @@ class DataCleaner(object):
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, *args, **kwargs)
 
+    # Métodos INDIVIDUALES de LIMPIEZA
     def remover_columnas(self, field, inplace=False):
         """Remueve columnas.
 

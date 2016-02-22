@@ -1,3 +1,5 @@
+"""Ejemplo integrador de una lista de reglas de limpieza."""
+
 rules = [
     {
         "nombre_propio": ["dependencia"]

@@ -1,10 +1,10 @@
-
 data-cleaner
 ===
 
 [![Coverage Status](https://coveralls.io/repos/gobabiertoAR/data-cleaner/badge.svg?branch=master)](https://coveralls.io/r/gobabiertoAR/data-cleaner?branch=master)
 [![Build Status](https://travis-ci.org/gobabiertoAR/data-cleaner.svg?branch=master)](https://travis-ci.org/gobabiertoAR/data-cleaner)
 [![PyPI](https://badge.fury.io/py/data-cleaner.svg)](http://badge.fury.io/py/data-cleaner)
+[![Stories in Ready](https://badge.waffle.io/gobabiertoAR/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/gobabiertoAR/data-cleaner)
 
 Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/gobabiertoAR/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
 
@@ -16,9 +16,8 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 
 - [Instalación](#instalaci%C3%B3n)
 - [Uso](#uso)
-  - [Ejemplo de uso integrador](#ejemplo-de-uso-integrador)
-  - [Ejemplos de uso individuales](#ejemplos-de-uso-individuales)
-- [Reglas disponibles](#reglas-disponibles)
+- [Limpieza automática](#limpieza-autom%C3%A1tica)
+- [Reglas de limpieza](#reglas-de-limpieza)
 - [TODO](#todo)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -158,7 +157,7 @@ Los nombres de los campos se normalizan automáticamente. Sólo el uso de caract
 
 Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son (a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o (b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
 
-### Remover columnas (*renombrar_columnas*)
+### Renombrar columnas (*renombrar_columnas*)
 Renombra columnas de la tabla de datos. 
 
 **Especificación:**
@@ -180,8 +179,8 @@ Renombra columnas de la tabla de datos.
 ]}
 ```
 
-### Renombrar columnas (*renombrar_columnas*)
-Re campos de la tabla de datos. 
+### Remover columnas (*remover_columnas*)
+Remueve campos de la tabla de datos. 
 
 Entre otras cosas, se puede utilizar para remover los campos originales -no recomendado- que dieron origen a múltiples campos nuevos cuando se utilizó alguna regla de *split*.
 
@@ -340,9 +339,11 @@ Separa strings de un campo en múltiples campos, mediante separadores simples.
 (NO IMPLEMENTADO)
 
 ### Separar campos mediante una parsing expression grammar (*string_peg_split*)
-Utiliza parsing expression grammars para separar un strings de un campo en múltiples campos.
+Utiliza parsing expression grammars para separar strings de un campo en múltiples campos.
 
-Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html).
+Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html). 
+
+Todas las PEG que se escriban para este paquete, deben contener una regla `values` cuyo output sea una lista de los valores que se quiere extraer. Cuando la PEG utilizada falle, el paquete dejará un valor nulo para esa celda.
 
 **Especificación:**
 
@@ -374,11 +375,36 @@ Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que 
 ]}
 ```
 
+### Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)
+Es análogo al método sub de la libreria de python [**re**](https://docs.python.org/2/library/re.html#re.sub). 
+
+**Especificación:**
+
+```python
+{"string_regex_substitute":[
+	["campo1", "str_regex_match1", "str_regex_replace1"], ["campo2", "str_regex_match2", "str_regex_replace2"]]
+}
+```
+
+**Ejemplos:**
+
+```python
+Reemplaza punto y comas por comas:
+{"string_regex_substitute":[
+	["norma_competencias_objetivos", ";", ","]]
+}
+
+Cambia el orden de una cadena entre parentesis:
+{"string_regex_substitute":[
+	["nombre_cargo", "(?P<cargo>\(.+\))(?P<nombre>.+)", "\g<nombre> \g<cargo>"]]
+}
+"(presidente)Juan Jose Perez."  pasaría a ser "Juan Jose Perez. (presidente)"
+```
+
 ## TODO
 
-* reescribir README en secciones más explicativas por regla
 * evitar stopwords en las reglas que lidian con strings
-* adivinar encoding si es posible
+* adivinar encoding, si es posible
 * corregir estilo de fingerprint, escribir docstrings y tests
 * agregar regla para filtros
 * escribir test de integración

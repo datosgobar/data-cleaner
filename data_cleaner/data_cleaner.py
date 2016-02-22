@@ -15,23 +15,31 @@ import arrow
 import parsley
 from unidecode import unidecode
 
-from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings
-from fingerprint_keyer import GetBestReplacements, ReplaceByKey
+from fingerprint_keyer import group_fingerprint_strings
+from fingerprint_keyer import get_best_replacements, replace_by_key
 
 
 class DataCleaner(object):
     """Limpia csvs a partir de reglas de limpieza."""
 
-    OUTPUT_ENCODING = "utf-8"
-    OUTPUT_SEPARATOR = ","
-    OUTPUT_QUOTECHAR = '"'
-    INPUT_DEFAULT_ENCODING = "utf-8"
-    INPUT_DEFAULT_SEPARATOR = ","
-    INPUT_DEFAULT_QUOTECHAR = '"'
+    OUTPUT_ENCODING = str("utf-8")
+    OUTPUT_SEPARATOR = str(",")
+    OUTPUT_QUOTECHAR = str('"')
+    INPUT_DEFAULT_ENCODING = str("utf-8")
+    INPUT_DEFAULT_SEPARATOR = str(",")
+    INPUT_DEFAULT_QUOTECHAR = str('"')
 
     NO_ARGS_RULES = ["nombre_propio", "string", "remover_columnas"]
 
     def __init__(self, input_path, encoding=None, sep=None, quotechar=None):
+        """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
+
+        Args:
+            input_path (str): Ruta al CSV que se va a limpiar.
+            encoding (str): Encoding del CSV a limpiar (default: utf-8)
+            sep (str): Separador del CSV a limpiar (default: ",")
+            quotechar (str): Enclosing character del CSV (default: '"')
+        """
         self.encoding = encoding or self.INPUT_DEFAULT_ENCODING
         sep = sep or self.INPUT_DEFAULT_SEPARATOR
         quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
@@ -58,6 +66,7 @@ class DataCleaner(object):
                              if char.isalnum() or char == "_")
         return norm_field
 
+    # Métodos GLOBALES
     def clean(self, rules):
         """Aplica las reglas de limpieza al objeto en memoria.
 
@@ -93,6 +102,7 @@ class DataCleaner(object):
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, *args, **kwargs)
 
+    # Métodos INDIVIDUALES de LIMPIEZA
     def remover_columnas(self, field, inplace=False):
         """Remueve columnas.
 
@@ -166,11 +176,15 @@ class DataCleaner(object):
         field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
 
-        clusters, counts = GroupFingerprintStrings(decoded_series)
-        d = GetBestReplacements(clusters, counts)
-        parsed_series = pd.Series(ReplaceByKey(d, decoded_series))
+        clusters, counts = group_fingerprint_strings(decoded_series)
+        d = get_best_replacements(clusters, counts)
+        parsed_series = pd.Series(replace_by_key(d, decoded_series))
+        encoded_series = parsed_series.str.encode(self.OUTPUT_ENCODING)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        if inplace:
+            self.df[field] = encoded_series
+
+        return encoded_series
 
     def reemplazar(self, field, values_map, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.
@@ -282,7 +296,7 @@ class DataCleaner(object):
                                             args=(time_format,))
 
         if inplace:
-            self.df["isodatetime_" + field] = parsed_series
+            self.df["isodatetime_" + new_field_name] = parsed_series
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
@@ -379,6 +393,29 @@ class DataCleaner(object):
             values = []
 
         return pd.Series(values)
+
+    def string_regex_substitute(self, field, regex_str_match,
+                                regex_str_sub, inplace=False):
+        """Regla para manipular y reeemplazar datos de un campo con regex.
+
+        Args:
+            field (str): Campo a limpiar.
+            regex_str_match (str): Expresion regular a buscar
+            regex_str_sub (str): Expresion regular para el reemplazo.
+
+        Returns:
+            pandas.Series: Serie de strings limpios
+        """
+        field = self._normalize_field(field)
+        decoded_series = self.df[field].str.decode(self.encoding)
+        replaced = decoded_series.replace(regex_str_match,
+                                          regex_str_sub, regex=True)
+        encoded_series = replaced.str.encode(self.OUTPUT_ENCODING)
+
+        if inplace:
+            self.df[field] = encoded_series
+
+        return encoded_series
 
 
 def main():

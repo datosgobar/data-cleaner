@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""test_data_cleaner.py
+"""test_data_cleaner.py.
 
 Unit tests for `data_cleaner.py` module. Si los tests no corren, correr desde
 la línea de comandos: `chmod 644 test_data_cleaner.py`
 """
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -21,25 +20,35 @@ BASE_DIR = os.path.dirname(__file__)
 
 
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):
-    """Testea métodos individuales de limpieza del DataCleaner."""
+
+    """Testea métodos individuales de limpieza del DataCleaner.
+
+    Saraza:
+        * Algo
+    """
 
     def setUp(self):
+        """Testea métodos individuales de limpieza del DataCleaner."""
         self.input_dir = os.path.join(BASE_DIR, "input")
         self.output_dir = os.path.join(BASE_DIR, "output")
 
     def get_input(self, case_name):
+        """Testea métodos individuales de limpieza del DataCleaner."""
         file_name = "to_clean_" + case_name + ".csv"
         return os.path.join(self.input_dir, file_name)
 
     def get_output(self, case_name):
+        """Testea métodos individuales de limpieza del DataCleaner."""
         file_name = "clean_" + case_name + ".csv"
         return os.path.join(self.output_dir, file_name)
 
     @staticmethod
     def nan_safe_list(iterable):
+        """Testea métodos individuales de limpieza del DataCleaner."""
         return [i if pd.notnull(i) else None for i in iterable]
 
     def test_cleaning_fields(self):
+        """Testea métodos individuales de limpieza del DataCleaner."""
         input_path = self.get_input("fields")
         output_path = self.get_output("fields")
 
@@ -49,6 +58,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(list(dc.df.columns), list(df.columns))
 
     def test_remover_columnas(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("nombre_propio")
         field = "dependencia"
 
@@ -59,6 +69,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertNotIn(field, df.columns)
 
     def test_renombrar_columnas(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("nombre_propio")
         field = "dependencia"
 
@@ -70,6 +81,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertIn("dependencia2", df.columns)
 
     def test_nombre_propio(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("nombre_propio")
         output_path = self.get_output("nombre_propio")
         field = "dependencia"
@@ -87,6 +99,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
     # @unittest.skip("skip")
     def test_string_normal(self):
+        """sakjdsladjla."""
         input_path = self.get_input("string_normal")
         output_path = self.get_output("string_normal")
         field = "lugar_audiencia"
@@ -103,6 +116,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_reemplazar(self):
+        """sakjdsladjla."""
         input_path = self.get_input("reemplazar")
         output_path = self.get_output("reemplazar")
         field = "tipo"
@@ -120,6 +134,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_completa(self):
+        """fjskdljflsj."""
         input_path = self.get_input("fecha_completa")
         output_path = self.get_output("fecha_completa")
         field = "fecha_completa_audiencia"
@@ -136,6 +151,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_simple_sin_hora(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("fecha_sin_hora")
         output_path = self.get_output("fecha_sin_hora")
         field = "fecha_audiencia"
@@ -152,6 +168,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_simple_mes(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("fecha_mes")
         output_path = self.get_output("fecha_mes")
         field = "fecha_audiencia"
@@ -168,6 +185,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_separada(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("fecha_separada")
         output_path = self.get_output("fecha_separada")
 
@@ -187,6 +205,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_string_simple_split(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("string_separable_simple")
         output_path = self.get_output("string_separable_simple")
 
@@ -212,10 +231,12 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
     @unittest.skip("skip")
     def test_string_regex_split(self):
+        """ksdjfljslkajfklas."""
         pass
 
     # @unittest.skip("skip")
     def test_string_peg_split(self):
+        """ksdjfljslkajfklas."""
         input_path = self.get_input("string_separable_complejo")
         output_path = self.get_output("string_separable_complejo")
 
@@ -250,6 +271,20 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res_2, exp_2)
         self.assertEqual(res_3, exp_3)
 
+    def test_string_regex_substitute(self):
+        """ksdjfljslkajfklas."""
+        input_path = self.get_input("regex_sub")
+        output_path = self.get_output("regex_sub")
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.string_regex_substitute("lugar_audiencia",
+                                            "\d+.+Piso.+",
+                                            "")
+        res = list(series)
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path)
+        exp = list(df["lugar_audiencia"])
+        self.assertEqual(res, exp)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

@@ -314,6 +314,26 @@ Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que 
     ]
 ]}
 
+### Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)
+Es análogo al método sub de la libreria de python [**re**](https://docs.python.org/2/library/re.html#re.sub). 
+
+**Especificación:**
+{"string_regex_substitute":[
+	["campo1", "str_regex_match1", "str_regex_replace1"], ["campo2", "str_regex_match2", "str_regex_replace2"]]
+}
+
+**Ejemplos:**
+Reemplaza punto y comas por comas:
+{"string_regex_substitute":[
+	["norma_competencias_objetivos", ";", ","]]
+}
+
+Cambia el orden de una cadena entre parentesis:
+{"string_regex_substitute":[
+	["nombre_cargo", "(?P<cargo>\(.+\))(?P<nombre>.+)", "\g<nombre> \g<cargo>"]]
+}
+"(presidente)Juan Jose Perez."  pasaría a ser "Juan Jose Perez. (presidente)"
+
 ## TODO
 
 * reescribir README en secciones más explicativas por regla

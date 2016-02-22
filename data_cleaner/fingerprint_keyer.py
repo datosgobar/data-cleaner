@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import string
@@ -17,6 +16,8 @@ def strip_accents(s):
 
 def FingerprintKeyer(key_string):
     # assert type(key_string) == str,"ERROR: key must be a string."
+    if type(key_string) == float:
+        key_string = str(key_string)
     if type(key_string) != str:
         key_string = key_string.encode('utf8')
 

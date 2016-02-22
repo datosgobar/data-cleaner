@@ -29,8 +29,6 @@ class DataCleaner(object):
     INPUT_DEFAULT_SEPARATOR = str(",")
     INPUT_DEFAULT_QUOTECHAR = str('"')
 
-    NO_ARGS_RULES = ["nombre_propio", "string", "remover_columnas"]
-
     def __init__(self, input_path, encoding=None, sep=None, quotechar=None):
         """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
 
@@ -86,15 +84,9 @@ class DataCleaner(object):
         for rule_item in rules:
             for rule in rule_item:
                 rule_method = getattr(self, rule)
-
-                if rule in self.NO_ARGS_RULES:
-                    fields = rule_item[rule]
-                    for field in fields:
-                        rule_method(field, inplace=True)
-
-                else:
-                    for args in rule_item[rule]:
-                        rule_method(*args, inplace=True)
+                for kwargs in rule_item[rule]:
+                    kwargs["inplace"] = True
+                    rule_method(**kwargs)
 
     def clean_file(self, rules, output_path):
         """Aplica las reglas de limpieza y guarda los datos en un csv.
@@ -196,12 +188,12 @@ class DataCleaner(object):
 
         return encoded_series
 
-    def reemplazar(self, field, values_map, inplace=False):
+    def reemplazar(self, field, replacements, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.
 
         Args:
             field (str): Campo a limpiar
-            values_map (dict): {"new_value": ["old_value1", "old_value2"]}
+            replacements (dict): {"new_value": ["old_value1", "old_value2"]}
 
         Returns:
             pandas.Series: Serie de strings limpios
@@ -209,7 +201,7 @@ class DataCleaner(object):
         field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
 
-        for new_value, old_values in values_map.iteritems():
+        for new_value, old_values in replacements.iteritems():
             decoded_series = decoded_series.replace(old_values, new_value)
 
         encoded_series = decoded_series.str.encode(self.OUTPUT_ENCODING)

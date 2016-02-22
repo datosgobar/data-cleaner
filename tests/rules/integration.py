@@ -2,39 +2,42 @@
 
 rules = [
     {
-        "nombre_propio": ["dependencia"]
+        "nombre_propio": [
+            {"field": "dependencia"}
+        ]
     },
     {
         "string": [
-            "dependencia",
-            "lugar_audiencia",
-            "sujeto_obligado",
-            "solicitante"
+            {"field": "dependencia"},
+            {"field": "lugar_audiencia"},
+            {"field": "sujeto_obligado"},
+            {"field": "solicitante"}
         ]
     },
     {
         "fecha_completa": [
-            ["fecha_completa_audiencia", "DD-MM-YYYY HH:mm"]
+            {"field": "fecha_completa_audiencia",
+             "time_format": "DD-MM-YYYY HH:mm"}
         ]
     },
     {
         "fecha_separada": [
-            [[["fecha_audiencia", "DD-MM-YYYY"], ["hora_audiencia", "HH:mm"]],
-             "audiencia"]
+            {"fields": [["fecha_audiencia", "DD-MM-YYYY"],
+                        ["hora_audiencia", "HH:mm"]],
+             "new_field_name": "audiencia"}
         ]
     },
     {
         "string_simple_split": [
-            ["sujeto_obligado", [", Cargo:", "Cargo:"], ["nombre", "cargo"]]
+            {"field": "sujeto_obligado",
+             "separators": [", Cargo:", "Cargo:"],
+             "new_field_names": ["nombre", "cargo"]}
         ]
     },
     {
-        "string_regex_split": []
-    },
-    {
         "string_peg_split": [
-            ["solicitante",
-             """
+            {"field": "solicitante",
+             "grammar": """
             allowed_char = anything:x ?(x not in '1234567890() ')
             nombre = ~('DNI') <allowed_char+>:n ws -> n.strip()
             number = <digit+>:num -> int(num)
@@ -44,9 +47,8 @@ rules = [
             dni = ','? ws 'DNI' ws number:num -> num
 
             values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
-            """,
-             ["nombre", "cargo", "dni"]
-             ]
+             """,
+             "new_field_names": ["nombre", "cargo", "dni"]}
         ]
     }
 ]

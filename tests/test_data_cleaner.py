@@ -37,6 +37,7 @@ def nan_safe_list(iterable):
     return [i if pd.notnull(i) else None for i in iterable]
 
 
+# @unittest.skip("skip")
 class DataCleanerIntegrationTestCase(unittest.TestCase):
     """Testea el funcionamiento integral del paquete."""
 

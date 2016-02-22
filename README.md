@@ -49,11 +49,14 @@ output_path = "samples/clean_example.csv"
 
 rules = [
     {
-        "nombre_propio": ["dependencia"]
+        "nombre_propio": [
+            {"field": "dependencia"}
+        ]
     },
     {
         "fecha_completa": [
-            ["fecha_audiencia", "DD-MM-YYYY HH:mm"]
+            {"field": "fecha_completa_audiencia",
+             "time_format": "DD-MM-YYYY HH:mm"}
         ]
     }
 ]
@@ -164,9 +167,9 @@ Renombra columnas de la tabla de datos.
 
 ```python
 {"renombrar_columnas": [
-    ["columna_actual_1", "columna_nueva_1"],
-    ["columna_actual_2", "columna_nueva_2"],
-    ["columna_actual_3", "columna_nueva_3"]
+    {"field": "columna_actual_1", "new_field": "columna_nueva_1"},
+    {"field": "columna_actual_2", "new_field": "columna_nueva_2"},
+    {"field": "columna_actual_3", "new_field": "columna_nueva_3"}
 ]}
 ```
 
@@ -174,8 +177,8 @@ Renombra columnas de la tabla de datos.
 
 ```python
 {"renombrar_columnas": [
-    ["aut_dependencia", "dependencia"],
-    ["sujeto_obligado_audiencia", "sujeto_obligado"]
+    {"field": "aut_dependencia", "new_field": "dependencia"},
+    {"field": "sujeto_obligado_audiencia", "new_field": "sujeto_obligado"}
 ]}
 ```
 
@@ -187,13 +190,19 @@ Entre otras cosas, se puede utilizar para remover los campos originales -no reco
 **Especificación:**
 
 ```python
-{"remover_columnas": ["columna_a_remover_1", "columna_a_remover_2"]}
+{"remover_columnas": [
+    {"field": "columna_a_remover_1"},
+    {"field": "columna_a_remover_2"}
+]}
 ```
 
 **Ejemplo:**
 
 ```python
-{"remover_columnas": ["dependencia", "fecha_completa_audiencia"]}
+{"remover_columnas": [
+    {"field": "dependencia"},
+    {"field": "fecha_completa_audiencia"}
+]}
 ```
 
 ### Capitalizar nombres propios (*nombre_propio*)
@@ -204,13 +213,18 @@ Se aplica a todos aquellos campos de datos que tengan nombres de personas. En el
 **Especificación:**
 
 ```python
-{"nombre_propio": ["columna_1", "columna_2"]}
+{"nombre_propio": [
+    {"field": "columna_1"},
+    {"field": "columna_2"}
+]}
 ```
 
 **Ejemplo:**
 
 ```python
-{"nombre_propio": ["dependencia"]}
+{"nombre_propio": [
+    {"field": "dependencia"}
+]}
 ```
 
 ### Normalizar strings (*string*)
@@ -221,14 +235,21 @@ Este algoritmo busca unificar la forma de escribir strings que contienen idénti
 **Especificación:**
 
 ```python
-{"string": ["columna_1", "columna_2"]}
+{"string": [
+    {"field": "columna_1"},
+    {"field": "columna_2"}
+]}
 ```
 
 **Ejemplo:**
 
 ```python
-{"string": ["dependencia", "lugar_audiencia", "sujeto_obligado", 
-            "solicitante"]}
+{"string": [
+    {"field": "dependencia"},
+    {"field": "lugar_audiencia"},
+    {"field": "sujeto_obligado"},
+    {"field": "solicitante"}
+]}
 ```
 
 ### Reemplazar listas de strings por valores predefinidos (*reemplazar*)
@@ -238,7 +259,10 @@ Reemplaza listas de strings por un valor predefinido que el usuario decide que r
 
 ```python
 {"reemplazar": [
-    ["columna", {"Nuevo1": ["Viejo"], "Nuevo2": ["ViejoA", "ViejoB"]}]
+    {
+     "field": "columna",
+     "replacements": {"Nuevo1": ["Viejo"], "Nuevo2": ["ViejoA", "ViejoB"]}
+    }
 ]}
 ```
 
@@ -246,7 +270,10 @@ Reemplaza listas de strings por un valor predefinido que el usuario decide que r
 
 ```python
 {"reemplazar": [
-    ["tipo", {"Servicios": ["Serv"], "Otros": ["Otro", "Loc"]}]
+    {
+    "field": "tipo",
+    "replacements": {"Servicios": ["Serv"], "Otros": ["Otro", "Loc"]}
+    }
 ]}
 ```
 
@@ -261,7 +288,7 @@ Para el parsing de fechas se utiliza la librería [*arrow*](http://crsmithdev.co
 
 ```python
 {"fecha_completa": [
-    ["columna", "DD-MM-YYYY HH:mm"]
+    {"field": "columna", "time_format": "DD-MM-YYYY HH:mm"}
 ]}
 ```
 
@@ -269,7 +296,7 @@ Para el parsing de fechas se utiliza la librería [*arrow*](http://crsmithdev.co
 
 ```python
 {"fecha_completa": [
-    ["fecha_completa_audiencia", "DD-MM-YYYY HH:mm"]
+    {"field": "fecha_completa_audiencia", "time_format": "DD-MM-YYYY HH:mm"}
 ]}
 ```
 
@@ -283,8 +310,8 @@ Ej.: **02-2016** a **2016-02**
 
 ```python
 {"fecha_simple": [
-    ["columna1", "DD-MM-YYYY"], 
-    ["columna2", "MM-YYYY"]
+    {"field": "columna1", "time_format": "DD-MM-YYYY"},
+    {"field": "columna2", "time_format": "MM-YYYY"}
 ]}
 ```
 
@@ -292,8 +319,8 @@ Ej.: **02-2016** a **2016-02**
 
 ```python
 {"fecha_simple": [
-    ["fecha", "DD-MM-YYYY"], 
-    ["mes", "MM-YYYY"]
+    {"field": "fecha", "time_format": "DD-MM-YYYY"},
+    {"field": "mes", "time_format": "MM-YYYY"}
 ]}
 ```
 
@@ -304,7 +331,8 @@ Estandariza una fecha completa donde distintos componentes de la misma están se
 
 ```python
 {"fecha_separada": [
-    [[["campo1", "DD-MM-YYYY"], ["campo2", "HH:mm"]], "audiencia"]
+    {"fields": [["campo1", "DD-MM-YYYY"], ["campo2", "HH:mm"]],
+     "new_field_name": "audiencia"}
 ]}
 ```
 
@@ -312,7 +340,7 @@ Estandariza una fecha completa donde distintos componentes de la misma están se
 
 ```python
 {"fecha_separada": [
-    [[["fecha_audiencia", "DD-MM-YYYY"], ["hora_audiencia", "HH:mm"]], "audiencia"]
+    {"fields": [["fecha_audiencia", "DD-MM-YYYY"], ["hora_audiencia", "HH:mm"]], "new_field_name": "audiencia"}
 ]}
 ```
 
@@ -323,7 +351,9 @@ Separa strings de un campo en múltiples campos, mediante separadores simples.
 
 ```python
 {"string_simple_split": [
-    ["campo", ["separador_A", "separador_B"], ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
+    {"field": "campo",
+    "separators": ["separador_A", "separador_B"],
+    "new_field_names": ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]}
 ]}
 ```
 
@@ -331,7 +361,9 @@ Separa strings de un campo en múltiples campos, mediante separadores simples.
 
 ```python
 {"string_simple_split": [
-    ["sujeto_obligado", [", Cargo:", "Cargo:"], ["nombre", "cargo"]]
+    {"field": "sujeto_obligado",
+    "separators": [", Cargo:", "Cargo:"],
+    "new_field_names": ["nombre", "cargo"]}
 ]}
 ```
 
@@ -341,7 +373,7 @@ Separa strings de un campo en múltiples campos, mediante separadores simples.
 ### Separar campos mediante una parsing expression grammar (*string_peg_split*)
 Utiliza parsing expression grammars para separar strings de un campo en múltiples campos.
 
-Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html). 
+Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html).
 
 Todas las PEG que se escriban para este paquete, deben contener una regla `values` cuyo output sea una lista de los valores que se quiere extraer. Cuando la PEG utilizada falle, el paquete dejará un valor nulo para esa celda.
 
@@ -349,7 +381,9 @@ Todas las PEG que se escriban para este paquete, deben contener una regla `value
 
 ```python
 {"string_peg_split": [
-    ["campo", "grammar", ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]]
+    {"field": "campo",
+    "grammar": "grammar",
+    "new_field_names": ["sufijo_nuevo_campo_1", "sufijo_nuevo_campo_2"]}
 ]}
 ```
 
@@ -357,9 +391,9 @@ Todas las PEG que se escriban para este paquete, deben contener una regla `value
 
 ```python
 {"string_peg_split": [
-    [
-    "solicitante",
-    """
+    {
+    "field": "solicitante",
+    "grammar": """
     allowed_char = anything:x ?(x not in '1234567890() ')
     nombre = ~('DNI') <allowed_char+>:n ws -> n.strip()
     number = <digit+>:num -> int(num)
@@ -370,8 +404,8 @@ Todas las PEG que se escriban para este paquete, deben contener una regla `value
 
     values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
     """,
-    ["nombre", "cargo", "dni"]
-    ]
+    "new_field_names": ["nombre", "cargo", "dni"]
+    }
 ]}
 ```
 
@@ -382,8 +416,13 @@ Es análogo al método sub de la libreria de python [**re**](https://docs.python
 
 ```python
 {"string_regex_substitute":[
-	["campo1", "str_regex_match1", "str_regex_replace1"], ["campo2", "str_regex_match2", "str_regex_replace2"]]
-}
+	{"field": "campo1",
+    "regex_str_match": "str_regex_match1",
+    "regex_str_sub": "str_regex_replace1"},
+    {"field": "campo2",
+    "regex_str_match": "str_regex_match2",
+    "regex_str_sub": "str_regex_replace2"}
+]}
 ```
 
 **Ejemplos:**
@@ -391,21 +430,22 @@ Es análogo al método sub de la libreria de python [**re**](https://docs.python
 ```python
 Reemplaza punto y comas por comas:
 {"string_regex_substitute":[
-	["norma_competencias_objetivos", ";", ","]]
-}
+	{"field": "norma_competencias_objetivos",
+    "regex_str_match": ";",
+    "regex_str_sub": ","}
+]}
 
 Cambia el orden de una cadena entre parentesis:
 {"string_regex_substitute":[
-	["nombre_cargo", "(?P<cargo>\(.+\))(?P<nombre>.+)", "\g<nombre> \g<cargo>"]]
-}
+	{"field": "nombre_cargo",
+    "regex_str_match": "(?P<cargo>\(.+\))(?P<nombre>.+)",
+    "regex_str_sub": "\g<nombre> \g<cargo>"}
+]}
 "(presidente)Juan Jose Perez."  pasaría a ser "Juan Jose Perez. (presidente)"
 ```
 
 ## TODO
 
-* evitar stopwords en las reglas que lidian con strings
 * adivinar encoding, si es posible
-* corregir estilo de fingerprint, escribir docstrings y tests
 * agregar regla para filtros
-* escribir test de integración
 * agregar herramienta para correr desde la línea de comandos

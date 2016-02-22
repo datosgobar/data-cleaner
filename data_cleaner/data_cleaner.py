@@ -394,6 +394,29 @@ class DataCleaner(object):
 
         return pd.Series(values)
 
+    def string_regex_substitute(self, field, regex_str_match,
+                                regex_str_sub, inplace=False):
+        """Regla para manipular y reeemplazar datos de un campo con regex.
+
+        Args:
+            field (str): Campo a limpiar.
+            regex_str_match (str): Expresion regular a buscar
+            regex_str_sub (str): Expresion regular para el reemplazo.
+
+        Returns:
+            pandas.Series: Serie de strings limpios
+        """
+        field = self._normalize_field(field)
+        decoded_series = self.df[field].str.decode(self.encoding)
+        replaced = decoded_series.replace(regex_str_match,
+                                          regex_str_sub, regex=True)
+        encoded_series = replaced.str.encode(self.OUTPUT_ENCODING)
+
+        if inplace:
+            self.df[field] = encoded_series
+
+        return encoded_series
+
 
 def main():
     pass

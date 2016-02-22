@@ -268,6 +268,20 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res_2, exp_2)
         self.assertEqual(res_3, exp_3)
 
+    def test_string_regex_substitute(self):
+        input_path = get_input("regex_sub")
+        output_path = get_output("regex_sub")
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.string_regex_substitute("lugar_audiencia",
+                                            "\d+.*$",
+                                            "")
+        res = list(series)
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path)
+        print(series)
+        exp = list(df["lugar_audiencia"])
+        self.assertEqual(res, exp)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/gobabiertoAR/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/gobabiertoAR/data-cleaner)
 
 data-cleaner
 ===

@@ -17,6 +17,7 @@ from unidecode import unidecode
 
 from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
+from capitalizer import capitalize
 
 
 class DataCleaner(object):
@@ -104,6 +105,15 @@ class DataCleaner(object):
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, *args, **kwargs)
 
+    def _update_series(self, field, new_series,
+                       keep_original=False, prefix=None, sufix=None):
+        if not keep_original:
+            self.df[field] = new_series
+        else:
+            new_field = "_".join([elem for elem in [prefix, field, sufix]
+                                  if elem])
+            self.df[new_field] = new_series
+
     # Métodos INDIVIDUALES de LIMPIEZA
     def remover_columnas(self, field, inplace=False):
         """Remueve columnas.
@@ -141,7 +151,8 @@ class DataCleaner(object):
 
         return renamed_df
 
-    def nombre_propio(self, field, inplace=False):
+    def nombre_propio(self, field, sufix="clean", keep_original=False,
+                      inplace=False):
         """Regla para todos los nombres propios.
 
         Capitaliza los nombres de países, ciudades, personas, instituciones y
@@ -155,15 +166,17 @@ class DataCleaner(object):
         """
         field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
-        capitalized = decoded_series.str.title()
+        capitalized = decoded_series.apply(capitalize)
         encoded_series = capitalized.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
-            self.df[field] = encoded_series
+            self._update_series(field=field, sufix=sufix,
+                                keep_original=keep_original,
+                                new_series=encoded_series)
 
         return encoded_series
 
-    def string(self, field, inplace=False):
+    def string(self, field, sufix="clean", keep_original=False, inplace=False):
         """Regla para todos los strings.
 
         Aplica un algoritimo de clustering para normalizar strings que son
@@ -179,16 +192,19 @@ class DataCleaner(object):
         decoded_series = self.df[field].str.decode(self.encoding)
 
         clusters, counts = group_fingerprint_strings(decoded_series)
-        d = get_best_replacements(clusters, counts)
-        parsed_series = pd.Series(replace_by_key(d, decoded_series))
+        replacements = get_best_replacements(clusters, counts)
+        parsed_series = pd.Series(replace_by_key(replacements, decoded_series))
         encoded_series = parsed_series.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
-            self.df[field] = encoded_series
+            self._update_series(field=field, sufix=sufix,
+                                keep_original=keep_original,
+                                new_series=encoded_series)
 
         return encoded_series
 
-    def reemplazar(self, field, replacements, inplace=False):
+    def reemplazar(self, field, replacements, sufix="clean",
+                   keep_original=False, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.
 
         Args:
@@ -207,11 +223,14 @@ class DataCleaner(object):
         encoded_series = decoded_series.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
-            self.df[field] = encoded_series
+            self._update_series(field=field, sufix=sufix,
+                                keep_original=keep_original,
+                                new_series=encoded_series)
 
         return encoded_series
 
-    def fecha_completa(self, field, time_format, inplace=False):
+    def fecha_completa(self, field, time_format, keep_original=False,
+                       inplace=False):
         """Regla para fechas completas que están en un sólo campo.
 
         Args:
@@ -226,11 +245,14 @@ class DataCleaner(object):
         parsed_series = decoded_series.apply(self._parse_datetime,
                                              args=(time_format,))
         if inplace:
-            self.df["isodatetime_" + field] = parsed_series
+            self._update_series(field=field, prefix="isodatetime",
+                                keep_original=keep_original,
+                                new_series=parsed_series)
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
-    def fecha_simple(self, field, time_format, inplace=False):
+    def fecha_simple(self, field, time_format, keep_original=False,
+                     inplace=False):
         """Regla para fechas sin hora, sin día o sin mes.
 
         Args:
@@ -244,8 +266,11 @@ class DataCleaner(object):
         decoded_series = self.df[field].str.decode(self.encoding)
         parsed_series = decoded_series.apply(self._parse_date,
                                              args=(time_format,))
+
         if inplace:
-            self.df["isodate_" + field] = parsed_series
+            self._update_series(field=field, prefix="isodate",
+                                keep_original=keep_original,
+                                new_series=parsed_series)
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
@@ -276,7 +301,8 @@ class DataCleaner(object):
         except:
             return pd.np.NaN
 
-    def fecha_separada(self, fields, new_field_name, inplace=False):
+    def fecha_separada(self, fields, new_field_name, keep_original=True,
+                       inplace=False):
         """Regla para fechas completas que están separadas en varios campos.
 
         Args:
@@ -299,11 +325,14 @@ class DataCleaner(object):
 
         if inplace:
             self.df["isodatetime_" + new_field_name] = parsed_series
+            if not keep_original:
+                for field in field_names:
+                    self.remover_columnas(field)
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     def string_simple_split(self, field, separators, new_field_names,
-                            inplace=False):
+                            keep_original=True, inplace=False):
         """Regla para separar un campo a partir de separadores simples.
 
         Args:
@@ -326,6 +355,8 @@ class DataCleaner(object):
 
         if inplace:
             self.df = pd.concat([self.df, parsed_df], axis=1)
+        if not keep_original:
+            self.remover_columnas(field)
 
         return parsed_df
 
@@ -341,8 +372,10 @@ class DataCleaner(object):
                           if pd.notnull(value)])
 
     def string_regex_split(self, field, pattern, new_field_names,
-                           inplace=False):
+                           keep_original=True, inplace=False):
         """Regla para separar un campo a partir de una expresión regular.
+
+        TODO!!! Falta implementar este método.
 
         Args:
             field (str): Campo a limpiar.
@@ -356,7 +389,8 @@ class DataCleaner(object):
         field = self._normalize_field(field)
         pass
 
-    def string_peg_split(self, field, grammar, new_field_names, inplace=False):
+    def string_peg_split(self, field, grammar, new_field_names,
+                         keep_original=True, inplace=False):
         """Regla para separar un campo a partir parsing expression grammars.
 
         Args:
@@ -379,6 +413,8 @@ class DataCleaner(object):
 
         if inplace:
             self.df = pd.concat([self.df, parsed_df], axis=1)
+        if not keep_original:
+            self.remover_columnas(field)
 
         return parsed_df
 
@@ -397,7 +433,8 @@ class DataCleaner(object):
         return pd.Series(values)
 
     def string_regex_substitute(self, field, regex_str_match,
-                                regex_str_sub, inplace=False):
+                                regex_str_sub, sufix="clean",
+                                keep_original=True, inplace=False):
         """Regla para manipular y reeemplazar datos de un campo con regex.
 
         Args:
@@ -415,7 +452,9 @@ class DataCleaner(object):
         encoded_series = replaced.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
-            self.df[field] = encoded_series
+            self._update_series(field=field, sufix=sufix,
+                                keep_original=keep_original,
+                                new_series=encoded_series)
 
         return encoded_series
 

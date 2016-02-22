@@ -34,6 +34,7 @@ def get_output(case_name):
 
 
 def nan_safe_list(iterable):
+    """Retorna una lista convirtiendo valores nulos a None."""
     return [i if pd.notnull(i) else None for i in iterable]
 
 
@@ -104,6 +105,16 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(res, exp)
 
+    def test_nombre_propio_keep_original(self):
+        input_path = get_input("nombre_propio")
+        field = "dependencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        dc.nombre_propio(field, keep_original=True, inplace=True)
+
+        self.assertIn("dependencia_clean", dc.df.columns)
+
     # @unittest.skip("skip")
     def test_string_normal(self):
         input_path = get_input("string_normal")
@@ -153,6 +164,17 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         exp = list(df["isodatetime_" + field])
 
         self.assertEqual(res, exp)
+
+    def test_fecha_completa_keep_original(self):
+        input_path = get_input("fecha_completa")
+        field = "fecha_completa_audiencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        dc.fecha_completa(field, "DD-MM-YYYY HH:mm",
+                          keep_original=True, inplace=True)
+
+        self.assertIn("isodatetime_fecha_completa_audiencia", dc.df.columns)
 
     def test_fecha_simple_sin_hora(self):
         input_path = get_input("fecha_sin_hora")

@@ -3,35 +3,38 @@
 rules = [
     {
         "nombre_propio": [
-            {"field": "dependencia"}
+            {"field": "dependencia", "keep_original": False}
         ]
     },
     {
         "string": [
-            {"field": "dependencia"},
-            {"field": "lugar_audiencia"},
-            {"field": "sujeto_obligado"},
-            {"field": "solicitante"}
+            {"field": "dependencia", "keep_original": False},
+            {"field": "lugar_audiencia", "keep_original": False},
+            {"field": "sujeto_obligado", "keep_original": False},
+            {"field": "solicitante", "keep_original": False}
         ]
     },
     {
         "fecha_completa": [
             {"field": "fecha_completa_audiencia",
-             "time_format": "DD-MM-YYYY HH:mm"}
+             "time_format": "DD-MM-YYYY HH:mm",
+             "keep_original": True}
         ]
     },
     {
         "fecha_separada": [
             {"fields": [["fecha_audiencia", "DD-MM-YYYY"],
                         ["hora_audiencia", "HH:mm"]],
-             "new_field_name": "audiencia"}
+             "new_field_name": "audiencia",
+             "keep_original": True}
         ]
     },
     {
         "string_simple_split": [
             {"field": "sujeto_obligado",
              "separators": [", Cargo:", "Cargo:"],
-             "new_field_names": ["nombre", "cargo"]}
+             "new_field_names": ["nombre", "cargo"],
+             "keep_original": True}
         ]
     },
     {
@@ -48,7 +51,8 @@ rules = [
 
             values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -> [n, c, d]
              """,
-             "new_field_names": ["nombre", "cargo", "dni"]}
+             "new_field_names": ["nombre", "cargo", "dni"],
+             "keep_original": True}
         ]
     }
 ]

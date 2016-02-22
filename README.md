@@ -210,6 +210,11 @@ Normaliza todas las palabras que encuentra poniéndolas en minúsculas y capital
 
 Se aplica a todos aquellos campos de datos que tengan nombres de personas. En el caso de direcciones, ciudades, países, organismos e instituciones debe aplicarse con mucha cautela, existen casos donde esta regla de limpieza hace más mal que bien (ej.: las instituciones pueden tener siglas, que no corresponde capitalizar).
 
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
+
 **Especificación:**
 
 ```python
@@ -231,6 +236,11 @@ Se aplica a todos aquellos campos de datos que tengan nombres de personas. En el
 Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido, normalizando capitalización, acentos, caracteres especiales, orden de las palabras, etc. 
 
 Este algoritmo busca unificar la forma de escribir strings que contienen idénticas palabras (cadenas de caracteres alfanuméricos separados por espacios) pero difieren en otros aspectos. [Para más detalle ver Key Collision Methods de OpenRefine](https://github.com/OpenRefine/OpenRefine/wiki/Clustering-In-Depth#key-collision-methods). La implementación que se utiliza es una adaptación de [esta](https://github.com/tweirick/okstate_bioinformatics_command_line_programs/blob/master/misc_programs/FingerprintKeyer.py), publicada en Github por Tyler Weirick.
+
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 
 **Especificación:**
 
@@ -254,6 +264,11 @@ Este algoritmo busca unificar la forma de escribir strings que contienen idénti
 
 ### Reemplazar listas de strings por valores predefinidos (*reemplazar*)
 Reemplaza listas de strings por un valor predefinido que el usuario decide que representa a todas.
+
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 
 **Especificación:**
 
@@ -284,6 +299,10 @@ Ej.: **05-02-2016 14:53** a **2016-02-05T14:53:00-03:00**
 
 Para el parsing de fechas se utiliza la librería [*arrow*](http://crsmithdev.com/arrow/). En la regla debe especificarse el formato temporal en que la fecha está expresada en la tabla de datos original. El resultado siempre se convertirá a ISO 8601 cuando sea posible, ante cualquier error se dejará la celda vacía.
 
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+
 **Especificación:**
 
 ```python
@@ -306,6 +325,10 @@ Estandariza un campo sin hora, día o mes a su representación en el estándar I
 Ej.: **05-02-2016** a **2016-02-05**
 Ej.: **02-2016** a **2016-02**
 
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+
 **Especificación:**
 
 ```python
@@ -327,6 +350,10 @@ Ej.: **02-2016** a **2016-02**
 ### Normalizar fecha separada en múltiples campos (*fecha_separada*)
 Estandariza una fecha completa donde distintos componentes de la misma están separados en varios campos, a su representación en el estándar ISO 8601.
 
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+
 **Especificación:**
 
 ```python
@@ -346,6 +373,10 @@ Estandariza una fecha completa donde distintos componentes de la misma están se
 
 ### Separar campos mediante un separador simple (*string_simple_split*)
 Separa strings de un campo en múltiples campos, mediante separadores simples.
+
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
 
 **Especificación:**
 
@@ -376,6 +407,10 @@ Utiliza parsing expression grammars para separar strings de un campo en múltipl
 Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html).
 
 Todas las PEG que se escriban para este paquete, deben contener una regla `values` cuyo output sea una lista de los valores que se quiere extraer. Cuando la PEG utilizada falle, el paquete dejará un valor nulo para esa celda.
+
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
 
 **Especificación:**
 
@@ -410,7 +445,12 @@ Todas las PEG que se escriban para este paquete, deben contener una regla `value
 ```
 
 ### Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)
-Es análogo al método sub de la libreria de python [**re**](https://docs.python.org/2/library/re.html#re.sub). 
+Es análogo al método sub de la libreria de python [**re**](https://docs.python.org/2/library/re.html#re.sub).
+
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 
 **Especificación:**
 

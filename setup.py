@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Archivo de instalación
+
+Para deployar a PyPI:
+    python setup.py sdist upload -r pypi
+"""
+
 
 try:
     from setuptools import setup
@@ -25,7 +31,7 @@ test_requirements = [
 
 setup(
     name='data-cleaner',
-    version='0.1.7',
+    version='0.1.8',
     description="Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina",
     long_description=readme + '\n\n' + history,
     author="Gobierno Abierto Argentina",

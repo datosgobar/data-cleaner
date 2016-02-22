@@ -272,11 +272,12 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
         series = dc.string_regex_substitute("lugar_audiencia",
-                                            "\d+.+Piso.+",
+                                            "\d+.*$",
                                             "")
         res = list(series)
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
+        print(series)
         exp = list(df["lugar_audiencia"])
         self.assertEqual(res, exp)
 

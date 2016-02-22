@@ -43,5 +43,5 @@ def capitalize(s, sep=None):
         str: String normalizada
     """
     l = s.split(sep)
-    l = map(str.title, l[:1]) + map(normalize_word, l[1:])
+    l = map(lambda e: e.title(), l[:1]) + map(normalize_word, l[1:])
     return (sep if sep else " ").join(l)

@@ -37,8 +37,8 @@ class FingerprintKeyerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(clean_strings, exp_strings)
 
 
-class FingerprintKeyerTestCase(unittest.TestCase):
-    """Unit tests for fingerprint_keyer."""
+class FingerprintKeyerUnitTestCase(unittest.TestCase):
+    """Testea el funcionamiento de cada método del fingerprint keyer."""
 
     def test_fingerprint_keyer(self):
         """Testea la creación de una key fingerprint."""

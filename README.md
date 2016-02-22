@@ -483,9 +483,3 @@ Cambia el orden de una cadena entre parentesis:
 ]}
 "(presidente)Juan Jose Perez."  pasaría a ser "Juan Jose Perez. (presidente)"
 ```
-
-## TODO
-
-* adivinar encoding, si es posible
-* agregar regla para filtros
-* agregar herramienta para correr desde la línea de comandos

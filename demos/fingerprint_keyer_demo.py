@@ -4,8 +4,8 @@
 from pprint import pprint
 import pandas as pd
 
-from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings
-from fingerprint_keyer import GetBestReplacements, ReplaceByKey
+from fingerprint_keyer import fingerprint_keyer, group_fingerprint_strings
+from fingerprint_keyer import get_best_replacements, replace_by_key
 
 testStrings = [
     u" - juan     peRes",
@@ -39,7 +39,7 @@ def demo1():
     ]
 
     for (inp, out_exp) in testStrings:
-        r = FingerprintKeyer(inp)
+        r = fingerprint_keyer(inp)
         print "inp=%s" % inp
         print "out_exp=%s" % out_exp
         print "r=%s" % r
@@ -61,7 +61,7 @@ def demo2():
     # df = pd.read_csv("audiencias-raw.csv")
     # testStrings = df.lugar
 
-    clusters, counts = GroupFingerprintStrings(testStrings)
+    clusters, counts = group_fingerprint_strings(testStrings)
     print "Clusters encontrados"
     pprint(clusters)
     print ""
@@ -71,14 +71,14 @@ def demo2():
     print ""
 
     # Para cada cluster tomo la string raw que resulte mas apta
-    d = GetBestReplacements(clusters, counts)
+    d = get_best_replacements(clusters, counts)
     print "Strings de replazo para cada key"
     pprint(d)
     print ""
 
     # Reemplazo las keys que matchean el fingerprint una version
     print "Output:"
-    for s in ReplaceByKey(d, testStrings):
+    for s in replace_by_key(d, testStrings):
         print s
     print ""
 

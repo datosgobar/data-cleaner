@@ -1,10 +1,11 @@
-"""test_data_cleaner.py.
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""test_data_cleaner.py
 
 Unit tests for `data_cleaner.py` module. Si los tests no corren, correr desde
 la línea de comandos: `chmod 644 test_data_cleaner.py`
 """
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -15,51 +16,56 @@ import os
 import pandas as pd
 
 from data_cleaner import DataCleaner
+from rules.integration import rules
 
 BASE_DIR = os.path.dirname(__file__)
 
 
+def get_input(case_name):
+    """Retorna el path al csv que se debe limpiar."""
+    file_name = "to_clean_" + case_name + ".csv"
+    return os.path.join(os.path.join(BASE_DIR, "input"), file_name)
+
+
+def get_output(case_name):
+    """Retorna el path al csv limpio que se espera."""
+    file_name = "clean_" + case_name + ".csv"
+    return os.path.join(os.path.join(BASE_DIR, "output"), file_name)
+
+
+def nan_safe_list(iterable):
+    return [i if pd.notnull(i) else None for i in iterable]
+
+
+class DataCleanerIntegrationTestCase(unittest.TestCase):
+    """Testea el funcionamiento integral del paquete."""
+
+    def test_integration_case_1(self):
+        dc = DataCleaner(get_input("integration"))
+        dc.clean_file(rules, get_output("temp_integration"))
+
+        df = pd.read_csv(get_output("temp_integration"))
+        df_exp = pd.read_csv(get_output("integration"))
+
+        self.assertEqual(set(df.columns), set(df_exp.columns))
+        for col in df.columns:
+            self.assertEqual(list(df[col]), list(df_exp[col]))
+
+
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):
-
-    """Testea métodos individuales de limpieza del DataCleaner.
-
-    Saraza:
-        * Algo
-    """
-
-    def setUp(self):
-        """Testea métodos individuales de limpieza del DataCleaner."""
-        self.input_dir = os.path.join(BASE_DIR, "input")
-        self.output_dir = os.path.join(BASE_DIR, "output")
-
-    def get_input(self, case_name):
-        """Testea métodos individuales de limpieza del DataCleaner."""
-        file_name = "to_clean_" + case_name + ".csv"
-        return os.path.join(self.input_dir, file_name)
-
-    def get_output(self, case_name):
-        """Testea métodos individuales de limpieza del DataCleaner."""
-        file_name = "clean_" + case_name + ".csv"
-        return os.path.join(self.output_dir, file_name)
-
-    @staticmethod
-    def nan_safe_list(iterable):
-        """Testea métodos individuales de limpieza del DataCleaner."""
-        return [i if pd.notnull(i) else None for i in iterable]
+    """Testea métodos individuales de limpieza del DataCleaner."""
 
     def test_cleaning_fields(self):
-        """Testea métodos individuales de limpieza del DataCleaner."""
-        input_path = self.get_input("fields")
-        output_path = self.get_output("fields")
+        input_path = get_input("fields")
+        output_path = get_output("fields")
 
         dc = DataCleaner(input_path)
         df = pd.read_csv(output_path)
 
-        self.assertEqual(list(dc.df.columns), list(df.columns))
+        self.assertEqual(set(dc.df.columns), set(df.columns))
 
     def test_remover_columnas(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("nombre_propio")
+        input_path = get_input("nombre_propio")
         field = "dependencia"
 
         # obtengo el resultado de limpiar el csv
@@ -69,8 +75,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertNotIn(field, df.columns)
 
     def test_renombrar_columnas(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("nombre_propio")
+        input_path = get_input("nombre_propio")
         field = "dependencia"
 
         # obtengo el resultado de limpiar el csv
@@ -81,9 +86,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertIn("dependencia2", df.columns)
 
     def test_nombre_propio(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("nombre_propio")
-        output_path = self.get_output("nombre_propio")
+        input_path = get_input("nombre_propio")
+        output_path = get_output("nombre_propio")
         field = "dependencia"
 
         # obtengo el resultado de limpiar el csv
@@ -99,9 +103,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
     # @unittest.skip("skip")
     def test_string_normal(self):
-        """sakjdsladjla."""
-        input_path = self.get_input("string_normal")
-        output_path = self.get_output("string_normal")
+        input_path = get_input("string_normal")
+        output_path = get_output("string_normal")
         field = "lugar_audiencia"
 
         # obtengo el resultado de limpiar el csv
@@ -116,9 +119,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_reemplazar(self):
-        """sakjdsladjla."""
-        input_path = self.get_input("reemplazar")
-        output_path = self.get_output("reemplazar")
+        input_path = get_input("reemplazar")
+        output_path = get_output("reemplazar")
         field = "tipo"
 
         # obtengo el resultado de limpiar el csv
@@ -134,9 +136,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_completa(self):
-        """fjskdljflsj."""
-        input_path = self.get_input("fecha_completa")
-        output_path = self.get_output("fecha_completa")
+        input_path = get_input("fecha_completa")
+        output_path = get_output("fecha_completa")
         field = "fecha_completa_audiencia"
 
         # obtengo el resultado de limpiar el csv
@@ -151,9 +152,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_simple_sin_hora(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("fecha_sin_hora")
-        output_path = self.get_output("fecha_sin_hora")
+        input_path = get_input("fecha_sin_hora")
+        output_path = get_output("fecha_sin_hora")
         field = "fecha_audiencia"
 
         # obtengo el resultado de limpiar el csv
@@ -168,9 +168,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_simple_mes(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("fecha_mes")
-        output_path = self.get_output("fecha_mes")
+        input_path = get_input("fecha_mes")
+        output_path = get_output("fecha_mes")
         field = "fecha_audiencia"
 
         # obtengo el resultado de limpiar el csv
@@ -185,9 +184,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_fecha_separada(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("fecha_separada")
-        output_path = self.get_output("fecha_separada")
+        input_path = get_input("fecha_separada")
+        output_path = get_output("fecha_separada")
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
@@ -205,9 +203,8 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertEqual(res, exp)
 
     def test_string_simple_split(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("string_separable_simple")
-        output_path = self.get_output("string_separable_simple")
+        input_path = get_input("string_separable_simple")
+        output_path = get_output("string_separable_simple")
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
@@ -216,13 +213,13 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
             [", Cargo:", "Cargo:"],
             ["nombre", "cargo"]
         )
-        res_1 = self.nan_safe_list(parsed_df["sujeto_obligado_nombre"])
-        res_2 = self.nan_safe_list(parsed_df["sujeto_obligado_cargo"])
+        res_1 = nan_safe_list(parsed_df["sujeto_obligado_nombre"])
+        res_2 = nan_safe_list(parsed_df["sujeto_obligado_cargo"])
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp_1 = self.nan_safe_list(df["sujeto_obligado_nombre"])
-        exp_2 = self.nan_safe_list(df["sujeto_obligado_cargo"])
+        exp_1 = nan_safe_list(df["sujeto_obligado_nombre"])
+        exp_2 = nan_safe_list(df["sujeto_obligado_cargo"])
 
         print(res_1, exp_1)
 
@@ -231,14 +228,12 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
     @unittest.skip("skip")
     def test_string_regex_split(self):
-        """ksdjfljslkajfklas."""
         pass
 
     # @unittest.skip("skip")
     def test_string_peg_split(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("string_separable_complejo")
-        output_path = self.get_output("string_separable_complejo")
+        input_path = get_input("string_separable_complejo")
+        output_path = get_output("string_separable_complejo")
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
@@ -257,24 +252,23 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
             """,
             ["nombre", "cargo", "dni"]
         )
-        res_1 = self.nan_safe_list(parsed_df["solicitante_nombre"])
-        res_2 = self.nan_safe_list(parsed_df["solicitante_cargo"])
-        res_3 = self.nan_safe_list(parsed_df["solicitante_dni"])
+        res_1 = nan_safe_list(parsed_df["solicitante_nombre"])
+        res_2 = nan_safe_list(parsed_df["solicitante_cargo"])
+        res_3 = nan_safe_list(parsed_df["solicitante_dni"])
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp_1 = self.nan_safe_list(df["solicitante_nombre"])
-        exp_2 = self.nan_safe_list(df["solicitante_cargo"])
-        exp_3 = self.nan_safe_list(df["solicitante_dni"])
+        exp_1 = nan_safe_list(df["solicitante_nombre"])
+        exp_2 = nan_safe_list(df["solicitante_cargo"])
+        exp_3 = nan_safe_list(df["solicitante_dni"])
 
         self.assertEqual(res_1, exp_1)
         self.assertEqual(res_2, exp_2)
         self.assertEqual(res_3, exp_3)
 
     def test_string_regex_substitute(self):
-        """ksdjfljslkajfklas."""
-        input_path = self.get_input("regex_sub")
-        output_path = self.get_output("regex_sub")
+        input_path = get_input("regex_sub")
+        output_path = get_output("regex_sub")
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
         series = dc.string_regex_substitute("lugar_audiencia",

@@ -15,19 +15,19 @@ import arrow
 import parsley
 from unidecode import unidecode
 
-from fingerprint_keyer import FingerprintKeyer, GroupFingerprintStrings
-from fingerprint_keyer import GetBestReplacements, ReplaceByKey
+from fingerprint_keyer import group_fingerprint_strings
+from fingerprint_keyer import get_best_replacements, replace_by_key
 
 
 class DataCleaner(object):
     """Limpia csvs a partir de reglas de limpieza."""
 
-    OUTPUT_ENCODING = "utf-8"
-    OUTPUT_SEPARATOR = ","
-    OUTPUT_QUOTECHAR = '"'
-    INPUT_DEFAULT_ENCODING = "utf-8"
-    INPUT_DEFAULT_SEPARATOR = ","
-    INPUT_DEFAULT_QUOTECHAR = '"'
+    OUTPUT_ENCODING = str("utf-8")
+    OUTPUT_SEPARATOR = str(",")
+    OUTPUT_QUOTECHAR = str('"')
+    INPUT_DEFAULT_ENCODING = str("utf-8")
+    INPUT_DEFAULT_SEPARATOR = str(",")
+    INPUT_DEFAULT_QUOTECHAR = str('"')
 
     NO_ARGS_RULES = ["nombre_propio", "string", "remover_columnas"]
 
@@ -72,8 +72,8 @@ class DataCleaner(object):
                     fields = rule_item[rule]
                     for field in fields:
                         rule_method(field, inplace=True)
+
                 else:
-                    print(rule_item[rule])
                     for args in rule_item[rule]:
                         rule_method(*args, inplace=True)
 
@@ -165,10 +165,10 @@ class DataCleaner(object):
         """
         field = self._normalize_field(field)
         decoded_series = self.df[field].str.decode(self.encoding)
-        print(field)
-        clusters, counts = GroupFingerprintStrings(decoded_series)
-        d = GetBestReplacements(clusters, counts)
-        parsed_series = pd.Series(ReplaceByKey(d, decoded_series))
+
+        clusters, counts = group_fingerprint_strings(decoded_series)
+        d = get_best_replacements(clusters, counts)
+        parsed_series = pd.Series(replace_by_key(d, decoded_series))
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
@@ -282,7 +282,7 @@ class DataCleaner(object):
                                             args=(time_format,))
 
         if inplace:
-            self.df["isodatetime_" + field] = parsed_series
+            self.df["isodatetime_" + new_field_name] = parsed_series
 
         return parsed_series.str.encode(self.OUTPUT_ENCODING)
 

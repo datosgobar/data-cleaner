@@ -379,11 +379,16 @@ Todas las PEG que se escriban para este paquete, deben contener una regla `value
 Es análogo al método sub de la libreria de python [**re**](https://docs.python.org/2/library/re.html#re.sub). 
 
 **Especificación:**
+
+```python
 {"string_regex_substitute":[
 	["campo1", "str_regex_match1", "str_regex_replace1"], ["campo2", "str_regex_match2", "str_regex_replace2"]]
 }
+```
 
 **Ejemplos:**
+
+```python
 Reemplaza punto y comas por comas:
 {"string_regex_substitute":[
 	["norma_competencias_objetivos", ";", ","]]
@@ -394,6 +399,7 @@ Cambia el orden de una cadena entre parentesis:
 	["nombre_cargo", "(?P<cargo>\(.+\))(?P<nombre>.+)", "\g<nombre> \g<cargo>"]]
 }
 "(presidente)Juan Jose Perez."  pasaría a ser "Juan Jose Perez. (presidente)"
+```
 
 ## TODO
 

@@ -18,3 +18,8 @@ History
 
 * Se mejora el capitalizer de la regla nombre_propio()
 * Se permite controlar al usuario si la o las columnas originales objeto de una limpieza se mantienen o se remueven
+
+0.1.9 (2016-2-23)
+------------------
+
+* Corrige bug en capitalizer() cuando el input es un integer o float

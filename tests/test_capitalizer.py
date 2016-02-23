@@ -29,6 +29,8 @@ class CapitalizerIntegrationTestCase(unittest.TestCase):
             (u"o'higgins mc Donald", u"O'Higgins Mc Donald"),
             ("Juan De La Vaca", 'Juan de la Vaca'),
             (u"Calle PúBlica S/N", u"Calle Pública S/N"),
+            (1, "1"),
+            (1.5, "1.5"),
         ]
         for (inp, outp) in test_strings:
             self.assertEqual(capitalize(inp), outp)

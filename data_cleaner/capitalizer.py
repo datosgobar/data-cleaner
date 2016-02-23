@@ -16,32 +16,39 @@ ignore_words = [
 ]
 
 
-def normalize_word(w):
-    """Normaliza el cade una palabra. Si contiene signos de puntacion se
-    capitaliza dentro de esas strings.
+def normalize_word(word):
+    """Normaliza una palabra, capitalizándola cuando corresponde.
+
+    Si contiene signos de puntacion se capitaliza dentro de esas strings.
+
     Args:
-        w (str): Palabra
+        word (str): Palabra
+
     Returns:
         str: Palabra normalizada
     """
-    for c in string.punctuation:
-        if c in w:
-            return capitalize(w, sep=c)
-    if w.lower() in ignore_words:
-        return w
-    if w.lower() in lower_words:
-        return w.lower()
-    return w.title()
+    for character in string.punctuation:
+        if character in word:
+            return capitalize(word, sep=character)
+    if word.lower() in ignore_words:
+        return word
+    if word.lower() in lower_words:
+        return word.lower()
+    return word.title()
 
 
-def capitalize(s, sep=None):
+def capitalize(string, sep=None):
     """Capitaliza una string que puede estar compuesta por varias palabras
+
     Args:
-        w (str): Palabra
+        string (str): Palabra
         sep (str): Separador
+
     Returns:
         str: String normalizada
     """
-    l = s.split(sep)
-    l = map(lambda e: e.title(), l[:1]) + map(normalize_word, l[1:])
-    return (sep if sep else " ").join(l)
+    words = unicode(string).split(sep)
+    first_word = words[0].title()
+    normalized_words = [first_word] + map(normalize_word, words[1:])
+
+    return (sep if sep else " ").join(normalized_words)

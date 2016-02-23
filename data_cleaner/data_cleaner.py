@@ -282,7 +282,7 @@ class DataCleaner(object):
                 tzinfo=tz.gettz("America/Argentina/Buenos Aires"))
             return datetime.isoformat()
         except:
-            return pd.np.NaN
+            return ""
 
     @staticmethod
     def _parse_date(value, time_format):
@@ -299,7 +299,7 @@ class DataCleaner(object):
             else:
                 return "-".join(date.split("-")[:-2])
         except:
-            return pd.np.NaN
+            return ""
 
     def fecha_separada(self, fields, new_field_name, keep_original=True,
                        inplace=False):

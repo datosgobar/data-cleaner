@@ -38,6 +38,11 @@ def nan_safe_list(iterable):
     return [i if pd.notnull(i) else None for i in iterable]
 
 
+def nan_to_empty_string_list(iterable):
+    """Retorna una lista convirtiendo valores nulos a None."""
+    return [i if pd.notnull(i) else "" for i in iterable]
+
+
 # @unittest.skip("skip")
 class DataCleanerIntegrationTestCase(unittest.TestCase):
     """Testea el funcionamiento integral del paquete."""
@@ -157,11 +162,11 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
         series = dc.fecha_completa(field, "DD-MM-YYYY HH:mm")
-        res = list(series)
+        res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp = list(df["isodatetime_" + field])
+        exp = nan_to_empty_string_list(df["isodatetime_" + field])
 
         self.assertEqual(res, exp)
 
@@ -184,11 +189,11 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
         series = dc.fecha_simple(field, "DD-MM-YYYY")
-        res = list(series)
+        res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp = list(df["isodate_" + field])
+        exp = nan_to_empty_string_list(df["isodate_" + field])
 
         self.assertEqual(res, exp)
 
@@ -200,11 +205,11 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
         series = dc.fecha_simple(field, "MM-YYYY")
-        res = list(series)
+        res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp = list(df["isodate_" + field])
+        exp = nan_to_empty_string_list(df["isodate_" + field])
 
         self.assertEqual(res, exp)
 
@@ -219,11 +224,11 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
             ["hora_audiencia", "HH:mm"]
         ],
             "audiencia")
-        res = list(series)
+        res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path)
-        exp = list(df["isodatetime_audiencia"])
+        exp = nan_to_empty_string_list(df["isodatetime_audiencia"])
 
         self.assertEqual(res, exp)
 

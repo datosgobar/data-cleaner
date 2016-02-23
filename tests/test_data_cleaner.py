@@ -16,6 +16,7 @@ import os
 import pandas as pd
 
 from data_cleaner import DataCleaner
+from data_cleaner.data_cleaner import DuplicatedField
 from rules.integration import rules
 
 BASE_DIR = os.path.dirname(__file__)
@@ -35,7 +36,19 @@ def get_output(case_name):
 
 def nan_safe_list(iterable):
     """Retorna una lista convirtiendo valores nulos a None."""
-    return [i if pd.notnull(i) else None for i in iterable]
+    safe_list = []
+    for element in iterable:
+        if pd.isnull(element):
+            safe_list.append(None)
+        elif (type(element) is str or type(element) is unicode):
+            if element == "None":
+                safe_list.append(None)
+            else:
+                safe_list.append(element)
+        else:
+            safe_list.append(unicode(int(element)))
+
+    return safe_list
 
 
 def nan_to_empty_string_list(iterable):
@@ -69,9 +82,15 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         output_path = get_output("fields")
 
         dc = DataCleaner(input_path)
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
 
         self.assertEqual(set(dc.df.columns), set(df.columns))
+
+    def test_repeated_fields(self):
+        input_path = get_input("repeated_fields")
+
+        with self.assertRaises(DuplicatedField):
+            DataCleaner(input_path)
 
     def test_remover_columnas(self):
         input_path = get_input("nombre_propio")
@@ -94,6 +113,17 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         self.assertNotIn(field, df.columns)
         self.assertIn("dependencia2", df.columns)
 
+    def test_renombrar_columnas_con_errores(self):
+        input_path = get_input("nombre_propio")
+        field = "dependencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        df = dc.renombrar_columnas(field, " dependencia2")
+
+        self.assertNotIn(field, df.columns)
+        self.assertIn("dependencia2", df.columns)
+
     def test_nombre_propio(self):
         input_path = get_input("nombre_propio")
         output_path = get_output("nombre_propio")
@@ -105,7 +135,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = list(series)
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp = list(df[field])
 
         self.assertEqual(res, exp)
@@ -132,7 +162,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = list(series)
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp = list(df[field])
 
         self.assertEqual(res, exp)
@@ -149,7 +179,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = list(series)
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp = list(df[field])
 
         self.assertEqual(res, exp)
@@ -165,7 +195,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp = nan_to_empty_string_list(df["isodatetime_" + field])
 
         self.assertEqual(res, exp)
@@ -192,7 +222,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp = nan_to_empty_string_list(df["isodate_" + field])
 
         self.assertEqual(res, exp)
@@ -208,7 +238,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp = nan_to_empty_string_list(df["isodate_" + field])
 
         self.assertEqual(res, exp)
@@ -227,7 +257,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = nan_to_empty_string_list(series)
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp = nan_to_empty_string_list(df["isodatetime_audiencia"])
 
         self.assertEqual(res, exp)
@@ -247,7 +277,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res_2 = nan_safe_list(parsed_df["sujeto_obligado_cargo"])
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp_1 = nan_safe_list(df["sujeto_obligado_nombre"])
         exp_2 = nan_safe_list(df["sujeto_obligado_cargo"])
 
@@ -287,7 +317,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res_3 = nan_safe_list(parsed_df["solicitante_dni"])
 
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         exp_1 = nan_safe_list(df["solicitante_nombre"])
         exp_2 = nan_safe_list(df["solicitante_cargo"])
         exp_3 = nan_safe_list(df["solicitante_dni"])
@@ -306,7 +336,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
                                             "")
         res = list(series)
         # cargo el csv limpio para comparar
-        df = pd.read_csv(output_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
         print(series)
         exp = list(df["lugar_audiencia"])
         self.assertEqual(res, exp)

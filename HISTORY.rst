@@ -24,3 +24,8 @@ History
 
 * Corrige bug en capitalizer() cuando el input es un integer o float
 * Corrige bug en métodos que parsean fechas, devuelven empty string "" en lugar de NaN
+
+0.1.12 (2016-2-23)
+------------------
+* Corrige varios problemas de encoding
+* Chequea que no haya campos repetidos antes de cargar un csv

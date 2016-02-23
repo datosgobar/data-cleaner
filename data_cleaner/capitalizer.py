@@ -37,7 +37,7 @@ def normalize_word(word):
     return word.title()
 
 
-def capitalize(string, sep=None):
+def capitalize(string, sep=None, encoding="utf-8"):
     """Capitaliza una string que puede estar compuesta por varias palabras
 
     Args:
@@ -47,7 +47,10 @@ def capitalize(string, sep=None):
     Returns:
         str: String normalizada
     """
-    words = unicode(string).split(sep)
+    if type(string) is not str or type(string) is not unicode:
+        string = unicode(string)
+
+    words = string.split(sep)
     first_word = words[0].title()
     normalized_words = [first_word] + map(normalize_word, words[1:])
 

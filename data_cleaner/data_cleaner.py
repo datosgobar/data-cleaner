@@ -14,10 +14,20 @@ from dateutil import tz
 import arrow
 import parsley
 from unidecode import unidecode
+import unicodecsv
 
 from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
 from capitalizer import capitalize
+
+
+class DuplicatedField(ValueError):
+    """Salta cuando hay un campo duplicado en el dataset."""
+
+    def __init__(self, value):
+        """Crea mensaje de error."""
+        msg = "El campo '{}' está duplicado. Campos duplicados no permitidos."
+        super(DuplicatedField, self).__init__(msg)
 
 
 class DataCleaner(object):
@@ -39,17 +49,32 @@ class DataCleaner(object):
             sep (str): Separador del CSV a limpiar (default: ",")
             quotechar (str): Enclosing character del CSV (default: '"')
         """
-        self.encoding = encoding or self.INPUT_DEFAULT_ENCODING
+        encoding = encoding or self.INPUT_DEFAULT_ENCODING
         sep = sep or self.INPUT_DEFAULT_SEPARATOR
         quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
 
+        self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
+                                   quotechar=quotechar)
         self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
                               quotechar=quotechar)
+
         self.df.columns = self._normalize_fields(self.df.columns)
 
         self.grammars = {}
 
         self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
+
+    def _assert_no_duplicates(self, csv_path, encoding, sep, quotechar):
+        with open(csv_path, 'r') as csvfile:
+            reader = unicodecsv.reader(csvfile,
+                                       encoding=encoding,
+                                       delimiter=sep,
+                                       quotechar=quotechar)
+            fields = reader.next()
+
+            for col in fields:
+                if fields.count(col) > 1:
+                    raise DuplicatedField(col)
 
     def _normalize_fields(self, fields):
         return [self._normalize_field(field) for field in fields]
@@ -64,8 +89,11 @@ class DataCleaner(object):
         Returns:
             str: Nombre de campo o sufijo de datset normalizado.
         """
+        if type(field) is not str and type(field) is not unicode:
+            field = unicode(field)
+
         # reemplaza caracteres que no sean unicode
-        norm_field = unidecode(field.decode(self.encoding))
+        norm_field = unidecode(field).strip()
 
         norm_field = norm_field.lower().replace(" ", sep)
         norm_field = norm_field.replace("-", sep).replace("_", sep)
@@ -165,16 +193,15 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
-        capitalized = decoded_series.apply(capitalize)
-        encoded_series = capitalized.str.encode(self.OUTPUT_ENCODING)
+        series = self.df[field]
+        capitalized = series.apply(capitalize)
 
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
-                                new_series=encoded_series)
+                                new_series=capitalized)
 
-        return encoded_series
+        return capitalized
 
     def string(self, field, sufix="clean", keep_original=False, inplace=False):
         """Regla para todos los strings.
@@ -189,19 +216,18 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
+        series = self.df[field]
 
-        clusters, counts = group_fingerprint_strings(decoded_series)
+        clusters, counts = group_fingerprint_strings(series)
         replacements = get_best_replacements(clusters, counts)
-        parsed_series = pd.Series(replace_by_key(replacements, decoded_series))
-        encoded_series = parsed_series.str.encode(self.OUTPUT_ENCODING)
+        parsed_series = pd.Series(replace_by_key(replacements, series))
 
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
-                                new_series=encoded_series)
+                                new_series=parsed_series)
 
-        return encoded_series
+        return parsed_series
 
     def reemplazar(self, field, replacements, sufix="clean",
                    keep_original=False, inplace=False):
@@ -215,12 +241,12 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
+        series = self.df[field]
 
         for new_value, old_values in replacements.iteritems():
-            decoded_series = decoded_series.replace(old_values, new_value)
+            series = series.replace(old_values, new_value)
 
-        encoded_series = decoded_series.str.encode(self.OUTPUT_ENCODING)
+        encoded_series = series.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
             self._update_series(field=field, sufix=sufix,
@@ -241,9 +267,9 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
-        parsed_series = decoded_series.apply(self._parse_datetime,
-                                             args=(time_format,))
+        series = self.df[field]
+        parsed_series = series.apply(self._parse_datetime,
+                                     args=(time_format,))
         if inplace:
             self._update_series(field=field, prefix="isodatetime",
                                 keep_original=keep_original,
@@ -263,9 +289,9 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
-        parsed_series = decoded_series.apply(self._parse_date,
-                                             args=(time_format,))
+        series = self.df[field]
+        parsed_series = series.apply(self._parse_date,
+                                     args=(time_format,))
 
         if inplace:
             self._update_series(field=field, prefix="isodate",
@@ -345,8 +371,13 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
-        parsed_df = decoded_series.apply(self._split, args=(separators,))
+        series = self.df[field]
+        parsed_df = series.apply(self._split, args=(separators,))
+
+        # encodea el resultado del split
+        # for col in parsed_df:
+        #     parsed_df[col] = parsed_df[col].str.encode(self.OUTPUT_ENCODING)
+
         parsed_df.rename(
             columns={key: field + "_" + value
                      for key, value in enumerate(new_field_names)},
@@ -364,11 +395,12 @@ class DataCleaner(object):
     def _split(value, separators):
         values = []
         for separator in separators:
-            if separator in str(value):
-                values = value.split(separator)
+            if separator in unicode(value):
+                values = [unicode(split_value) for split_value in
+                          value.split(separator)]
                 break
 
-        return pd.Series([str(value).strip() for value in values
+        return pd.Series([unicode(value).strip() for value in values
                           if pd.notnull(value)])
 
     def string_regex_split(self, field, pattern, new_field_names,
@@ -403,8 +435,13 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
-        parsed_df = decoded_series.apply(self._split_with_peg, args=(grammar,))
+        series = self.df[field]
+        parsed_df = series.apply(self._split_with_peg, args=(grammar,))
+
+        # encodea el resultado del split
+        # for col in parsed_df:
+        #     parsed_df[col] = parsed_df[col].str.encode(self.OUTPUT_ENCODING)
+
         parsed_df.rename(
             columns={key: field + "_" + value
                      for key, value in enumerate(new_field_names)},
@@ -430,6 +467,8 @@ class DataCleaner(object):
         except:
             values = []
 
+        values = [unicode(split_value) for split_value in values]
+
         return pd.Series(values)
 
     def string_regex_substitute(self, field, regex_str_match,
@@ -446,9 +485,9 @@ class DataCleaner(object):
             pandas.Series: Serie de strings limpios
         """
         field = self._normalize_field(field)
-        decoded_series = self.df[field].str.decode(self.encoding)
-        replaced = decoded_series.replace(regex_str_match,
-                                          regex_str_sub, regex=True)
+        series = self.df[field]
+        replaced = series.replace(regex_str_match,
+                                  regex_str_sub, regex=True)
         encoded_series = replaced.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:

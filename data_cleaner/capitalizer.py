@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Nomalizacion de strings
-"""
+
+"""Nomalizacion de strings."""
 
 import string
 
 
-lower_words = [
+LOWER_WORDS = [
     "el", "los", "la", "las",
-    "de", "del", "en"
+    "de", "del", "en", "y"
 ]
 
-ignore_words = [
+IGNORE_WORDS = [
     "S/N"
 ]
 
@@ -30,9 +30,9 @@ def normalize_word(word):
     for character in string.punctuation:
         if character in word:
             return capitalize(word, sep=character)
-    if word.lower() in ignore_words:
+    if word.lower() in IGNORE_WORDS:
         return word
-    if word.lower() in lower_words:
+    if word.lower() in LOWER_WORDS:
         return word.lower()
     return word.title()
 

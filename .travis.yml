@@ -3,9 +3,9 @@
 after_success:
 - coveralls
 deploy:
-  true:
-    repo: gobabiertoAR/data-cleaner
+  on:
     tags: true
+    repo: gobabiertoAR/data-cleaner
   distributions: sdist bdist_wheel
   password:
     secure: j1Hoc3frMLIbK+/C/KfGWRmulZaVEsJv/U8kk4JChtddVuakwkHxfBO6QkZqcPeRcoXtDhcLwvdaaEEPq+SYYvDsxKWsYM2rly2qvU79e+o54+36PGKnUzVvgVajxLo8KeLwq41a+qK/kG1FyHpO9I85CJeaT0/T8Ge25upTb3sDtbPRWG2IylXtBfpUNpxXI4lNHBopsD9M6slj9nef7Daozi1N+2eCFC2/0qrb3enxJTv3he8NYRF4L48JrGBNaCXdupcZKr1sKCier9SN9JDBpdiTScSjxE/7HK4qQLAzCGcVkt78CKXz7Tij+t6pgsbMz4+7SlDoWucGUypFw9NahRHcLVBWSq6oUMx/1LcfgkOh3z6rT4b8Prp0EJXFz4iioVhr9rOuD9gbvTiELjfLFFF4PlTEaHXbXu9adVs4N+SONx3fvKpiLPdyvoJR6+Seccb6YPU9Cx44wLJ2Tww3UuU4Jz4Lz+NSQqiqjPXV84c+8qpg3GgqJDxQELC4QvAEJlnz/l7CQ7xp7D7BJVZqmpDarv79/O4GPB5s75yXOWhZet6qW4SVnSD4Xd9hCJdPuoS2c/z+egAVUdnL+xhRk3qlDNS9yXmBeKDzJOWj9xWiX6iE4jFQqOF/74S5nBkc9eGPxCh9skqDMc5WsE0pC1cdRhJTubAZjHDPi0k=
@@ -26,6 +26,6 @@ matrix:
   - python: '2.6'
   - python: '3.4'
   - python: pypy
-  
+
 notifications:
  slack: ssipyga:yyz0hyWmiaoGGnprhjqDXUwk

@@ -232,6 +232,32 @@ Argumentos opcionales:
 ]}
 ```
 
+### Dar formato a correo electronico (*mail_format*)
+
+Parsea todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.
+
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
+
+**Especificación:**
+
+```python
+{"mail_format": [
+    {"field": "columna_1"},
+    {"field": "columna_2"}
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"mail_format": [
+    {"field": "correo_electronico"}
+]}
+```
+
 ### Normalizar strings (*string*)
 Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido, normalizando capitalización, acentos, caracteres especiales, orden de las palabras, etc. 
 

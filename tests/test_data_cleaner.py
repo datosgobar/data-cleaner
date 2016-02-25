@@ -167,6 +167,22 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(res, exp)
 
+    def test_mail_format(self):
+        input_path = get_input("mail_format")
+        output_path = get_output("mail_format")
+        field = "mail"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.mail_format(field)
+        res = list(series)
+
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path, encoding="utf-8")
+        exp = list(df[field])
+
+        self.assertEqual(res, exp)
+
     def test_reemplazar(self):
         input_path = get_input("reemplazar")
         output_path = get_output("reemplazar")

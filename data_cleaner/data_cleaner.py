@@ -229,6 +229,30 @@ class DataCleaner(object):
 
         return parsed_series
 
+    def mail_format(self, field, sufix="clean",
+                    keep_original=False, inplace=False):
+        """Regla para dar formato a las direcciones de correo electronico.
+
+        Lleva todas las cadenas a minusculas y luego si hay varias las separa
+        por comas.
+
+        Args:
+            field (str): Campo a limpiar
+
+        Returns:
+            pandas.Series: Serie de strings limpios
+        """
+        field = self._normalize_field(field)
+        series = self.df[field].str.lower()
+        series = series.str.findall('[a-z_0-9\.]+@[a-z_0-9\.]+').str.join(", ")
+
+        if inplace:
+            self._update_series(field=field, sufix=sufix,
+                                keep_original=keep_original,
+                                new_series=series)
+
+        return series
+
     def reemplazar(self, field, replacements, sufix="clean",
                    keep_original=False, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.

@@ -29,3 +29,7 @@ History
 ------------------
 * Corrige varios problemas de encoding
 * Chequea que no haya campos repetidos antes de cargar un csv
+
+0.1.13 (2016-2-25)
+------------------
+* Agrega método de limpieza de e-mails

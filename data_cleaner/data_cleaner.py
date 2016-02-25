@@ -505,16 +505,14 @@ class DataCleaner(object):
         """
         field = self._normalize_field(field)
         series = self.df[field]
-        replaced = series.replace(regex_str_match,
-                                  regex_str_sub, regex=True)
-        encoded_series = replaced.str.encode(self.OUTPUT_ENCODING)
+        replaced = series.str.replace(regex_str_match, regex_str_sub)
 
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
-                                new_series=encoded_series)
+                                new_series=replaced)
 
-        return encoded_series
+        return replaced
 
 
 def main():

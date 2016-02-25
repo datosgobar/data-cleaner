@@ -374,10 +374,6 @@ class DataCleaner(object):
         series = self.df[field]
         parsed_df = series.apply(self._split, args=(separators,))
 
-        # encodea el resultado del split
-        # for col in parsed_df:
-        #     parsed_df[col] = parsed_df[col].str.encode(self.OUTPUT_ENCODING)
-
         parsed_df.rename(
             columns={key: field + "_" + value
                      for key, value in enumerate(new_field_names)},
@@ -437,10 +433,6 @@ class DataCleaner(object):
         field = self._normalize_field(field)
         series = self.df[field]
         parsed_df = series.apply(self._split_with_peg, args=(grammar,))
-
-        # encodea el resultado del split
-        # for col in parsed_df:
-        #     parsed_df[col] = parsed_df[col].str.encode(self.OUTPUT_ENCODING)
 
         parsed_df.rename(
             columns={key: field + "_" + value

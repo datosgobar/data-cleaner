@@ -203,7 +203,8 @@ class DataCleaner(object):
 
         return capitalized
 
-    def string(self, field, sufix="clean", keep_original=False, inplace=False):
+    def string(self, field, sufix="clean", sort_tokens=False,
+               remove_duplicates=False, keep_original=False, inplace=False):
         """Regla para todos los strings.
 
         Aplica un algoritimo de clustering para normalizar strings que son
@@ -218,7 +219,9 @@ class DataCleaner(object):
         field = self._normalize_field(field)
         series = self.df[field]
 
-        clusters, counts = group_fingerprint_strings(series)
+        clusters, counts = group_fingerprint_strings(
+            series, sort_tokens=sort_tokens,
+            remove_duplicates=remove_duplicates)
         replacements = get_best_replacements(clusters, counts)
         parsed_series = pd.Series(replace_by_key(replacements, series))
 

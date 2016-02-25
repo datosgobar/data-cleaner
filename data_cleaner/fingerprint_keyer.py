@@ -8,9 +8,10 @@ Utiliza el algoritmo Key Collision: Fingerprint.
 
 import string
 from unidecode import unidecode
+from functools import partial
 
 
-def fingerprint_keyer(key_string):
+def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
     """Convierte un string en su fingerprint key representation.
 
     Args:
@@ -35,11 +36,21 @@ def fingerprint_keyer(key_string):
     # split the string into whitespace-separated tokens
     split_key = key_string.split()
 
-    # sort the tokens and remove duplicates
-    unique_sorted_split_key = sorted(set(split_key))
+    # remove duplicates, if chosen
+    if remove_duplicates:
+        dups_removed = set(split_key)
+    else:
+        dups_removed = split_key
+
+    # sort the tokens, if chosen
+    if sort_tokens:
+        # sort the tokens
+        sorted_split_key = sorted(dups_removed)
+    else:
+        sorted_split_key = dups_removed
 
     # join the tokens back together
-    finger_printed_key = " ".join(unique_sorted_split_key)
+    finger_printed_key = " ".join(sorted_split_key)
 
     # normalize extended western characters to their ASCII
     # representation (for example "gödel" → "godel")
@@ -48,7 +59,8 @@ def fingerprint_keyer(key_string):
     return finger_printed_key
 
 
-def group_fingerprint_strings(raw_strs):
+def group_fingerprint_strings(raw_strs, sort_tokens=False,
+                              remove_duplicates=False):
     """Clusteriza un conjunto de strings, según sus fingerprints.
 
     Args:
@@ -62,7 +74,11 @@ def group_fingerprint_strings(raw_strs):
     """
     res = {}
     counts = {}
-    for (key, raw_str) in zip(map(fingerprint_keyer, raw_strs), raw_strs):
+    fingerprint_keyer_with_args = partial(fingerprint_keyer,
+                                          sort_tokens=sort_tokens,
+                                          remove_duplicates=remove_duplicates)
+    for (key, raw_str) in zip(map(fingerprint_keyer_with_args, raw_strs),
+                              raw_strs):
         res[key] = res.get(key, []) + [raw_str]
         counts[raw_str] = counts.get(raw_str, 0) + 1
     return res, counts

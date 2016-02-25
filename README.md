@@ -259,12 +259,14 @@ Argumentos opcionales:
 ```
 
 ### Normalizar strings (*string*)
-Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido, normalizando capitalización, acentos, caracteres especiales, orden de las palabras, etc. 
+Utiliza el algoritmo *Key Collision Fingerprint* para clusterizar strings con el mismo contenido, normalizando capitalización, acentos, caracteres especiales, etc. 
 
 Este algoritmo busca unificar la forma de escribir strings que contienen idénticas palabras (cadenas de caracteres alfanuméricos separados por espacios) pero difieren en otros aspectos. [Para más detalle ver Key Collision Methods de OpenRefine](https://github.com/OpenRefine/OpenRefine/wiki/Clustering-In-Depth#key-collision-methods). La implementación que se utiliza es una adaptación de [esta](https://github.com/tweirick/okstate_bioinformatics_command_line_programs/blob/master/misc_programs/FingerprintKeyer.py), publicada en Github por Tyler Weirick.
 
 Argumentos opcionales:
 
+* **sort_tokens**: False (default) para no ordenar las palabras al crear el fingerprint de un string. Esto ubicará a "Sol Geriatrico" y "Geriatrico Sol" en clusters separados, sin unificar el string en un sentido o en otro. Si se especifica True, ambos strings se reescribirían de una de las dos maneras.
+* **remove_duplicates**: False (default) para evitar remover tokens duplicados. Esto ubicará a "Sol Sol Geriatrico" en un cluster distinto a "Sol Geriatrico", sin elegir una forma de escribir el string para ambos casos. Si se especifica True, ambos strings se escribirían de una de las dos maneras.
 * **keep_original**: True para conservar la columna original / False para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 

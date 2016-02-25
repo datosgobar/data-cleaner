@@ -124,14 +124,14 @@ class DataCleaner(object):
             rules (list): Lista de reglas de limpieza.
         """
         self.clean(rules)
-        self.save(output_path, encoding=self.OUTPUT_ENCODING,
-                  separator=self.OUTPUT_SEPARATOR,
-                  quotechar=self.OUTPUT_QUOTECHAR)
+        self.save(output_path)
 
-    def save(self, output_path, *args, **kwargs):
+    def save(self, output_path):
         """Redirige al método DataFrame.to_csv()."""
         self.df.set_index(self.df.columns[0]).to_csv(
-            output_path, *args, **kwargs)
+            output_path, encoding=self.OUTPUT_ENCODING,
+            separator=self.OUTPUT_SEPARATOR,
+            quotechar=self.OUTPUT_QUOTECHAR)
 
     def _update_series(self, field, new_series,
                        keep_original=False, prefix=None, sufix=None):

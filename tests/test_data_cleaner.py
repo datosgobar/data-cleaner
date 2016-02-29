@@ -148,7 +148,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         dc = DataCleaner(input_path)
         dc.nombre_propio(field, keep_original=True, inplace=True)
 
-        self.assertIn("dependencia_clean", dc.df.columns)
+        self.assertIn("dependencia_normalizado", dc.df.columns)
 
     # @unittest.skip("skip")
     def test_string_normal(self):

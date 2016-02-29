@@ -39,6 +39,7 @@ class DataCleaner(object):
     INPUT_DEFAULT_ENCODING = str("utf-8")
     INPUT_DEFAULT_SEPARATOR = str(",")
     INPUT_DEFAULT_QUOTECHAR = str('"')
+    DEFAULT_SUFIX = "normalizado"
 
     def __init__(self, input_path, encoding=None, sep=None, quotechar=None):
         """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
@@ -97,10 +98,14 @@ class DataCleaner(object):
 
         norm_field = norm_field.lower().replace(" ", sep)
         norm_field = norm_field.replace("-", sep).replace("_", sep)
+        norm_field = norm_field.replace("/", sep)
 
         # remueve caracteres que no sean alfanuméricos o "_"
         norm_field = ''.join(char for char in norm_field
                              if char.isalnum() or char == "_")
+
+        # TODO: comparar field contra norm_field, si son distintos emite
+        # un Warning
         return norm_field
 
     # Métodos GLOBALES
@@ -179,7 +184,7 @@ class DataCleaner(object):
 
         return renamed_df
 
-    def nombre_propio(self, field, sufix="clean", keep_original=False,
+    def nombre_propio(self, field, sufix=None, keep_original=False,
                       inplace=False):
         """Regla para todos los nombres propios.
 
@@ -192,6 +197,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        sufix = sufix or self.DEFAULT_SUFIX
         field = self._normalize_field(field)
         series = self.df[field]
         capitalized = series.apply(capitalize)
@@ -203,7 +209,7 @@ class DataCleaner(object):
 
         return capitalized
 
-    def string(self, field, sufix="clean", sort_tokens=False,
+    def string(self, field, sufix=None, sort_tokens=False,
                remove_duplicates=False, keep_original=False, inplace=False):
         """Regla para todos los strings.
 
@@ -211,11 +217,12 @@ class DataCleaner(object):
         demasiado parecidos, sin pérdida de información.
 
         Args:
-            field (str): Campo a limpiar
+            field (str): Campo a limpiar.
 
         Returns:
-            pandas.Series: Serie de strings limpios
+            pandas.Series: Serie de strings limpios.
         """
+        sufix = sufix or self.DEFAULT_SUFIX
         field = self._normalize_field(field)
         series = self.df[field]
 
@@ -232,7 +239,7 @@ class DataCleaner(object):
 
         return parsed_series
 
-    def mail_format(self, field, sufix="clean",
+    def mail_format(self, field, sufix=None,
                     keep_original=False, inplace=False):
         """Regla para dar formato a las direcciones de correo electronico.
 
@@ -245,6 +252,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        sufix = sufix or self.DEFAULT_SUFIX
         field = self._normalize_field(field)
         series = self.df[field].str.lower()
         series = series.str.findall('[a-z_0-9\.]+@[a-z_0-9\.]+').str.join(", ")
@@ -256,7 +264,7 @@ class DataCleaner(object):
 
         return series
 
-    def reemplazar(self, field, replacements, sufix="clean",
+    def reemplazar(self, field, replacements, sufix=None,
                    keep_original=False, inplace=False):
         """Reemplaza listas de valores por un nuevo valor.
 
@@ -267,6 +275,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        sufix = sufix or self.DEFAULT_SUFIX
         field = self._normalize_field(field)
         series = self.df[field]
 
@@ -491,7 +500,7 @@ class DataCleaner(object):
         return pd.Series(values)
 
     def string_regex_substitute(self, field, regex_str_match,
-                                regex_str_sub, sufix="clean",
+                                regex_str_sub, sufix=None,
                                 keep_original=True, inplace=False):
         """Regla para manipular y reeemplazar datos de un campo con regex.
 
@@ -503,6 +512,7 @@ class DataCleaner(object):
         Returns:
             pandas.Series: Serie de strings limpios
         """
+        sufix = sufix or self.DEFAULT_SUFIX
         field = self._normalize_field(field)
         series = self.df[field]
         replaced = series.replace(regex_str_match,
@@ -515,10 +525,3 @@ class DataCleaner(object):
                                 new_series=encoded_series)
 
         return encoded_series
-
-
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()

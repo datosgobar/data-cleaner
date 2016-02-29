@@ -15,6 +15,8 @@ import arrow
 import parsley
 from unidecode import unidecode
 import unicodecsv
+import warnings
+import inspect
 
 from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
@@ -104,9 +106,36 @@ class DataCleaner(object):
         norm_field = ''.join(char for char in norm_field
                              if char.isalnum() or char == "_")
 
-        # TODO: comparar field contra norm_field, si son distintos emite
-        # un Warning
+        # emite un Warning si tuvo que normalizar el field
+        if field != norm_field:
+            caller_rule = self._get_normalize_field_caller(
+                inspect.currentframe())
+            msg = """
+
+El campo "{}" no sigue las convenciones para escribir
+campos (sólo se admiten caracteres alfanuméricos ASCII en
+minúsculas, con palabras separadas por "{}"). DataCleaner
+normaliza automáticamente los campos en estos casos, lo
+que puede llevar a resultados inesperados.
+
+El nuevo nombre del campo normalizado es: "{}".
+Método que llamó al normalizador de campos: {}
+""".format(field, sep, norm_field, caller_rule).encode("utf-8")
+            warnings.warn(msg)
+
         return norm_field
+
+    @staticmethod
+    def _get_normalize_field_caller(curframe):
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+
+        if calframe[2][3] != "_normalize_fields":
+            caller_rule = calframe[2][3]
+        else:
+            caller_rule = calframe[3][3]
+
+        return caller_rule
 
     # Métodos GLOBALES
     def clean(self, rules):

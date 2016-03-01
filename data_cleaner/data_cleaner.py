@@ -174,7 +174,8 @@ Método que llamó al normalizador de campos: {}
         else:
             new_field = "_".join([elem for elem in [prefix, field, sufix]
                                   if elem])
-            self.df[new_field] = new_series
+            self.df.insert(self.df.columns.get_loc(field),
+                           new_field, new_series)
 
     # Métodos INDIVIDUALES de LIMPIEZA
     def remover_columnas(self, field, inplace=False):

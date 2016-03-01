@@ -17,8 +17,8 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 - [Instalación](#instalaci%C3%B3n)
 - [Uso](#uso)
 - [Limpieza automática](#limpieza-autom%C3%A1tica)
+- [Template de script de limpieza](#template-de-script-de-limpieza)
 - [Reglas de limpieza](#reglas-de-limpieza)
-- [TODO](#todo)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -155,7 +155,11 @@ Los nombres de los campos se normalizan automáticamente. Sólo el uso de caract
 * Reemplaza espacios y "-" por "_"
 * Reemplaza todos los caracteres alfanuméricos por su versión ASCII más próxima
 * Remueve todos los caracteres especiales que no sean "_"
-    
+
+## Template de script de limpieza
+
+Para realizar la limpieza de un archivo CSV de datos con `data-cleaner` se sugiere utilizar el [template de script de limpieza](templates/cleaning_script.py). Este permite correr la limpieza desde la línea de comandos e implementar pasos de limpieza personalizados que exceden las funcionalidades del paquete.
+
 ## Reglas de limpieza
 
 Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son (a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o (b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.

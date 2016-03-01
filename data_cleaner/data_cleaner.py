@@ -169,6 +169,7 @@ Método que llamó al normalizador de campos: {}
 
     def _update_series(self, field, new_series,
                        keep_original=False, prefix=None, sufix=None):
+        """Agrega o pisa una serie nueva en el DataFrame."""
         if not keep_original:
             self.df[field] = new_series
         else:

@@ -200,6 +200,23 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(res, exp)
 
+    def test_reemplazar_string(self):
+        input_path = get_input("reemplazar_string")
+        output_path = get_output("reemplazar_string")
+        field = "dependencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.reemplazar_string(field, {" Jaguarete ":
+                                              ["ABBA", "ABBBA"]})
+        res = list(series)
+
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path, encoding="utf-8")
+        exp = list(df[field])
+
+        self.assertEqual(res, exp)
+
     def test_fecha_completa(self):
         input_path = get_input("fecha_completa")
         output_path = get_output("fecha_completa")

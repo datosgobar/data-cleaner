@@ -322,6 +322,33 @@ Método que llamó al normalizador de campos: {}
 
         return encoded_series
 
+    def reemplazar_string(self, field, replacements, sufix=None,
+                          keep_original=False, inplace=False):
+        """Reemplaza listas de strings por un nuevo string.
+           A diferencias de la funcion reemplazar hace reemplazos parciales.
+
+        Args:
+            field (str): Campo a limpiar
+            replacements (dict): {"new_value": ["old_value1", "old_value2"]}
+
+        Returns:
+            pandas.Series: Serie de strings limpios
+        """
+        sufix = sufix or self.DEFAULT_SUFIX
+        field = self._normalize_field(field)
+        series = self.df[field]
+
+        for new_value, old_values in replacements.iteritems():
+            for old_value in old_values:
+                series = map(lambda x: unicode(x)
+                             .replace(old_value, new_value), series)
+        if inplace:
+            self._update_series(field=field, sufix=sufix,
+                                keep_original=keep_original,
+                                new_series=series)
+
+        return series
+
     def fecha_completa(self, field, time_format, keep_original=False,
                        inplace=False):
         """Regla para fechas completas que están en un sólo campo.

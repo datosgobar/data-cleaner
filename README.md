@@ -295,7 +295,7 @@ Argumentos opcionales:
 ```
 
 ### Reemplazar listas de strings por valores predefinidos (*reemplazar*)
-Reemplaza listas de strings por un valor predefinido que el usuario decide que representa a todas.
+Reemplaza listas de strings por un valor predefinido que el usuario decide que representa a todas. Solo sirve para reemplazar valores **completos**
 
 Argumentos opcionales:
 
@@ -322,7 +322,41 @@ Argumentos opcionales:
     "replacements": {"Servicios": ["Serv"], "Otros": ["Otro", "Loc"]}
     }
 ]}
+
 ```
+En este ejemplo si el campo *tipo* tuviese el valor "Serv de venta" no sería reemplazado, mientras que si tuviese el valor "Serv" sería reemplazado por "Servicios"
+
+
+### Reemplazar partes de valores (strings) por otros (*reemplazar_string*)
+Reemplaza listas de strings por otro string. A diferencia del metodo *reemplazar* que reemplaza directamente valores, *reemplazar_string* hace reemplazos parciales. Es una versión más sencilla de *string_regex_substitute* que no permite evaluar expresiones regulares.
+
+Argumentos opcionales:
+
+* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
+
+**Especificación:**
+
+```python
+{"reemplazar_string": [
+    {
+     "field": "columna",
+     "replacements": {"Nuevo1": ["Viejo"], "Nuevo2": ["ViejoA", "ViejoB"]}
+    }
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"reemplazar": [
+    {
+    "field": "tipo",
+    "replacements": {"Servicios": ["Serv"], "Otros": ["Otro", "Loc"]}
+    }
+]}
+```
+En este ejemplo si el campo *tipo* tuviese el valor "Serv de venta" sería reemplazado por "Servicios de Venta"
 
 ### Normalizar fecha completa (*fecha_completa*)
 Estandariza un campo **con fecha y hora** a su representación en el estándar ISO 8601 (**YYYY-MM-DDTHH:MM:SS[.mmmmmm][+HH:MM]**). 

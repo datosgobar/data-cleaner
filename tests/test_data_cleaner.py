@@ -314,8 +314,6 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         exp_1 = nan_safe_list(df["sujeto_obligado_nombre"])
         exp_2 = nan_safe_list(df["sujeto_obligado_cargo"])
 
-        print(res_1, exp_1)
-
         self.assertEqual(res_1, exp_1)
         self.assertEqual(res_2, exp_2)
 

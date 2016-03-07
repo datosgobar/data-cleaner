@@ -327,8 +327,8 @@ Argumentos opcionales:
 En este ejemplo si el campo *tipo* tuviese el valor "Serv de venta" no sería reemplazado, mientras que si tuviese el valor "Serv" sería reemplazado por "Servicios"
 
 
-### Reemplazar partes de valores (strings) por otros (*reemplazar_string*)
-Reemplaza listas de strings por otro string. A diferencia del metodo *reemplazar* que reemplaza directamente valores, *reemplazar_string* hace reemplazos parciales. Es una versión más sencilla de *string_regex_substitute* que no permite evaluar expresiones regulares.
+### Reemplazar partes de valores (substrings) por otros (*reemplazar_string*)
+Reemplaza listas de substrings por otro substring. A diferencia del método *reemplazar* que reemplaza directamente valores completos, *reemplazar_string* hace reemplazos parciales. Es una versión más sencilla de *string_regex_substitute* que no permite evaluar expresiones regulares.
 
 Argumentos opcionales:
 
@@ -349,14 +349,15 @@ Argumentos opcionales:
 **Ejemplo:**
 
 ```python
-{"reemplazar": [
+{"reemplazar_string": [
     {
     "field": "tipo",
     "replacements": {"Servicios": ["Serv"], "Otros": ["Otro", "Loc"]}
     }
 ]}
 ```
-En este ejemplo si el campo *tipo* tuviese el valor "Serv de venta" sería reemplazado por "Servicios de Venta"
+
+En este ejemplo si el campo *tipo* tuviese el valor "Serv de venta" sería reemplazado por "Servicios de Venta".
 
 ### Normalizar fecha completa (*fecha_completa*)
 Estandariza un campo **con fecha y hora** a su representación en el estándar ISO 8601 (**YYYY-MM-DDTHH:MM:SS[.mmmmmm][+HH:MM]**). 

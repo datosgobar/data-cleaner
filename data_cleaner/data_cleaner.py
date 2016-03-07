@@ -399,7 +399,7 @@ Método que llamó al normalizador de campos: {}
         try:
             datetime = arrow.get(
                 value, time_format,
-                tzinfo=tz.gettz("America/Argentina/Buenos Aires"))
+                tzinfo=tz.gettz("America/Argentina/Buenos Aires"), locale='es')
             return datetime.isoformat()
         except:
             return ""

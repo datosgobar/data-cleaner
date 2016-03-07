@@ -14,7 +14,7 @@ PREPOSITIONS = ["a", "ante", "bajo", "cabe ", "con", "contra", "de", "desde",
 
 ARTICLES = ["el", "los", "la", "las"]
 
-OTHERS = ["del", "y"]
+OTHERS = ["del", "y", "e"]
 
 # agrega todos los tipos de stopwords considerados
 LOWER_WORDS = PREPOSITIONS + ARTICLES + OTHERS

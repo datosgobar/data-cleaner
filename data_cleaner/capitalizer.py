@@ -51,6 +51,8 @@ def capitalize(string, sep=None, encoding="utf-8"):
         string = unicode(string)
 
     words = string.split(sep)
+    if len(words) == 0:
+        return ""
     first_word = words[0].title()
     normalized_words = [first_word] + map(normalize_word, words[1:])
 

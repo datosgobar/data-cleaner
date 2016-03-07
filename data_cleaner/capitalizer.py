@@ -4,6 +4,7 @@
 """Nomalizacion de strings."""
 
 import string
+import pandas as pd
 
 
 LOWER_WORDS = [
@@ -47,6 +48,9 @@ def capitalize(string, sep=None, encoding="utf-8"):
     Returns:
         str: String normalizada
     """
+    if pd.isnull(string):
+        return pd.np.nan
+
     if type(string) is not str or type(string) is not unicode:
         string = unicode(string)
 

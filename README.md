@@ -187,7 +187,7 @@ Renombra columnas de la tabla de datos.
 ```
 
 ### Remover columnas (*remover_columnas*)
-Remueve campos de la tabla de datos. 
+Remueve campos de la tabla de datos.
 
 Entre otras cosas, se puede utilizar para remover los campos originales -no recomendado- que dieron origen a múltiples campos nuevos cuando se utilizó alguna regla de *split*.
 

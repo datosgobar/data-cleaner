@@ -9,6 +9,7 @@ Utiliza el algoritmo Key Collision: Fingerprint.
 import string
 from unidecode import unidecode
 from functools import partial
+import pandas as pd
 
 
 def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
@@ -20,6 +21,9 @@ def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
     Returns:
         str: Fingerprint correspondiente al input.
     """
+    if pd.isnull(key_string):
+        return pd.np.nan
+
     # enforece string type
     if type(key_string) != str:
         key_string = unicode(key_string).encode('utf8')

@@ -5,11 +5,19 @@
 
 import string
 
+# stopwords
 
-LOWER_WORDS = [
-    "el", "los", "la", "las",
-    "de", "del", "en", "y"
-]
+# preposiciones: http://www.auladiez.com/ejercicios/16_preposiciones.php
+PREPOSITIONS = ["a", "ante", "bajo", "cabe ", "con", "contra", "de", "desde",
+                "en", "entre", "hacia", "hasta", "para", "por", "según", "sin",
+                "so", "sobre", "tras"]
+
+ARTICLES = ["el", "los", "la", "las"]
+
+OTHERS = ["del", "y"]
+
+# agrega todos los tipos de stopwords considerados
+LOWER_WORDS = PREPOSITIONS + ARTICLES + OTHERS
 
 IGNORE_WORDS = [
     "S/N"

@@ -262,6 +262,7 @@ Método que llamó al normalizador de campos: {}
             remove_duplicates=remove_duplicates)
         replacements = get_best_replacements(clusters, counts)
         parsed_series = pd.Series(replace_by_key(replacements, series))
+        parsed_series = parsed_series.str.strip()
 
         if inplace:
             self._update_series(field=field, sufix=sufix,

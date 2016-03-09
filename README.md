@@ -12,6 +12,7 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 
 *Nota: Este paquete aún se encuentra en etapa temprana de desarrollo y la interface podría sufrir modificaciones significativas.*
 
+Para referencia detallada de la documentación de este paquete leer la [documentación] (http://data-cleaner.readthedocs.org/en/latest/)
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*

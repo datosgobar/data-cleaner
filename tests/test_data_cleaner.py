@@ -207,7 +207,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
-        series = dc.reemplazar_string(field, {" Jaguarete ":
+        series = dc.reemplazar_string(field, {"Jaguarete":
                                               ["ABBA", "ABBBA"]})
         res = list(series)
 

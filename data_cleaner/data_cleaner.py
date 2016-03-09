@@ -17,6 +17,7 @@ from unidecode import unidecode
 import unicodecsv
 import warnings
 import inspect
+from functools import partial
 
 from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
@@ -341,14 +342,24 @@ Método que llamó al normalizador de campos: {}
 
         for new_value, old_values in replacements.iteritems():
             for old_value in old_values:
-                series = map(lambda x: unicode(x)
-                             .replace(old_value, new_value), series)
+                replace_function = partial(self._safe_replace,
+                                           old_value=old_value,
+                                           new_value=new_value)
+                series = map(replace_function, series)
+
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
                                 new_series=series)
 
         return series
+
+    @staticmethod
+    def _safe_replace(string, old_value, new_value):
+        if pd.isnull(string):
+            return pd.np.nan
+        else:
+            return unicode(string).replace(old_value, new_value)
 
     def fecha_completa(self, field, time_format, keep_original=False,
                        inplace=False):

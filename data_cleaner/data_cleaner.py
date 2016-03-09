@@ -427,11 +427,11 @@ Método que llamó al normalizador de campos: {}
         """Regla para fechas completas que están separadas en varios campos.
 
         Args:
-            field (str): Campo a limpiar
-            new_field_name (str): Sufijo para agregar a "isodatetime_".
+            field (str): Campo a limpiar.
+            new_field_name (str): Sufijo para construir nombre del nuevo field.
 
         Returns:
-            pandas.Series: Serie de strings limpios
+            pandas.Series: Serie de strings limpios.
         """
         field_names = [self._normalize_field(field[0]) for field in fields]
         time_format = " ".join([field[1] for field in fields])

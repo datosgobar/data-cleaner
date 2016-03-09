@@ -7,6 +7,8 @@ Para deployar a PyPI:
     python setup.py sdist upload -r pypi
 """
 
+import shutil
+import os
 
 try:
     from setuptools import setup
@@ -16,6 +18,7 @@ except ImportError:
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
+shutil.copy("README.md", os.path.join(["docs", "README.md"]))
 
 with open('HISTORY.md') as history_file:
     history = history_file.read()

@@ -35,7 +35,9 @@ class DuplicatedField(ValueError):
 
 
 class DataCleaner(object):
-    """Limpia csvs a partir de reglas de limpieza."""
+    """Crea un objeto DataCleaner cargando un CSV en un DataFrame y expone
+    reglas de limpieza para operar sobre las columnas del objeto y retornar un
+    CSV limplio."""
 
     OUTPUT_ENCODING = str("utf-8")
     OUTPUT_SEPARATOR = str(",")

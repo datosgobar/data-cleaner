@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Cleaner de csvs a partir de reglas de limpieza.
+"""Cleaner de CSVs a partir de reglas de limpieza.
 
-DataCleaner permite aplicar reglas de limpieza a csvs.
+La clase DataCleaner permite limpiar archivos CSVs con datos a partir de la
+aplicación de reglas de limpieza.
 """
 
 from __future__ import unicode_literals

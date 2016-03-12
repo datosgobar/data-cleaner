@@ -161,6 +161,10 @@ Los nombres de los campos se normalizan automáticamente. Sólo el uso de caract
 * Reemplaza todos los caracteres alfanuméricos por su versión ASCII más próxima
 * Remueve todos los caracteres especiales que no sean "_"
 
+### Saltos de línea
+
+No se permiten saltos de línea en los valores, al momento de crear un objeto DataCleaner se reemplazan todos los saltos de línea que estén dentro del caracter de enclosing (usualmente comillas dobles '"') por un espacio " ".
+
 ## Template de script de limpieza
 
 Para realizar la limpieza de un archivo CSV de datos con `data-cleaner` se sugiere utilizar el [template de script de limpieza](templates/cleaning_script.py). Este permite correr la limpieza desde la línea de comandos e implementar pasos de limpieza personalizados que exceden las funcionalidades del paquete.

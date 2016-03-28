@@ -60,16 +60,24 @@ class DataCleaner(object):
         sep = sep or self.INPUT_DEFAULT_SEPARATOR
         quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
 
+        # chequea que no haya fields con nombre duplicado
         self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
                                    quotechar=quotechar)
+
+        # lee el CSV a limpiar
         self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
                               quotechar=quotechar)
 
+        # limpieza automática
+        # normaliza los nombres de los campos
         self.df.columns = self._normalize_fields(self.df.columns)
 
-        self.grammars = {}
+        # remueve todos los saltos de línea
+        if len(self.df) > 0:
+            self.df = self.df.applymap(self._remove_line_breaks)
 
-        self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
+        # guarda PEGs compiladas para optimizar performance
+        self.grammars = {}
 
     def _assert_no_duplicates(self, csv_path, encoding, sep, quotechar):
         with open(csv_path, 'r') as csvfile:
@@ -141,6 +149,13 @@ Método que llamó al normalizador de campos: {}
 
         return caller_rule
 
+    @staticmethod
+    def _remove_line_breaks(value, replace_char=" "):
+        if type(value) == unicode or type(value) == str:
+            return value.replace("\n", replace_char)
+        else:
+            return value
+
     # Métodos GLOBALES
     def clean(self, rules):
         """Aplica las reglas de limpieza al objeto en memoria.
@@ -165,7 +180,11 @@ Método que llamó al normalizador de campos: {}
         self.save(output_path)
 
     def save(self, output_path):
-        """Redirige al método DataFrame.to_csv()."""
+        """Guarda los datos en un nuevo CSV con formato estándar.
+
+        El CSV se guarda codificado en UTF-8, separado con "," y usando '"'
+        comillas dobles como caracter de enclosing."""
+
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
             separator=self.OUTPUT_SEPARATOR,

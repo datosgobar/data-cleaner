@@ -2,6 +2,12 @@
 History
 =======
 
+0.1.15 (2016-3-7)
+------------------
+
+* Se arregla un bug en los métodos que operan con strings que transformaba missings nan de pandas en strings "nan".
+* Se corrige capitalizer para evitar errores con cadenas de texto vacías.
+
 0.1.14 (2016-3-7)
 ------------------
 

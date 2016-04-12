@@ -13,6 +13,7 @@ deploy:
   user: gobabiertoAR
 install:
 - pip install -r requirements.txt
+- pip install -r requirements_dev.txt
 - pip install python-coveralls
 - pip install coveralls
 language: python
@@ -20,6 +21,7 @@ python:
 - '2.7'
 script:
 - nosetests --with-coverage
+- travis-sphinx --source=docs -n build
 sudo: false
 matrix:
   allow_failures:
@@ -29,3 +31,6 @@ matrix:
 
 notifications:
  slack: ssipyga:yyz0hyWmiaoGGnprhjqDXUwk
+
+after_success:
+    - travis-sphinx deploy

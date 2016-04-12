@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Cleaner de csvs a partir de reglas de limpieza.
+"""Cleaner de CSVs a partir de reglas de limpieza.
 
-DataCleaner permite aplicar reglas de limpieza a csvs.
+La clase DataCleaner permite limpiar archivos CSVs con datos a partir de la
+aplicación de reglas de limpieza.
 """
 
 from __future__ import unicode_literals
@@ -18,6 +19,7 @@ import unicodecsv
 import warnings
 import inspect
 import re
+from functools import partial
 
 from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
@@ -34,7 +36,9 @@ class DuplicatedField(ValueError):
 
 
 class DataCleaner(object):
-    """Limpia csvs a partir de reglas de limpieza."""
+    """Crea un objeto DataCleaner cargando un CSV en un DataFrame y expone
+    reglas de limpieza para operar sobre las columnas del objeto y retornar un
+    CSV limplio."""
 
     OUTPUT_ENCODING = str("utf-8")
     OUTPUT_SEPARATOR = str(",")
@@ -58,14 +62,24 @@ class DataCleaner(object):
         sep = sep or self.INPUT_DEFAULT_SEPARATOR
         quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
 
+        # chequea que no haya fields con nombre duplicado
         if not ignore_dups:
             self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
                                        quotechar=quotechar)
+
+        # lee el CSV a limpiar
         self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
                               quotechar=quotechar)
 
+        # limpieza automática
+        # normaliza los nombres de los campos
         self.df.columns = self._normalize_fields(self.df.columns)
 
+        # remueve todos los saltos de línea
+        if len(self.df) > 0:
+            self.df = self.df.applymap(self._remove_line_breaks)
+
+        # guarda PEGs compiladas para optimizar performance
         self.grammars = {}
 
         self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
@@ -145,6 +159,13 @@ Método que llamó al normalizador de campos: {}
 
         return caller_rule
 
+    @staticmethod
+    def _remove_line_breaks(value, replace_char=" "):
+        if type(value) == unicode or type(value) == str:
+            return value.replace("\n", replace_char)
+        else:
+            return value
+
     # Métodos GLOBALES
     def clean(self, rules):
         """Aplica las reglas de limpieza al objeto en memoria.
@@ -169,7 +190,11 @@ Método que llamó al normalizador de campos: {}
         self.save(output_path)
 
     def save(self, output_path):
-        """Redirige al método DataFrame.to_csv()."""
+        """Guarda los datos en un nuevo CSV con formato estándar.
+
+        El CSV se guarda codificado en UTF-8, separado con "," y usando '"'
+        comillas dobles como caracter de enclosing."""
+
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
             separator=self.OUTPUT_SEPARATOR,
@@ -270,6 +295,7 @@ Método que llamó al normalizador de campos: {}
             remove_duplicates=remove_duplicates)
         replacements = get_best_replacements(clusters, counts)
         parsed_series = pd.Series(replace_by_key(replacements, series))
+        parsed_series = parsed_series.str.strip()
 
         if inplace:
             self._update_series(field=field, sufix=sufix,
@@ -348,14 +374,24 @@ Método que llamó al normalizador de campos: {}
 
         for new_value, old_values in replacements.iteritems():
             for old_value in old_values:
-                series = map(lambda x: unicode(x)
-                             .replace(old_value, new_value), series)
+                replace_function = partial(self._safe_replace,
+                                           old_value=old_value,
+                                           new_value=new_value)
+                series = map(replace_function, series)
+
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
                                 new_series=series)
 
         return series
+
+    @staticmethod
+    def _safe_replace(string, old_value, new_value):
+        if pd.isnull(string):
+            return pd.np.nan
+        else:
+            return unicode(string).replace(old_value, new_value)
 
     def fecha_completa(self, field, time_format, keep_original=False,
                        inplace=False):
@@ -434,11 +470,11 @@ Método que llamó al normalizador de campos: {}
         """Regla para fechas completas que están separadas en varios campos.
 
         Args:
-            field (str): Campo a limpiar
-            new_field_name (str): Sufijo para agregar a "isodatetime_".
+            field (str): Campo a limpiar.
+            new_field_name (str): Sufijo para construir nombre del nuevo field.
 
         Returns:
-            pandas.Series: Serie de strings limpios
+            pandas.Series: Serie de strings limpios.
         """
         field_names = [self._normalize_field(field[0]) for field in fields]
         time_format = " ".join([field[1] for field in fields])

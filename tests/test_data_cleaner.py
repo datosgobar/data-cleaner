@@ -86,6 +86,15 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(set(dc.df.columns), set(df.columns))
 
+    def test_removing_line_breaks(self):
+        input_path = get_input("with_line_breaks")
+        output_path = get_output("with_line_breaks")
+
+        dc = DataCleaner(input_path)
+        df = pd.read_csv(output_path, encoding="utf-8")
+
+        self.assertEqual(list(dc.df.columna), list(df.columna))
+
     def test_repeated_fields(self):
         input_path = get_input("repeated_fields")
 
@@ -207,7 +216,7 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         # obtengo el resultado de limpiar el csv
         dc = DataCleaner(input_path)
-        series = dc.reemplazar_string(field, {" Jaguarete ":
+        series = dc.reemplazar_string(field, {"Jaguarete":
                                               ["ABBA", "ABBBA"]})
         res = list(series)
 

@@ -17,6 +17,7 @@ from unidecode import unidecode
 import unicodecsv
 import warnings
 import inspect
+import re
 
 from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
@@ -43,7 +44,8 @@ class DataCleaner(object):
     INPUT_DEFAULT_QUOTECHAR = str('"')
     DEFAULT_SUFIX = "normalizado"
 
-    def __init__(self, input_path, encoding=None, sep=None, quotechar=None):
+    def __init__(self, input_path, encoding=None, sep=None, ignore_dups=False,
+                 quotechar=None):
         """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
 
         Args:
@@ -56,8 +58,9 @@ class DataCleaner(object):
         sep = sep or self.INPUT_DEFAULT_SEPARATOR
         quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
 
-        self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
-                                   quotechar=quotechar)
+        if not ignore_dups:
+            self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
+                                       quotechar=quotechar)
         self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
                               quotechar=quotechar)
 
@@ -98,9 +101,10 @@ class DataCleaner(object):
         # reemplaza caracteres que no sean unicode
         norm_field = unidecode(field).strip()
 
-        norm_field = norm_field.lower().replace(" ", sep)
+        norm_field = norm_field.replace(" ", sep)
         norm_field = norm_field.replace("-", sep).replace("_", sep)
         norm_field = norm_field.replace("/", sep)
+        norm_field = self._camel_convert(norm_field).lower()
 
         # remueve caracteres que no sean alfanuméricos o "_"
         norm_field = ''.join(char for char in norm_field
@@ -124,6 +128,10 @@ Método que llamó al normalizador de campos: {}
             warnings.warn(msg)
 
         return norm_field
+
+    @staticmethod
+    def _camel_convert(name):
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
 
     @staticmethod
     def _get_normalize_field_caller(curframe):

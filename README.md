@@ -29,6 +29,8 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 
 ## Instalación
 
+Requiere tener **Python 2.7** instalado en el sistema. Si se va a instalar python desde cero, se recomienda instalar la distribución de **Anaconda** con Python 2.7, ya que viene con varias librerías preinstaladas.
+
 Para uso simple:
 ```
 pip install data_cleaner

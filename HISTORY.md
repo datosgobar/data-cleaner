@@ -2,6 +2,12 @@
 History
 =======
 
+0.1.16 (2016-4-16)
+------------------
+
+* Se remueven los caracteres de salto de línea de todos los valores.
+* Se detectan los fields con títulos que usan la convencion upper CamelCase para interpretar que cada mayúscula comienza una palabra distinta
+
 0.1.15 (2016-3-7)
 ------------------
 

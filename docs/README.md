@@ -5,10 +5,15 @@ data-cleaner
 [![Build Status](https://travis-ci.org/gobabiertoAR/data-cleaner.svg?branch=master)](https://travis-ci.org/gobabiertoAR/data-cleaner)
 [![PyPI](https://badge.fury.io/py/data-cleaner.svg)](http://badge.fury.io/py/data-cleaner)
 [![Stories in Ready](https://badge.waffle.io/gobabiertoAR/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/gobabiertoAR/data-cleaner)
+[![Documentation Status](http://readthedocs.org/projects/data-cleaner/badge/?version=latest)](http://data-cleaner.readthedocs.org/en/latest/?badge=latest)
+
 
 Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/gobabiertoAR/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
 
 *Nota: Este paquete aún se encuentra en etapa temprana de desarrollo y la interface podría sufrir modificaciones significativas.*
+
+* Para referencia detallada de este paquete leer la [documentación] (http://data-cleaner.readthedocs.org/en/latest/) *
+
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -23,6 +28,8 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Instalación
+
+Requiere tener **Python 2.7** instalado en el sistema. Si se va a instalar python desde cero, se recomienda instalar la distribución de **Anaconda** con Python 2.7, ya que viene con varias librerías preinstaladas.
 
 Para uso simple:
 ```
@@ -155,6 +162,10 @@ Los nombres de los campos se normalizan automáticamente. Sólo el uso de caract
 * Reemplaza espacios y "-" por "_"
 * Reemplaza todos los caracteres alfanuméricos por su versión ASCII más próxima
 * Remueve todos los caracteres especiales que no sean "_"
+
+### Saltos de línea
+
+No se permiten saltos de línea en los valores, al momento de crear un objeto DataCleaner se reemplazan todos los saltos de línea que estén dentro del caracter de enclosing (usualmente comillas dobles '"') por un espacio " ".
 
 ## Template de script de limpieza
 

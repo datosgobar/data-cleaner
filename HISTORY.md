@@ -2,6 +2,12 @@
 History
 =======
 
+0.1.18 (2016-4-30)
+------------------
+
+* Se agrega un parámetro opcional (`lower_words`) al método `nombre_propio`, para especificar palabras que no se capitalizan.
+
+
 0.1.16 (2016-4-16)
 ------------------
 

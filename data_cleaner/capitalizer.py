@@ -5,6 +5,7 @@
 
 import string
 import pandas as pd
+from functools import partial
 
 
 LOWER_WORDS = [
@@ -17,7 +18,7 @@ IGNORE_WORDS = [
 ]
 
 
-def normalize_word(word):
+def normalize_word(word, lower_words=None):
     """Normaliza una palabra, capitalizándola cuando corresponde.
 
     Si contiene signos de puntacion se capitaliza dentro de esas strings.
@@ -28,17 +29,19 @@ def normalize_word(word):
     Returns:
         str: Palabra normalizada
     """
+    lower_words = lower_words or LOWER_WORDS
+
     for character in string.punctuation:
         if character in word:
             return capitalize(word, sep=character)
     if word.lower() in IGNORE_WORDS:
         return word
-    if word.lower() in LOWER_WORDS:
+    if word.lower() in lower_words:
         return word.lower()
     return word.title()
 
 
-def capitalize(string, sep=None, encoding="utf-8"):
+def capitalize(string, sep=None, encoding="utf-8", lower_words=None):
     """Capitaliza una string que puede estar compuesta por varias palabras
 
     Args:
@@ -58,6 +61,7 @@ def capitalize(string, sep=None, encoding="utf-8"):
     if len(words) == 0:
         return ""
     first_word = words[0].title()
-    normalized_words = [first_word] + map(normalize_word, words[1:])
+    partial_normalize_word = partial(normalize_word, lower_words=lower_words)
+    normalized_words = [first_word] + map(partial_normalize_word, words[1:])
 
     return (sep if sep else " ").join(normalized_words)

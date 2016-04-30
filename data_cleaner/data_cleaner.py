@@ -248,8 +248,8 @@ Método que llamó al normalizador de campos: {}
 
         return renamed_df
 
-    def nombre_propio(self, field, sufix=None, keep_original=False,
-                      inplace=False):
+    def nombre_propio(self, field, sufix=None, lower_words=None,
+                      keep_original=False, inplace=False):
         """Regla para todos los nombres propios.
 
         Capitaliza los nombres de países, ciudades, personas, instituciones y
@@ -264,7 +264,7 @@ Método que llamó al normalizador de campos: {}
         sufix = sufix or self.DEFAULT_SUFIX
         field = self._normalize_field(field)
         series = self.df[field]
-        capitalized = series.apply(capitalize)
+        capitalized = series.apply(capitalize, lower_words=lower_words)
 
         if inplace:
             self._update_series(field=field, sufix=sufix,

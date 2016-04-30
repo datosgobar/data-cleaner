@@ -159,6 +159,24 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertIn("dependencia_normalizado", dc.df.columns)
 
+    def test_nombre_propio_lower_words(self):
+        input_path = get_input("nombre_propio")
+        output_path = get_output("nombre_propio_lower_words")
+        field = "dependencia"
+
+        # obtengo el resultado de limpiar el csv
+        dc = DataCleaner(input_path)
+        series = dc.nombre_propio(
+            field, lower_words=["nación", "de", "la"],
+            keep_original=True, inplace=True)
+        res = list(series)
+
+        # cargo el csv limpio para comparar
+        df = pd.read_csv(output_path, encoding="utf-8")
+        exp = list(df[field])
+
+        self.assertEqual(res, exp)
+
     # @unittest.skip("skip")
     def test_string_normal(self):
         input_path = get_input("string_normal")

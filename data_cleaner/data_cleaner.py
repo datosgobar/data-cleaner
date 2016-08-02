@@ -49,7 +49,7 @@ class DataCleaner(object):
     DEFAULT_SUFIX = "normalizado"
 
     def __init__(self, input_path, encoding=None, sep=None, ignore_dups=False,
-                 quotechar=None):
+                 quotechar=None, dtype=None):
         """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
 
         Args:
@@ -69,7 +69,7 @@ class DataCleaner(object):
 
         # lee el CSV a limpiar
         self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
-                              quotechar=quotechar)
+                              quotechar=quotechar, dtype=dtype)
 
         # limpieza automática
         # normaliza los nombres de los campos
@@ -222,6 +222,9 @@ Método que llamó al normalizador de campos: {}
             pandas.DataFrame: Data frame con las columnas removidas.
         """
         field = self._normalize_field(field)
+        if field not in self.df.columns:
+            warnings.warn("No existe el campo '{}'".format(field))
+            return self.df
         removed_df = self.df.drop(field, axis=1)
 
         if inplace:

@@ -143,7 +143,7 @@ El método `DataCleaner.save()` redirige al método `pandas.DataFrame.to_csv()`,
 
 ### Encoding del input, y otros
 
-Se asume que el input es un csv encodeado en *utf-8*, separado por comas y que usa comillas dobles para el enclosing. Si alguno de estos parámetros (especialmente el enconding) es diferente, debe especificarse.
+Se asume que el input es un csv codificado en *utf-8*, separado por comas y que usa comillas dobles para el enclosing. Si alguno de estos parámetros (especialmente el encoding) es diferente, debe especificarse.
 
 ```python
 dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
@@ -153,7 +153,7 @@ dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
 
 ### Formato del archivo limpio
 
-Luego de la limpieza los datos se guardan siempre en un archivo *CSV*, encodeado en *utf-8* separado por *","* y usando *'"'* como caracter de citas.
+Luego de la limpieza, los datos se guardan siempre en un archivo *CSV*, codificado en *utf-8* separado por *","* y usando *'"'* como caracter de citas.
 
 ### Nombres de los campos
 
@@ -173,7 +173,9 @@ Para realizar la limpieza de un archivo CSV de datos con `data-cleaner` se sugie
 
 ## Reglas de limpieza
 
-Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son (a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o (b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
+Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son: 
+(a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o 
+(b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
 
 ### Renombrar columnas (*renombrar_columnas*)
 Renombra columnas de la tabla de datos. 
@@ -250,9 +252,9 @@ Argumentos opcionales:
 ]}
 ```
 
-### Dar formato a correo electronico (*mail_format*)
+### Dar formato a correo electrónico (*mail_format*)
 
-Parsea todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.
+Analiza todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.
 
 Argumentos opcionales:
 

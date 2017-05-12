@@ -1,14 +1,14 @@
 data-cleaner
 ===
 
-[![Coverage Status](https://coveralls.io/repos/gobabiertoAR/data-cleaner/badge.svg?branch=master)](https://coveralls.io/r/gobabiertoAR/data-cleaner?branch=master)
-[![Build Status](https://travis-ci.org/gobabiertoAR/data-cleaner.svg?branch=master)](https://travis-ci.org/gobabiertoAR/data-cleaner)
+[![Coverage Status](https://coveralls.io/repos/github/datosgobar/data-cleaner/badge.svg?branch=master)](https://coveralls.io/github/datosgobar/data-cleaner?branch=master)
+[![Build Status](https://travis-ci.org/datosgobar/data-cleaner.svg?branch=master)](https://travis-ci.org/datosgobar/data-cleaner)
 [![PyPI](https://badge.fury.io/py/data-cleaner.svg)](http://badge.fury.io/py/data-cleaner)
-[![Stories in Ready](https://badge.waffle.io/gobabiertoAR/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/gobabiertoAR/data-cleaner)
+[![Stories in Ready](https://badge.waffle.io/datosgobar/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/datosgobar/data-cleaner)
 [![Documentation Status](http://readthedocs.org/projects/data-cleaner/badge/?version=latest)](http://data-cleaner.readthedocs.org/en/latest/?badge=latest)
 
 
-Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/gobabiertoAR/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
+Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/datosgobar/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
 
 *Nota: Este paquete aún se encuentra en etapa temprana de desarrollo y la interface podría sufrir modificaciones significativas.*
 

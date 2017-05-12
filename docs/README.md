@@ -1,14 +1,14 @@
 data-cleaner
 ===
 
-[![Coverage Status](https://coveralls.io/repos/gobabiertoAR/data-cleaner/badge.svg?branch=master)](https://coveralls.io/r/gobabiertoAR/data-cleaner?branch=master)
-[![Build Status](https://travis-ci.org/gobabiertoAR/data-cleaner.svg?branch=master)](https://travis-ci.org/gobabiertoAR/data-cleaner)
+[![Coverage Status](https://coveralls.io/repos/github/datosgobar/data-cleaner/badge.svg?branch=master)](https://coveralls.io/github/datosgobar/data-cleaner?branch=master)
+[![Build Status](https://travis-ci.org/datosgobar/data-cleaner.svg?branch=master)](https://travis-ci.org/datosgobar/data-cleaner)
 [![PyPI](https://badge.fury.io/py/data-cleaner.svg)](http://badge.fury.io/py/data-cleaner)
-[![Stories in Ready](https://badge.waffle.io/gobabiertoAR/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/gobabiertoAR/data-cleaner)
+[![Stories in Ready](https://badge.waffle.io/datosgobar/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/datosgobar/data-cleaner)
 [![Documentation Status](http://readthedocs.org/projects/data-cleaner/badge/?version=latest)](http://data-cleaner.readthedocs.org/en/latest/?badge=latest)
 
 
-Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/gobabiertoAR/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
+Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/datosgobar/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
 
 *Nota: Este paquete aún se encuentra en etapa temprana de desarrollo y la interface podría sufrir modificaciones significativas.*
 
@@ -20,16 +20,37 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Instalación](#instalaci%C3%B3n)
-- [Uso](#uso)
+  - [Dependencias](#dependencias)
+  - [Tests](#tests)
+- [Uso de data-cleaner](#uso-de-data-cleaner)
+  - [Lista de reglas](#lista-de-reglas)
+  - [Métodos de limpieza](#m%C3%A9todos-de-limpieza)
+  - [Encoding del input, y otros](#encoding-del-input-y-otros)
 - [Limpieza automática](#limpieza-autom%C3%A1tica)
+  - [Formato del archivo limpio](#formato-del-archivo-limpio)
+  - [Nombres de los campos](#nombres-de-los-campos)
+  - [Saltos de línea](#saltos-de-l%C3%ADnea)
 - [Template de script de limpieza](#template-de-script-de-limpieza)
 - [Reglas de limpieza](#reglas-de-limpieza)
+  - [Renombrar columnas (*renombrar_columnas*)](#renombrar-columnas-renombrar_columnas)
+  - [Remover columnas (*remover_columnas*)](#remover-columnas-remover_columnas)
+  - [Capitalizar nombres propios (*nombre_propio*)](#capitalizar-nombres-propios-nombre_propio)
+  - [Dar formato a correo electrónico (*mail_format*)](#dar-formato-a-correo-electr%C3%B3nico-mail_format)
+  - [Normalizar strings (*string*)](#normalizar-strings-string)
+  - [Reemplazar listas de strings por valores predefinidos (*reemplazar*)](#reemplazar-listas-de-strings-por-valores-predefinidos-reemplazar)
+  - [Reemplazar partes de valores (substrings) por otros (*reemplazar_string*)](#reemplazar-partes-de-valores-substrings-por-otros-reemplazar_string)
+  - [Normalizar fecha completa (*fecha_completa*)](#normalizar-fecha-completa-fecha_completa)
+  - [Normalizar fecha simple (*fecha_simple*)](#normalizar-fecha-simple-fecha_simple)
+  - [Normalizar fecha separada en múltiples campos (*fecha_separada*)](#normalizar-fecha-separada-en-m%C3%BAltiples-campos-fecha_separada)
+  - [Separar campos mediante un separador simple (*string_simple_split*)](#separar-campos-mediante-un-separador-simple-string_simple_split)
+  - [Separar campos mediante una expresión regular (*string_regex_split*)](#separar-campos-mediante-una-expresi%C3%B3n-regular-string_regex_split)
+  - [Separar campos mediante una parsing expression grammar (*string_peg_split*)](#separar-campos-mediante-una-parsing-expression-grammar-string_peg_split)
+  - [Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)](#manipular-y-reemplazar-contenido-de-campos-mediante-una-expression-regular-string_regex_substitute)
+- [Contacto](#contacto)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Instalación
-
-Requiere tener **Python 2.7** instalado en el sistema. Si se va a instalar python desde cero, se recomienda instalar la distribución de **Anaconda** con Python 2.7, ya que viene con varias librerías preinstaladas.
 
 Para uso simple:
 ```
@@ -42,7 +63,17 @@ cd package_directory
 pip install -e .
 ```
 
-## Uso
+### Dependencias
+
+* Python 2.7
+
+Si se va a instalar python desde cero, se recomienda instalar la distribución de **Anaconda** con Python 2.7, ya que viene con varias librerías preinstaladas.
+
+### Tests
+
+`nosetests` en el root del repositorio clonado (sólo para desarrollo)
+
+## Uso de data-cleaner
 
 ### Lista de reglas
 
@@ -143,7 +174,7 @@ El método `DataCleaner.save()` redirige al método `pandas.DataFrame.to_csv()`,
 
 ### Encoding del input, y otros
 
-Se asume que el input es un csv encodeado en *utf-8*, separado por comas y que usa comillas dobles para el enclosing. Si alguno de estos parámetros (especialmente el enconding) es diferente, debe especificarse.
+Se asume que el input es un csv codificado en *utf-8*, separado por comas y que usa comillas dobles para el enclosing. Si alguno de estos parámetros (especialmente el encoding) es diferente, debe especificarse.
 
 ```python
 dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
@@ -153,7 +184,7 @@ dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
 
 ### Formato del archivo limpio
 
-Luego de la limpieza los datos se guardan siempre en un archivo *CSV*, encodeado en *utf-8* separado por *","* y usando *'"'* como caracter de citas.
+Luego de la limpieza, los datos se guardan siempre en un archivo *CSV*, codificado en *utf-8* separado por *","* y usando *'"'* como caracter de citas.
 
 ### Nombres de los campos
 
@@ -173,7 +204,9 @@ Para realizar la limpieza de un archivo CSV de datos con `data-cleaner` se sugie
 
 ## Reglas de limpieza
 
-Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son (a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o (b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
+Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son: 
+(a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o 
+(b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
 
 ### Renombrar columnas (*renombrar_columnas*)
 Renombra columnas de la tabla de datos. 
@@ -229,13 +262,14 @@ Argumentos opcionales:
 
 * **keep_original**: True para conservar la columna original / False para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
+* **lower_words**: Lista de palabras que deben mantenerse en minúsculas, sin aplicar capitalización (Default: ["el", "los", "la", "las", "de", "del", "en", "y"])
 
 **Especificación:**
 
 ```python
 {"nombre_propio": [
     {"field": "columna_1"},
-    {"field": "columna_2"}
+    {"field": "columna_2", "lower_words": ["lower_word1", "lower_word2"]}
 ]}
 ```
 
@@ -243,13 +277,15 @@ Argumentos opcionales:
 
 ```python
 {"nombre_propio": [
+    {"field": "dependencia", "lower_words": ["en", "la"]}
+    {"field": "dependencia", "lower_words": []}
     {"field": "dependencia"}
 ]}
 ```
 
-### Dar formato a correo electronico (*mail_format*)
+### Dar formato a correo electrónico (*mail_format*)
 
-Parsea todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.
+Analiza todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.
 
 Argumentos opcionales:
 
@@ -561,3 +597,9 @@ Cambia el orden de una cadena entre parentesis:
 ]}
 "(presidente)Juan Jose Perez."  pasaría a ser "Juan Jose Perez. (presidente)"
 ```
+
+## Contacto
+
+Te invitamos a [creanos un issue](https://github.com/datosgobar/data-cleaner/issues/new?title=Encontre un bug en data-cleaner) en caso de que encuentres algún bug o tengas feedback de alguna parte de `data-cleaner`.
+
+Para todo lo demás, podés mandarnos tu comentario o consulta a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar).

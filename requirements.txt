@@ -1,4 +1,4 @@
-pandas>=0.16.0
+pandas==0.18.1
 parsley>=1.2
 arrow>=0.7.0
 unidecode>=0.4.17

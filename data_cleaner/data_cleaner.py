@@ -197,7 +197,7 @@ Método que llamó al normalizador de campos: {}
 
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
-            separator=self.OUTPUT_SEPARATOR,
+            sep=self.OUTPUT_SEPARATOR,
             quotechar=self.OUTPUT_QUOTECHAR)
 
     def _update_series(self, field, new_series,

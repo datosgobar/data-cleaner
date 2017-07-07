@@ -48,19 +48,18 @@ class DataCleaner(object):
     INPUT_DEFAULT_QUOTECHAR = str('"')
     DEFAULT_SUFIX = "normalizado"
 
-    def __init__(self, input_path, encoding=None, sep=None, ignore_dups=False,
-                 quotechar=None, dtype=None):
+    def __init__(self, input_path, ignore_dups=False, **kwargs):
         """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
 
         Args:
             input_path (str): Ruta al CSV que se va a limpiar.
-            encoding (str): Encoding del CSV a limpiar (default: utf-8)
-            sep (str): Separador del CSV a limpiar (default: ",")
-            quotechar (str): Enclosing character del CSV (default: '"')
+            ignore_dups (bool): Ignora los duplicados en colunas
+            kwargs: todos los mismos argumentos que puede tomar `pandas.read_csv`
         """
-        encoding = encoding or self.INPUT_DEFAULT_ENCODING
-        sep = sep or self.INPUT_DEFAULT_SEPARATOR
-        quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
+
+        encoding = kwargs.get('encoding', self.INPUT_DEFAULT_ENCODING)
+        sep = kwargs.get('sep', self.INPUT_DEFAULT_SEPARATOR)
+        quotechar = kwargs.get('quotechar', self.INPUT_DEFAULT_QUOTECHAR)
 
         # chequea que no haya fields con nombre duplicado
         if not ignore_dups:
@@ -68,8 +67,7 @@ class DataCleaner(object):
                                        quotechar=quotechar)
 
         # lee el CSV a limpiar
-        self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
-                              quotechar=quotechar, dtype=dtype)
+        self.df = pd.read_csv(input_path, **kwargs)
 
         # limpieza automática
         # normaliza los nombres de los campos

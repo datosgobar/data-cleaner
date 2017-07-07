@@ -56,18 +56,20 @@ class DataCleaner(object):
             ignore_dups (bool): Ignora los duplicados en colunas
             kwargs: todos los mismos argumentos que puede tomar `pandas.read_csv`
         """
-
-        encoding = kwargs.get('encoding', self.INPUT_DEFAULT_ENCODING)
-        sep = kwargs.get('sep', self.INPUT_DEFAULT_SEPARATOR)
-        quotechar = kwargs.get('quotechar', self.INPUT_DEFAULT_QUOTECHAR)
-
+        default_args = {'encoding': self.INPUT_DEFAULT_ENCODING,
+                        'sep': self.INPUT_DEFAULT_SEPARATOR,
+                        'quotechar': self.INPUT_DEFAULT_QUOTECHAR
+                        }
+        default_args.update(kwargs)
         # chequea que no haya fields con nombre duplicado
         if not ignore_dups:
-            self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
-                                       quotechar=quotechar)
+            self._assert_no_duplicates(input_path, encoding=default_args['encoding'],
+                                       sep=default_args['sep'],
+                                       quotechar=default_args['quotechar'])
 
+        print(kwargs)
         # lee el CSV a limpiar
-        self.df = pd.read_csv(input_path, **kwargs)
+        self.df = pd.read_csv(input_path, **default_args)
 
         # limpieza automática
         # normaliza los nombres de los campos
@@ -160,7 +162,7 @@ Método que llamó al normalizador de campos: {}
     @staticmethod
     def _remove_line_breaks(value, replace_char=" "):
         if type(value) == unicode or type(value) == str:
-            return value.replace("\n", replace_char)
+            return unicode(value).replace('\n', replace_char)
         else:
             return value
 

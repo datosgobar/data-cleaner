@@ -58,21 +58,24 @@ class DataCleaner(object):
             ignore_dups (bool): Ignora los duplicados en colunas
             kwargs: todos los mismos argumentos que puede tomar `pandas.read_csv`
         """
-        default_args = {'encoding': self.INPUT_DEFAULT_ENCODING,
-                        'sep': self.INPUT_DEFAULT_SEPARATOR,
-                        'quotechar': self.INPUT_DEFAULT_QUOTECHAR
-                        }
+        default_args = {
+            'encoding': self.INPUT_DEFAULT_ENCODING,
+            'sep': self.INPUT_DEFAULT_SEPARATOR,
+            'quotechar': self.INPUT_DEFAULT_QUOTECHAR
+        }
         default_args.update(kwargs)
         # chequea que no haya fields con nombre duplicado
-        if not ignore_dups and not input_path.endswith('.shp'):
-            self._assert_no_duplicates(input_path, encoding=default_args['encoding'],
+        if not ignore_dups and input_path.endswith('.csv'):
+            self._assert_no_duplicates(input_path,
+                                       encoding=default_args['encoding'],
                                        sep=default_args['sep'],
                                        quotechar=default_args['quotechar'])
 
         print(kwargs)
-        
+
         if input_path.endswith('.shp'):
-            self.df = gpd.read_file(input_path)
+            self.df = gpd.read_file(input_path,
+                                    encoding=default_args['encoding'])
         else:
             self.df = pd.read_csv(input_path, **default_args)
 
@@ -209,7 +212,7 @@ Método que llamó al normalizador de campos: {}
             output_path, encoding=self.OUTPUT_ENCODING,
             sep=self.OUTPUT_SEPARATOR,
             quotechar=self.OUTPUT_QUOTECHAR)
-    
+
     def _update_series(self, field, new_series,
                        keep_original=False, prefix=None, sufix=None):
         """Agrega o pisa una serie nueva en el DataFrame."""

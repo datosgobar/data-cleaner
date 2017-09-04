@@ -84,8 +84,8 @@ class DataCleanerShapefileConversionTestCase(unittest.TestCase):
         dc = DataCleaner(input_path)
         dc.save(output_path)
 
-        #df = pd.read_csv(BASE_DIR + '/input/vias/vias.csv')
-        #self.assertEqual(set(df.columns), set(df_exp.columns))
+        csv_df = pd.read_csv(output_path)
+        self.assertEqual(set(csv_df.columns), set(dc.df.columns))
 
 
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):

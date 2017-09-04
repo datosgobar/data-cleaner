@@ -159,15 +159,22 @@ Name: dependencia, dtype: object
 ```
 
 En todo momento se puede acceder al `pandas.DataFrame` que contiene la tabla de datos, donde se verán reflejados los cambios luego de aplicar métodos de limpieza con el parámetro `inplace=True`.
+Cuando se carga un archivo `.shp` al `DataCleaner`, éste contiene un objeto `geopandas.GeoDataFrame`, que extiende la funcionalidad de `pandas` para trabajar con geometrías.
 
 ```python
-dc.df  # accede al pandas.DataFrame del cleaner
+dc.df  # Accede al pandas.DataFrame o geopandas.GeoDataFrame del cleaner.
 ```
 
-Para guardar el `pandas.DataFrame` en cualquier momento, probablemente luego de probar y aplicar algunas transformaciones.
+Para guardar el `pandas.DataFrame` en cualquier momento, probablemente luego de probar y aplicar algunas transformaciones, usar:
 
 ```python
 dc.save(output_path)
+```
+Si se trata de un `GeoDataFrame`, se puede especificar el nombre para la columna de geometría con un argumento opcional. El nombre por defecto es "geojson".
+
+```python
+dc = DataCleaner('samples/provincias/provincias.shp')
+dc.save(output_path, geometry_name='geojson')
 ```
 
 El método `DataCleaner.save()` redirige al método `pandas.DataFrame.to_csv()`, y por lo tanto tienen los mismos argumentos.

@@ -74,6 +74,20 @@ class DataCleanerIntegrationTestCase(unittest.TestCase):
             )
 
 
+class DataCleanerShapefileConversionTestCase(unittest.TestCase):
+    """Testea la conversión de archivos Shapefile a CSV."""
+
+    def test_shapefile_to_csv_conversion(self):
+        input_path = BASE_DIR + '/input/localidades/localidades.shp'
+        output_path = BASE_DIR + '/output/localidades.csv'
+        
+        dc = DataCleaner(input_path)
+        dc.save(output_path)
+
+        #df = pd.read_csv(BASE_DIR + '/input/vias/vias.csv')
+        #self.assertEqual(set(df.columns), set(df_exp.columns))
+
+
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):
     """Testea métodos individuales de limpieza del DataCleaner."""
 

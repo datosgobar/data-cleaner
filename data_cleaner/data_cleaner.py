@@ -11,6 +11,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import with_statement
 import pandas as pd
+import geopandas as gpd
+import csv
+import json
 from dateutil import tz
 import arrow
 import parsley
@@ -62,14 +65,17 @@ class DataCleaner(object):
                         }
         default_args.update(kwargs)
         # chequea que no haya fields con nombre duplicado
-        if not ignore_dups:
+        if not ignore_dups and not input_path.endswith('.shp'):
             self._assert_no_duplicates(input_path, encoding=default_args['encoding'],
                                        sep=default_args['sep'],
                                        quotechar=default_args['quotechar'])
 
         print(kwargs)
-        # lee el CSV a limpiar
-        self.df = pd.read_csv(input_path, **default_args)
+        
+        if input_path.endswith('.shp'):
+            self.df = gpd.read_file(input_path)
+        else:
+            self.df = pd.read_csv(input_path, **default_args)
 
         # limpieza automática
         # normaliza los nombres de los campos
@@ -194,12 +200,35 @@ Método que llamó al normalizador de campos: {}
 
         El CSV se guarda codificado en UTF-8, separado con "," y usando '"'
         comillas dobles como caracter de enclosing."""
+        if isinstance(self.df, gpd.GeoDataFrame):
+            self._gdf_to_csv(output_path)
+        else:
+            self.df.set_index(self.df.columns[0]).to_csv(
+                output_path, encoding=self.OUTPUT_ENCODING,
+                sep=self.OUTPUT_SEPARATOR,
+                quotechar=self.OUTPUT_QUOTECHAR)
 
-        self.df.set_index(self.df.columns[0]).to_csv(
-            output_path, encoding=self.OUTPUT_ENCODING,
-            sep=self.OUTPUT_SEPARATOR,
-            quotechar=self.OUTPUT_QUOTECHAR)
+    def _gdf_to_csv(self, output_path):
+        """Procesa un GeoDataFrame y guarda los datos
+            en un CSV con formato estándar.
 
+        El CSV se guarda codificado en UTF-8, separado con "," y usando '"'
+        comillas dobles como caracter de enclosing."""
+        geodict = json.loads(self.df.to_json())
+        with open(output_path, 'w') as geocsv:
+            columns = list(self.df.columns)
+            columns.remove('geometry')
+            columns.append('geom')
+            writer = csv.DictWriter(geocsv, fieldnames=columns)
+            writer.writeheader()
+            for feature in geodict['features']:
+                data = feature['properties']
+                data['geom'] = feature['geometry']
+                if data['tipo'] == 'OTRO': continue # Borrar!!!
+                writer.writerow(data)
+                #writer.writerow(dict((k, v.encode('utf-8'))
+                #                for k, v in data.iteritems()))
+    
     def _update_series(self, field, new_series,
                        keep_original=False, prefix=None, sufix=None):
         """Agrega o pisa una serie nueva en el DataFrame."""

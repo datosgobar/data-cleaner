@@ -229,13 +229,14 @@ Argumentos opcionales:
 
 * **keep_original**: True para conservar la columna original / False para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
+* **lower_words**: Lista de palabras que deben mantenerse en minúsculas, sin aplicar capitalización (Default: ["el", "los", "la", "las", "de", "del", "en", "y"])
 
 **Especificación:**
 
 ```python
 {"nombre_propio": [
     {"field": "columna_1"},
-    {"field": "columna_2"}
+    {"field": "columna_2", "lower_words": ["lower_word1", "lower_word2"]}
 ]}
 ```
 
@@ -243,6 +244,8 @@ Argumentos opcionales:
 
 ```python
 {"nombre_propio": [
+    {"field": "dependencia", "lower_words": ["en", "la"]}
+    {"field": "dependencia", "lower_words": []}
     {"field": "dependencia"}
 ]}
 ```

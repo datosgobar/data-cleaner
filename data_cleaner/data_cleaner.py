@@ -49,27 +49,40 @@ class DataCleaner(object):
     DEFAULT_SUFIX = "normalizado"
 
     def __init__(self, input_path, encoding=None, sep=None, ignore_dups=False,
-                 quotechar=None):
+                 quotechar=None, converters=None):
         """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
 
         Args:
-            input_path (str): Ruta al CSV que se va a limpiar.
+            input_path (str): Ruta al CSV o XLSX que se va a limpiar.
             encoding (str): Encoding del CSV a limpiar (default: utf-8)
             sep (str): Separador del CSV a limpiar (default: ",")
             quotechar (str): Enclosing character del CSV (default: '"')
+            converters (dict): Funciones convertidoras para procesar los datos
+                en lectura {"nombre_campo": funcion}
         """
         encoding = encoding or self.INPUT_DEFAULT_ENCODING
         sep = sep or self.INPUT_DEFAULT_SEPARATOR
         quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
+        converters = converters or {}
+        file_format = input_path.split(".")[-1].lower()
 
         # chequea que no haya fields con nombre duplicado
         if not ignore_dups:
             self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
-                                       quotechar=quotechar)
+                                       quotechar=quotechar,
+                                       file_format=file_format)
 
         # lee el CSV a limpiar
-        self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
-                              quotechar=quotechar)
+        if file_format == "csv":
+            self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
+                                  quotechar=quotechar, converters=converters)
+        # lee el XLSX a limpiar
+        elif file_format == "xlsx":
+            self.df = pd.read_excel(input_path, converters=converters,
+                                    engine="xlrd")
+        else:
+            raise Exception(
+                "{} no es un formato soportado.".format(file_format))
 
         # limpieza automática
         # normaliza los nombres de los campos
@@ -84,17 +97,23 @@ class DataCleaner(object):
 
         self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
 
-    def _assert_no_duplicates(self, csv_path, encoding, sep, quotechar):
-        with open(csv_path, 'r') as csvfile:
-            reader = unicodecsv.reader(csvfile,
-                                       encoding=encoding,
-                                       delimiter=sep,
-                                       quotechar=quotechar)
-            fields = reader.next()
+    def _assert_no_duplicates(self, csv_path, encoding, sep, quotechar,
+                              file_format):
+        if file_format == "csv":
+            with open(csv_path, 'r') as csvfile:
+                reader = unicodecsv.reader(csvfile,
+                                           encoding=encoding,
+                                           delimiter=sep,
+                                           quotechar=quotechar)
+                fields = reader.next()
 
-            for col in fields:
-                if fields.count(col) > 1:
-                    raise DuplicatedField(col)
+                for col in fields:
+                    if fields.count(col) > 1:
+                        raise DuplicatedField(col)
+
+        # TODO: Implementar chequeo de que no hay duplicados para XLSX
+        elif file_format == "xlsx":
+            pass
 
     def _normalize_fields(self, fields):
         return [self._normalize_field(field) for field in fields]
@@ -373,6 +392,7 @@ Método que llamó al normalizador de campos: {}
         series = self.df[field]
 
         for new_value, old_values in replacements.iteritems():
+            # for old_value in sorted(old_values, key=len, reverse=True):
             for old_value in old_values:
                 replace_function = partial(self._safe_replace,
                                            old_value=old_value,

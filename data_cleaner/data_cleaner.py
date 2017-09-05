@@ -12,6 +12,7 @@ from __future__ import print_function
 from __future__ import with_statement
 import pandas as pd
 import geopandas as gpd
+import pycrs
 import json
 from dateutil import tz
 import arrow
@@ -72,11 +73,22 @@ class DataCleaner(object):
                                        sep=default_args['sep'],
                                        quotechar=default_args['quotechar'])
 
-        print(kwargs)
-
+        # lee el SHP a limpiar
         if input_path.endswith('.shp'):
-            self.df = gpd.read_file(input_path,
-                                    encoding=default_args['encoding'])
+            self.df = gpd.read_file(
+                input_path,
+                encoding=default_args['encoding']
+            )
+
+            # lee la proyección del .prj, si puede
+            try:
+                projection_path = input_path.replace('.shp', '.prj')
+                self.source_crs = pycrs.loader.from_file(
+                    projection_path).to_proj4()
+            except Exception as e:
+                print(e)
+                self.source_crs = self.df.crs
+
         # lee el CSV a limpiar
         elif input_path.endswith('.csv'):
             self.df = pd.read_csv(input_path, **default_args)
@@ -87,7 +99,8 @@ class DataCleaner(object):
 
         else:
             raise Exception(
-                "{} no es un formato soportado.".format(file_format))
+                "{} no es un formato soportado.".format(
+                    input_path.split(".")[-1]))
 
         # limpieza automática
         # normaliza los nombres de los campos
@@ -213,14 +226,28 @@ Método que llamó al normalizador de campos: {}
         self.clean(rules)
         self.save(output_path)
 
-    def save(self, output_path, geometry_name='geojson'):
+    def save(self, output_path, geometry_name='geojson',
+             geometry_crs='epsg:4326'):
         """Guarda los datos en un nuevo CSV con formato estándar.
 
         El CSV se guarda codificado en UTF-8, separado con "," y usando '"'
         comillas dobles como caracter de enclosing."""
         if isinstance(self.df, gpd.GeoDataFrame):
+
+            # convierte la proyección, si puede
+            if geometry_crs:
+                try:
+                    self.df.crs = self.source_crs
+                    self.df = self.df.to_crs({'init': geometry_crs})
+                except Exception as e:
+                    print(e)
+                    print("Se procede sin re-proyectar las coordenadas.")
+
+            # convierte la geometría a GeoJson
             features = json.loads(self.df.geometry.to_json())['features']
             geometries = [feature['geometry'] for feature in features]
+
+            # cambia el nombre del campo de la geometría
             self.df[geometry_name] = geometries
             del self.df['geometry']
 

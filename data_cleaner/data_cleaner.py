@@ -48,38 +48,35 @@ class DataCleaner(object):
     INPUT_DEFAULT_QUOTECHAR = str('"')
     DEFAULT_SUFIX = "normalizado"
 
-    def __init__(self, input_path, encoding=None, sep=None, ignore_dups=False,
-                 quotechar=None, converters=None):
+    def __init__(self, input_path, ignore_dups=False, **kwargs):
         """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
 
         Args:
-            input_path (str): Ruta al CSV o XLSX que se va a limpiar.
-            encoding (str): Encoding del CSV a limpiar (default: utf-8)
-            sep (str): Separador del CSV a limpiar (default: ",")
-            quotechar (str): Enclosing character del CSV (default: '"')
-            converters (dict): Funciones convertidoras para procesar los datos
-                en lectura {"nombre_campo": funcion}
+            input_path (str): Ruta al CSV que se va a limpiar.
+            ignore_dups (bool): Ignora los duplicados en colunas
+            kwargs: todos los mismos argumentos que puede tomar `pandas.read_csv`
         """
-        encoding = encoding or self.INPUT_DEFAULT_ENCODING
-        sep = sep or self.INPUT_DEFAULT_SEPARATOR
-        quotechar = quotechar or self.INPUT_DEFAULT_QUOTECHAR
-        converters = converters or {}
-        file_format = input_path.split(".")[-1].lower()
-
+        default_args = {'encoding': self.INPUT_DEFAULT_ENCODING,
+                        'sep': self.INPUT_DEFAULT_SEPARATOR,
+                        'quotechar': self.INPUT_DEFAULT_QUOTECHAR
+                        }
+        default_args.update(kwargs)
         # chequea que no haya fields con nombre duplicado
         if not ignore_dups:
-            self._assert_no_duplicates(input_path, encoding=encoding, sep=sep,
-                                       quotechar=quotechar,
-                                       file_format=file_format)
+            self._assert_no_duplicates(input_path, encoding=default_args['encoding'],
+                                       sep=default_args['sep'],
+                                       quotechar=default_args['quotechar'])
+
+        print(kwargs)
 
         # lee el CSV a limpiar
         if file_format == "csv":
-            self.df = pd.read_csv(input_path, encoding=encoding, sep=sep,
-                                  quotechar=quotechar, converters=converters)
+            self.df = pd.read_csv(input_path, **default_args)
+
         # lee el XLSX a limpiar
         elif file_format == "xlsx":
-            self.df = pd.read_excel(input_path, converters=converters,
-                                    engine="xlrd")
+            self.df = pd.read_excel(input_path, engine="xlrd", **default_args)
+
         else:
             raise Exception(
                 "{} no es un formato soportado.".format(file_format))
@@ -181,7 +178,7 @@ Método que llamó al normalizador de campos: {}
     @staticmethod
     def _remove_line_breaks(value, replace_char=" "):
         if type(value) == unicode or type(value) == str:
-            return value.replace("\n", replace_char)
+            return unicode(value).replace('\n', replace_char)
         else:
             return value
 
@@ -216,7 +213,7 @@ Método que llamó al normalizador de campos: {}
 
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
-            separator=self.OUTPUT_SEPARATOR,
+            sep=self.OUTPUT_SEPARATOR,
             quotechar=self.OUTPUT_QUOTECHAR)
 
     def _update_series(self, field, new_series,
@@ -241,6 +238,9 @@ Método que llamó al normalizador de campos: {}
             pandas.DataFrame: Data frame con las columnas removidas.
         """
         field = self._normalize_field(field)
+        if field not in self.df.columns:
+            warnings.warn("No existe el campo '{}'".format(field))
+            return self.df
         removed_df = self.df.drop(field, axis=1)
 
         if inplace:

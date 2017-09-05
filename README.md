@@ -1,18 +1,18 @@
 data-cleaner
 ===
 
-[![Coverage Status](https://coveralls.io/repos/gobabiertoAR/data-cleaner/badge.svg?branch=master)](https://coveralls.io/r/gobabiertoAR/data-cleaner?branch=master)
-[![Build Status](https://travis-ci.org/gobabiertoAR/data-cleaner.svg?branch=master)](https://travis-ci.org/gobabiertoAR/data-cleaner)
+[![Coverage Status](https://coveralls.io/repos/github/datosgobar/data-cleaner/badge.svg?branch=master)](https://coveralls.io/github/datosgobar/data-cleaner?branch=master)
+[![Build Status](https://travis-ci.org/datosgobar/data-cleaner.svg?branch=master)](https://travis-ci.org/datosgobar/data-cleaner)
 [![PyPI](https://badge.fury.io/py/data-cleaner.svg)](http://badge.fury.io/py/data-cleaner)
-[![Stories in Ready](https://badge.waffle.io/gobabiertoAR/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/gobabiertoAR/data-cleaner)
+[![Stories in Ready](https://badge.waffle.io/datosgobar/data-cleaner.png?label=ready&title=Ready)](https://waffle.io/datosgobar/data-cleaner)
 [![Documentation Status](http://readthedocs.org/projects/data-cleaner/badge/?version=latest)](http://data-cleaner.readthedocs.org/en/latest/?badge=latest)
 
 
-Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/gobabiertoAR/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
+Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyGA](https://github.com/datosgobar/documentacion-estandares/tree/master/datos/limpieza) - Gobierno Abierto Argentina
 
 *Nota: Este paquete aún se encuentra en etapa temprana de desarrollo y la interface podría sufrir modificaciones significativas.*
 
-* Para referencia detallada de este paquete leer la [documentación] (http://data-cleaner.readthedocs.org/en/latest/) *
+* Para referencia detallada de este paquete leer la [documentación](http://data-cleaner.readthedocs.org/en/latest/) *
 
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -20,16 +20,37 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Instalación](#instalaci%C3%B3n)
-- [Uso](#uso)
+  - [Dependencias](#dependencias)
+  - [Tests](#tests)
+- [Uso de data-cleaner](#uso-de-data-cleaner)
+  - [Lista de reglas](#lista-de-reglas)
+  - [Métodos de limpieza](#m%C3%A9todos-de-limpieza)
+  - [Encoding del input, y otros](#encoding-del-input-y-otros)
 - [Limpieza automática](#limpieza-autom%C3%A1tica)
+  - [Formato del archivo limpio](#formato-del-archivo-limpio)
+  - [Nombres de los campos](#nombres-de-los-campos)
+  - [Saltos de línea](#saltos-de-l%C3%ADnea)
 - [Template de script de limpieza](#template-de-script-de-limpieza)
 - [Reglas de limpieza](#reglas-de-limpieza)
+  - [Renombrar columnas (*renombrar_columnas*)](#renombrar-columnas-renombrar_columnas)
+  - [Remover columnas (*remover_columnas*)](#remover-columnas-remover_columnas)
+  - [Capitalizar nombres propios (*nombre_propio*)](#capitalizar-nombres-propios-nombre_propio)
+  - [Dar formato a correo electrónico (*mail_format*)](#dar-formato-a-correo-electr%C3%B3nico-mail_format)
+  - [Normalizar strings (*string*)](#normalizar-strings-string)
+  - [Reemplazar listas de strings por valores predefinidos (*reemplazar*)](#reemplazar-listas-de-strings-por-valores-predefinidos-reemplazar)
+  - [Reemplazar partes de valores (substrings) por otros (*reemplazar_string*)](#reemplazar-partes-de-valores-substrings-por-otros-reemplazar_string)
+  - [Normalizar fecha completa (*fecha_completa*)](#normalizar-fecha-completa-fecha_completa)
+  - [Normalizar fecha simple (*fecha_simple*)](#normalizar-fecha-simple-fecha_simple)
+  - [Normalizar fecha separada en múltiples campos (*fecha_separada*)](#normalizar-fecha-separada-en-m%C3%BAltiples-campos-fecha_separada)
+  - [Separar campos mediante un separador simple (*string_simple_split*)](#separar-campos-mediante-un-separador-simple-string_simple_split)
+  - [Separar campos mediante una expresión regular (*string_regex_split*)](#separar-campos-mediante-una-expresi%C3%B3n-regular-string_regex_split)
+  - [Separar campos mediante una parsing expression grammar (*string_peg_split*)](#separar-campos-mediante-una-parsing-expression-grammar-string_peg_split)
+  - [Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)](#manipular-y-reemplazar-contenido-de-campos-mediante-una-expression-regular-string_regex_substitute)
+- [Contacto](#contacto)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Instalación
-
-Requiere tener **Python 2.7** instalado en el sistema. Si se va a instalar python desde cero, se recomienda instalar la distribución de **Anaconda** con Python 2.7, ya que viene con varias librerías preinstaladas.
 
 Para uso simple:
 ```
@@ -42,7 +63,17 @@ cd package_directory
 pip install -e .
 ```
 
-## Uso
+### Dependencias
+
+* Python 2.7
+
+Si se va a instalar python desde cero, se recomienda instalar la distribución de **Anaconda** con Python 2.7, ya que viene con varias librerías preinstaladas.
+
+### Tests
+
+`nosetests` en el root del repositorio clonado (sólo para desarrollo)
+
+## Uso de data-cleaner
 
 ### Lista de reglas
 
@@ -81,7 +112,7 @@ dc.df  # accede al DataFrame donde están los datos
 
 ### Métodos de limpieza
 
-Las reglas de limpieza del cleaner también se pueden utilizar como métodos individuales que devuelven una pandas.DataSeries o un pandas.DataFrame (en el caso en que el método genere múltiples columnas nuevas).
+Las reglas de limpieza del cleaner también se pueden utilizar como métodos individuales que devuelven una `pandas.DataSeries` o un `pandas.DataFrame (en el caso en que el método genere múltiples columnas nuevas).
 
 ```python
 dependencia_clean = dc.nombre_propio("dependencia")
@@ -127,13 +158,13 @@ print dc.df.dependencia
 Name: dependencia, dtype: object
 ```
 
-En todo momento se puede acceder al pandas.DataFrame que contiene la tabla de datos, donde se verán reflejados los cambios luego de aplicar métodos de limpieza con el parámetro `inplace=True`.
+En todo momento se puede acceder al `pandas.DataFrame` que contiene la tabla de datos, donde se verán reflejados los cambios luego de aplicar métodos de limpieza con el parámetro `inplace=True`.
 
 ```python
 dc.df  # accede al pandas.DataFrame del cleaner
 ```
 
-Para guardar el pandas.DataFrame en cualquier momento, probablemente luego de probar y aplicar algunas transformaciones.
+Para guardar el `pandas.DataFrame` en cualquier momento, probablemente luego de probar y aplicar algunas transformaciones.
 
 ```python
 dc.save(output_path)
@@ -143,7 +174,7 @@ El método `DataCleaner.save()` redirige al método `pandas.DataFrame.to_csv()`,
 
 ### Encoding del input, y otros
 
-Se asume que el input es un csv encodeado en *utf-8*, separado por comas y que usa comillas dobles para el enclosing. Si alguno de estos parámetros (especialmente el enconding) es diferente, debe especificarse.
+Se asume que el input es un csv codificado en *utf-8*, separado por comas y que usa comillas dobles para el _enclosing_. Si alguno de estos parámetros (especialmente el _encoding_) es diferente, debe especificarse.
 
 ```python
 dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
@@ -153,7 +184,7 @@ dc = DataCleaner("ugly.csv", encoding="latin1", sep=";", quotechar="'")
 
 ### Formato del archivo limpio
 
-Luego de la limpieza los datos se guardan siempre en un archivo *CSV*, encodeado en *utf-8* separado por *","* y usando *'"'* como caracter de citas.
+Luego de la limpieza, los datos se guardan siempre en un archivo *CSV*, codificado en *utf-8* separado por *","* y usando *'"'* como caracter de citas.
 
 ### Nombres de los campos
 
@@ -165,15 +196,17 @@ Los nombres de los campos se normalizan automáticamente. Sólo el uso de caract
 
 ### Saltos de línea
 
-No se permiten saltos de línea en los valores, al momento de crear un objeto DataCleaner se reemplazan todos los saltos de línea que estén dentro del caracter de enclosing (usualmente comillas dobles '"') por un espacio " ".
+No se permiten saltos de línea en los valores, al momento de crear un objeto ^DataCleaner^ se reemplazan todos los saltos de línea que estén dentro del caracter de _enclosing_ (usualmente comillas dobles '"') por un espacio " ".
 
-## Template de script de limpieza
+## Template de _script_ de limpieza
 
 Para realizar la limpieza de un archivo CSV de datos con `data-cleaner` se sugiere utilizar el [template de script de limpieza](templates/cleaning_script.py). Este permite correr la limpieza desde la línea de comandos e implementar pasos de limpieza personalizados que exceden las funcionalidades del paquete.
 
 ## Reglas de limpieza
 
-Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son (a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o (b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
+Son diccionarios cuyas *keys* son los nombres de las reglas de limpieza y cuyos *values* son: 
+(a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o 
+(b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.
 
 ### Renombrar columnas (*renombrar_columnas*)
 Renombra columnas de la tabla de datos. 
@@ -227,7 +260,7 @@ Se aplica a todos aquellos campos de datos que tengan nombres de personas. En el
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 * **lower_words**: Lista de palabras que deben mantenerse en minúsculas, sin aplicar capitalización (Default: ["el", "los", "la", "las", "de", "del", "en", "y"])
 
@@ -250,9 +283,9 @@ Argumentos opcionales:
 ]}
 ```
 
-### Dar formato a correo electronico (*mail_format*)
+### Dar formato a correo electrónico (*mail_format*)
 
-Parsea todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.
+Analiza todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.
 
 Argumentos opcionales:
 
@@ -283,9 +316,9 @@ Este algoritmo busca unificar la forma de escribir strings que contienen idénti
 
 Argumentos opcionales:
 
-* **sort_tokens**: False (default) para no ordenar las palabras al crear el fingerprint de un string. Esto ubicará a "Sol Geriatrico" y "Geriatrico Sol" en clusters separados, sin unificar el string en un sentido o en otro. Si se especifica True, ambos strings se reescribirían de una de las dos maneras.
-* **remove_duplicates**: False (default) para evitar remover tokens duplicados. Esto ubicará a "Sol Sol Geriatrico" en un cluster distinto a "Sol Geriatrico", sin elegir una forma de escribir el string para ambos casos. Si se especifica True, ambos strings se escribirían de una de las dos maneras.
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **sort_tokens**: `False` (default) para no ordenar las palabras al crear el _fingerprint_ de un string. Esto ubicará a "Sol Geriátrico" y "Geriátrico Sol" en clusters separados, sin unificar el _string_ en un sentido o en otro. Si se especifica `True`, ambos _strings_ se reescribirían de una de las dos maneras.
+* **remove_duplicates**: `False` (default) para evitar remover tokens duplicados. Esto ubicará a "Sol Sol Geriátrico" en un cluster distinto a "Sol Geriátrico", sin elegir una forma de escribir el _string_ para ambos casos. Si se especifica `True`, ambos _strings_ se escribirían de una de las dos maneras.
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 
 **Especificación:**
@@ -309,11 +342,11 @@ Argumentos opcionales:
 ```
 
 ### Reemplazar listas de strings por valores predefinidos (*reemplazar*)
-Reemplaza listas de strings por un valor predefinido que el usuario decide que representa a todas. Solo sirve para reemplazar valores **completos**
+Reemplaza listas de _strings_ por un valor predefinido que el usuario decide que representa a todas. Solo sirve para reemplazar valores **completos**
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 
 **Especificación:**
@@ -346,7 +379,7 @@ Reemplaza listas de substrings por otro substring. A diferencia del método *ree
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 
 **Especificación:**
@@ -378,11 +411,11 @@ Estandariza un campo **con fecha y hora** a su representación en el estándar I
 
 Ej.: **05-02-2016 14:53** a **2016-02-05T14:53:00-03:00**
 
-Para el parsing de fechas se utiliza la librería [*arrow*](http://crsmithdev.com/arrow/). En la regla debe especificarse el formato temporal en que la fecha está expresada en la tabla de datos original. El resultado siempre se convertirá a ISO 8601 cuando sea posible, ante cualquier error se dejará la celda vacía.
+Para el _parsing_ de fechas se utiliza la librería [*arrow*](http://crsmithdev.com/arrow/). En la regla debe especificarse el formato temporal en que la fecha está expresada en la tabla de datos original. El resultado siempre se convertirá a ISO 8601 cuando sea posible, ante cualquier error se dejará la celda vacía.
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 
 **Especificación:**
 
@@ -408,7 +441,7 @@ Ej.: **02-2016** a **2016-02**
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 
 **Especificación:**
 
@@ -433,7 +466,7 @@ Estandariza una fecha completa donde distintos componentes de la misma están se
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 
 **Especificación:**
 
@@ -453,11 +486,11 @@ Argumentos opcionales:
 ```
 
 ### Separar campos mediante un separador simple (*string_simple_split*)
-Separa strings de un campo en múltiples campos, mediante separadores simples.
+Separa _strings_ de un campo en múltiples campos, mediante separadores simples.
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 
 **Especificación:**
 
@@ -483,15 +516,15 @@ Argumentos opcionales:
 (NO IMPLEMENTADO)
 
 ### Separar campos mediante una parsing expression grammar (*string_peg_split*)
-Utiliza parsing expression grammars para separar strings de un campo en múltiples campos.
+Utiliza _parsing expression grammars_ para separar strings de un campo en múltiples campos.
 
 Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es [**parsley**](http://parsley.readthedocs.org/en/latest/reference.html).
 
-Todas las PEG que se escriban para este paquete, deben contener una regla `values` cuyo output sea una lista de los valores que se quiere extraer. Cuando la PEG utilizada falle, el paquete dejará un valor nulo para esa celda.
+Todas las PEG que se escriban para este paquete, deben contener una regla `values` cuyo _output_ sea una lista de los valores que se quiere extraer. Cuando la PEG utilizada falle, el paquete dejará un valor nulo para esa celda.
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 
 **Especificación:**
 
@@ -525,12 +558,12 @@ Argumentos opcionales:
 ]}
 ```
 
-### Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)
+### Manipular y reemplazar contenido de campos mediante una expresión regular (*string_regex_substitute*)
 Es análogo al método sub de la libreria de python [**re**](https://docs.python.org/2/library/re.html#re.sub).
 
 Argumentos opcionales:
 
-* **keep_original**: True para conservar la columna original / False para removerla (Default: False)
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: False)
 * **sufix**: Sufijo para agregar a la nueva columna limpia (Default: "clean")
 
 **Especificación:**
@@ -556,11 +589,17 @@ Reemplaza punto y comas por comas:
     "regex_str_sub": ","}
 ]}
 
-Cambia el orden de una cadena entre parentesis:
+Cambia el orden de una cadena entre paréntesis:
 {"string_regex_substitute":[
 	{"field": "nombre_cargo",
     "regex_str_match": "(?P<cargo>\(.+\))(?P<nombre>.+)",
     "regex_str_sub": "\g<nombre> \g<cargo>"}
 ]}
-"(presidente)Juan Jose Perez."  pasaría a ser "Juan Jose Perez. (presidente)"
+"(presidente)Juan José Perez." pasaría a ser "Juan José Perez. (presidente)"
 ```
+
+## Contacto
+
+Te invitamos a [creanos un issue](https://github.com/datosgobar/data-cleaner/issues/new?title=Encontre un bug en data-cleaner) en caso de que encuentres algún bug o tengas feedback de alguna parte de `data-cleaner`.
+
+Para todo lo demás, podés mandarnos tu comentario o consulta a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar).

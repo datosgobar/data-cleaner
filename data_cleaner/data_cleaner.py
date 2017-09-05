@@ -64,6 +64,7 @@ class DataCleaner(object):
             'quotechar': self.INPUT_DEFAULT_QUOTECHAR
         }
         default_args.update(kwargs)
+
         # chequea que no haya fields con nombre duplicado
         if not ignore_dups and input_path.endswith('.csv'):
             self._assert_no_duplicates(input_path,
@@ -76,8 +77,17 @@ class DataCleaner(object):
         if input_path.endswith('.shp'):
             self.df = gpd.read_file(input_path,
                                     encoding=default_args['encoding'])
-        else:
+        # lee el CSV a limpiar
+        elif input_path.endswith('.csv'):
             self.df = pd.read_csv(input_path, **default_args)
+
+        # lee el XLSX a limpiar
+        elif input_path.endswith('.xlsx'):
+            self.df = pd.read_excel(input_path, engine="xlrd", **default_args)
+
+        else:
+            raise Exception(
+                "{} no es un formato soportado.".format(file_format))
 
         # limpieza automática
         # normaliza los nombres de los campos
@@ -92,17 +102,23 @@ class DataCleaner(object):
 
         self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
 
-    def _assert_no_duplicates(self, csv_path, encoding, sep, quotechar):
-        with open(csv_path, 'r') as csvfile:
-            reader = unicodecsv.reader(csvfile,
-                                       encoding=encoding,
-                                       delimiter=sep,
-                                       quotechar=quotechar)
-            fields = reader.next()
+    def _assert_no_duplicates(self, input_path, encoding, sep, quotechar):
 
-            for col in fields:
-                if fields.count(col) > 1:
-                    raise DuplicatedField(col)
+        if input_path.endswith('.csv'):
+            with open(input_path, 'r') as csvfile:
+                reader = unicodecsv.reader(csvfile,
+                                           encoding=encoding,
+                                           delimiter=sep,
+                                           quotechar=quotechar)
+                fields = reader.next()
+
+                for col in fields:
+                    if fields.count(col) > 1:
+                        raise DuplicatedField(col)
+
+        # TODO: Implementar chequeo de que no hay duplicados para XLSX
+        elif input_path.endswith('.xlsx'):
+            pass
 
     def _normalize_fields(self, fields):
         return [self._normalize_field(field) for field in fields]
@@ -400,6 +416,7 @@ Método que llamó al normalizador de campos: {}
         series = self.df[field]
 
         for new_value, old_values in replacements.iteritems():
+            # for old_value in sorted(old_values, key=len, reverse=True):
             for old_value in old_values:
                 replace_function = partial(self._safe_replace,
                                            old_value=old_value,

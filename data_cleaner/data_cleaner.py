@@ -248,12 +248,6 @@ Método que llamó al normalizador de campos: {}
             features = json.loads(self.df.geometry.to_json())['features']
             geometries = [feature['geometry'] for feature in features]
 
-            # TODO: temporal
-            # for geometry in geometries:
-            #     geometry["type"] = "MultiPolygon"
-            #     geometry["coordinates"] = [geometry["coordinates"]]
-            # TODO: temporal
-
             # convierte cada geometría en un string JSON válido
             self.df[geometry_name] = [json.dumps(geometry)
                                       for geometry in geometries]

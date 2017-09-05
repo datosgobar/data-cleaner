@@ -159,7 +159,6 @@ Name: dependencia, dtype: object
 ```
 
 En todo momento se puede acceder al `pandas.DataFrame` que contiene la tabla de datos, donde se verán reflejados los cambios luego de aplicar métodos de limpieza con el parámetro `inplace=True`.
-
 Cuando se carga un archivo `.shp` al `DataCleaner`, éste contiene un objeto `geopandas.GeoDataFrame`, que extiende la funcionalidad de `pandas` para trabajar con geometrías.
 
 ```python

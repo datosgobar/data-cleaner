@@ -202,10 +202,21 @@ Método que llamó al normalizador de campos: {}
 
         El CSV se guarda codificado en UTF-8, separado con "," y usando '"'
         comillas dobles como caracter de enclosing."""
+
         if isinstance(self.df, gpd.GeoDataFrame):
             features = json.loads(self.df.geometry.to_json())['features']
-            geometries = [feature['geometry'] for feature in features]
-            self.df[geometry_name] = geometries
+            geometries = [feature['geometry']for feature in features]
+
+            # TODO: temporal
+            # for geometry in geometries:
+            #     geometry["type"] = "MultiPolygon"
+            #     geometry["coordinates"] = [geometry["coordinates"]]
+            # TODO: temporal
+
+            # convierte cada geometría en un string JSON válido
+            self.df[geometry_name] = [json.dumps(geometry)
+                                      for geometry in geometries]
+
             del self.df['geometry']
 
         self.df.set_index(self.df.columns[0]).to_csv(

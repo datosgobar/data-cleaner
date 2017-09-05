@@ -2,6 +2,12 @@
 History
 =======
 
+0.1.19 (2017-9-5)
+------------------
+
+* Se agrega funcionalidad para leer archivos geográficos (SHP) y guardarlos en CSV con una columna GEOJSON, principalmente para compatibilidad con CKAN. Se lee la proyección en el .prj (si este existe) y se re-proyecta por default a EPSG 4326, salvo se especifique lo contrario.
+* Se agrega capacidad de leer archivos excel en XLSX.
+
 0.1.18 (2016-4-30)
 ------------------
 

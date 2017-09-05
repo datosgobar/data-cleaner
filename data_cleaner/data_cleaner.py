@@ -11,6 +11,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import with_statement
 import pandas as pd
+import geopandas as gpd
+import pycrs
+import json
 from dateutil import tz
 import arrow
 import parsley
@@ -56,30 +59,48 @@ class DataCleaner(object):
             ignore_dups (bool): Ignora los duplicados en colunas
             kwargs: todos los mismos argumentos que puede tomar `pandas.read_csv`
         """
-        default_args = {'encoding': self.INPUT_DEFAULT_ENCODING,
-                        'sep': self.INPUT_DEFAULT_SEPARATOR,
-                        'quotechar': self.INPUT_DEFAULT_QUOTECHAR
-                        }
+        default_args = {
+            'encoding': self.INPUT_DEFAULT_ENCODING,
+            'sep': self.INPUT_DEFAULT_SEPARATOR,
+            'quotechar': self.INPUT_DEFAULT_QUOTECHAR
+        }
         default_args.update(kwargs)
+
         # chequea que no haya fields con nombre duplicado
-        if not ignore_dups:
-            self._assert_no_duplicates(input_path, encoding=default_args['encoding'],
+        if not ignore_dups and input_path.endswith('.csv'):
+            self._assert_no_duplicates(input_path,
+                                       encoding=default_args['encoding'],
                                        sep=default_args['sep'],
                                        quotechar=default_args['quotechar'])
 
-        print(kwargs)
+        # lee el SHP a limpiar
+        if input_path.endswith('.shp'):
+            self.df = gpd.read_file(
+                input_path,
+                encoding=default_args['encoding']
+            )
+
+            # lee la proyección del .prj, si puede
+            try:
+                projection_path = input_path.replace('.shp', '.prj')
+                self.source_crs = pycrs.loader.from_file(
+                    projection_path).to_proj4()
+            except Exception as e:
+                print(e)
+                self.source_crs = self.df.crs
 
         # lee el CSV a limpiar
-        if file_format == "csv":
+        elif input_path.endswith('.csv'):
             self.df = pd.read_csv(input_path, **default_args)
 
         # lee el XLSX a limpiar
-        elif file_format == "xlsx":
+        elif input_path.endswith('.xlsx'):
             self.df = pd.read_excel(input_path, engine="xlrd", **default_args)
 
         else:
             raise Exception(
-                "{} no es un formato soportado.".format(file_format))
+                "{} no es un formato soportado.".format(
+                    input_path.split(".")[-1]))
 
         # limpieza automática
         # normaliza los nombres de los campos
@@ -94,10 +115,10 @@ class DataCleaner(object):
 
         self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
 
-    def _assert_no_duplicates(self, csv_path, encoding, sep, quotechar,
-                              file_format):
-        if file_format == "csv":
-            with open(csv_path, 'r') as csvfile:
+    def _assert_no_duplicates(self, input_path, encoding, sep, quotechar):
+
+        if input_path.endswith('.csv'):
+            with open(input_path, 'r') as csvfile:
                 reader = unicodecsv.reader(csvfile,
                                            encoding=encoding,
                                            delimiter=sep,
@@ -109,7 +130,7 @@ class DataCleaner(object):
                         raise DuplicatedField(col)
 
         # TODO: Implementar chequeo de que no hay duplicados para XLSX
-        elif file_format == "xlsx":
+        elif input_path.endswith('.xlsx'):
             pass
 
     def _normalize_fields(self, fields):
@@ -205,11 +226,33 @@ Método que llamó al normalizador de campos: {}
         self.clean(rules)
         self.save(output_path)
 
-    def save(self, output_path):
+    def save(self, output_path, geometry_name='geojson',
+             geometry_crs='epsg:4326'):
         """Guarda los datos en un nuevo CSV con formato estándar.
 
         El CSV se guarda codificado en UTF-8, separado con "," y usando '"'
         comillas dobles como caracter de enclosing."""
+
+        if isinstance(self.df, gpd.GeoDataFrame):
+
+            # convierte la proyección, si puede
+            if geometry_crs:
+                try:
+                    self.df.crs = self.source_crs
+                    self.df = self.df.to_crs({'init': geometry_crs})
+                except Exception as e:
+                    print(e)
+                    print("Se procede sin re-proyectar las coordenadas.")
+
+            # convierte la geometría a GeoJson
+            features = json.loads(self.df.geometry.to_json())['features']
+            geometries = [feature['geometry'] for feature in features]
+
+            # convierte cada geometría en un string JSON válido
+            self.df[geometry_name] = [json.dumps(geometry)
+                                      for geometry in geometries]
+
+            del self.df['geometry']
 
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,

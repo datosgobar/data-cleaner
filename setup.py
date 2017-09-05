@@ -33,19 +33,19 @@ test_requirements = [
 ]
 
 setup(
-    name='data-cleaner',
+    name='data_cleaner',
     version='0.1.18',
     description="Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina",
     long_description=readme + '\n\n' + history,
-    author="Gobierno Abierto Argentina",
-    author_email='',
-    url='https://github.com/gobabiertoAR/data-cleaner',
+    author="Datos Argentina",
+    author_email='datos@modernizacion.gob.ar',
+    url='https://github.com/datosgobar/data-cleaner',
     packages=[
-        'data_cleaner',
-        'tests'
+        'data_cleaner'
     ],
-    package_dir={'data-cleaner': 'data-cleaner',
-                 'tests': 'tests'},
+    package_dir={
+        'data_cleaner': 'data_cleaner'
+    },
     include_package_data=True,
     install_requires=requirements,
     license="ISCL",

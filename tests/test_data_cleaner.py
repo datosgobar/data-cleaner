@@ -412,6 +412,29 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         print(series)
         exp = list(df["lugar_audiencia"])
         self.assertEqual(res, exp)
+    
+    def test_simplify_geometry(self):
+        input_path = BASE_DIR + '/input/localidades/localidades.shp'
+        original = BASE_DIR + '/output/localidades-original.csv'
+        simplified = BASE_DIR + '/output/localidades-simplificado.csv'
+        
+        dc = DataCleaner(input_path)
+        dc.save(original)  # CSV con geometría original.
+        dc = DataCleaner(input_path)
+        dc.simplificar_geometria()
+        dc.save(simplified)  # CSV con geometría simplificada.
+
+        import filecmp
+        files_are_equal = filecmp.cmp(original, simplified, shallow=False)
+        self.assertFalse(files_are_equal)
+
+    def test_simplify_non_geodataframe_object(self):
+        # Genera un DataFrame sin geometría, para producir un error de tipo.
+        input_path = get_input("nombre_propio")
+        dc = DataCleaner(input_path)
+        # simplificar_geometria() opera con objetos GeoDataFrame.
+        nose.tools.assert_raises(TypeError, dc.simplificar_geometria)
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

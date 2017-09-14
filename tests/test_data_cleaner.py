@@ -415,13 +415,18 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
     
     def test_simplify_geometry(self):
         input_path = BASE_DIR + '/input/localidades/localidades.shp'
-        dc = DataCleaner(input_path)
+        original = BASE_DIR + '/output/localidades-original.csv'
+        simplified = BASE_DIR + '/output/localidades-simplificado.csv'
         
-        simplified = dc.simplificar_geometria()
+        dc = DataCleaner(input_path)
+        dc.save(original)  # CSV con geometría original.
+        dc = DataCleaner(input_path)
+        dc.simplificar_geometria()
+        dc.save(simplified)  # CSV con geometría simplificada.
 
-        # Comprobar de manera indirecta, tal vez por tamaño de archivo transformado.
-        # self.assertFalse(dc.df.geometry.geom_almost_equals(simpler_geometries.geometry))
-        # no funciona porque opera sobre toda la serie y el "valor de verdad" es ambiguo.
+        import filecmp
+        files_are_equal = filecmp.cmp(original, simplified, shallow=False)
+        self.assertFalse(files_are_equal)
 
     def test_simplify_non_geodataframe_object(self):
         # Genera un DataFrame sin geometría, para producir un error de tipo.

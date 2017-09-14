@@ -690,7 +690,9 @@ Método que llamó al normalizador de campos: {}
         return replaced
 
     def simplificar_geometria(self, tolerance=0.5):
-        """Regla para simplificar una geometría.
+        """Simplifica una geometría para que resulte
+           en un objeto de menor tamaño y complejidad,
+           que a la vez retenga sus características esenciales.
 
         Args:
             tolerance (float): Nivel de tolerancia en la transformación.

@@ -605,6 +605,26 @@ Cambia el orden de una cadena entre paréntesis:
 "(presidente)Juan José Perez." pasaría a ser "Juan José Perez. (presidente)"
 ```
 
+### Simplificar un objeto con datos de geometría (líneas, polígonos, etc.)
+Simplifica una geometría para que resulte en un objeto de menor tamaño
+y complejidad, que a la vez retenga sus características esenciales.
+
+**Especificación:**
+
+```python
+{"simplificar_geometria": [
+    {"tolerance": nivel}
+]}
+```
+
+**Ejemplos:**
+
+```python
+{"simplificar_geometria": [
+    {"tolerance": 0.5}
+]}
+```
+
 ## Contacto
 
 Te invitamos a [creanos un issue](https://github.com/datosgobar/data-cleaner/issues/new?title=Encontre un bug en data-cleaner) en caso de que encuentres algún bug o tengas feedback de alguna parte de `data-cleaner`.

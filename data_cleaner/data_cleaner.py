@@ -688,3 +688,18 @@ Método que llamó al normalizador de campos: {}
                                 new_series=replaced)
 
         return replaced
+
+    def simplificar_geometria(self, tolerance=0.5):
+        """Regla para simplificar una geometría.
+
+        Args:
+            tolerance (float): Nivel de tolerancia en la transformación.
+
+        Returns:
+            pandas.Series: Serie de geometrías.
+        """
+        if isinstance(self.df, gpd.GeoDataFrame):
+            self.df.geometry = self.df.geometry.simplify(tolerance)
+            return self.df.geometry
+        else:
+            raise TypeError('El dataframe no es de tipo GeoDataFrame.')

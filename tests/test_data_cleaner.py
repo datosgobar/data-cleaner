@@ -14,7 +14,7 @@ import unittest
 import nose
 import os
 import pandas as pd
-
+import geopandas as gpd
 from data_cleaner import DataCleaner
 from data_cleaner.data_cleaner import DuplicatedField
 from rules.integration import rules
@@ -76,16 +76,25 @@ class DataCleanerIntegrationTestCase(unittest.TestCase):
 
 class DataCleanerShapefileConversionTestCase(unittest.TestCase):
     """Testea la conversión de archivos Shapefile a CSV."""
+    input_path = BASE_DIR + '/input/localidades/localidades.shp'
 
-    def test_shapefile_to_csv_conversion(self):
-        input_path = BASE_DIR + '/input/localidades/localidades.shp'
+    def test_shapefile_to_csv(self):
         output_path = BASE_DIR + '/output/localidades.csv'
         
-        dc = DataCleaner(input_path)
+        dc = DataCleaner(self.input_path)
         dc.save(output_path)
 
         csv_df = pd.read_csv(output_path)
         self.assertEqual(set(csv_df.columns), set(dc.df.columns))
+
+    def test_shapefile_to_geojson(self):
+        output_path = BASE_DIR + '/output/localidades.geojson'
+        
+        dc = DataCleaner(self.input_path)
+        dc.save(output_path)
+
+        geojson_df = gpd.read_file(output_path, driver='GeoJSON')
+        self.assertEqual(set(geojson_df.columns), set(dc.df.columns))
 
 
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):

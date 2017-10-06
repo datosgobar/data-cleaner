@@ -75,12 +75,12 @@ class DataCleanerIntegrationTestCase(unittest.TestCase):
 
 
 class DataCleanerShapefileConversionTestCase(unittest.TestCase):
-    """Testea la conversión de archivos Shapefile a CSV."""
+    """Testea la conversión de archivos Shapefile a otros formatos."""
     input_path = BASE_DIR + '/input/localidades/localidades.shp'
 
     def test_shapefile_to_csv(self):
         output_path = BASE_DIR + '/output/localidades.csv'
-        
+
         dc = DataCleaner(self.input_path)
         dc.save(output_path)
 
@@ -89,12 +89,20 @@ class DataCleanerShapefileConversionTestCase(unittest.TestCase):
 
     def test_shapefile_to_geojson(self):
         output_path = BASE_DIR + '/output/localidades.geojson'
-        
+
         dc = DataCleaner(self.input_path)
         dc.save(output_path)
 
         geojson_df = gpd.read_file(output_path, driver='GeoJSON')
         self.assertEqual(set(geojson_df.columns), set(dc.df.columns))
+
+    def test_shapefile_to_kml(self):
+        output_path = BASE_DIR + '/output/localidades.kml'
+
+        dc = DataCleaner(self.input_path)
+        dc.save(output_path)
+
+        assert os.path.isfile(output_path)
 
 
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):

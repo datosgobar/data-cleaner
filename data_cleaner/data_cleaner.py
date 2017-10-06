@@ -21,7 +21,9 @@ from unidecode import unidecode
 import unicodecsv
 import warnings
 import inspect
+import os
 import re
+import subprocess
 from functools import partial
 
 from fingerprint_keyer import group_fingerprint_strings
@@ -246,15 +248,25 @@ Método que llamó al normalizador de campos: {}
             if output_path.endswith('.csv'):
                 self._set_json_geometry(geometry_name)
   
-            # Guarda el archivo en formato GeoJSON.
+            # Guarda el archivo en formato GeoJSON o KML.
             if output_path.endswith('json'):  # Acepta .json y .geojson.
                 self.df.to_file(output_path, driver='GeoJSON')
+                return
+            elif output_path.endswith('kml'):
+                self._save_to_kml(output_path)
                 return
 
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
             sep=self.OUTPUT_SEPARATOR,
             quotechar=self.OUTPUT_QUOTECHAR)
+
+    def _save_to_kml(self, output_path):
+        aux_file = output_path + '.json'
+        self.df.to_file(aux_file, driver='GeoJSON')
+        command = 'ogr2ogr -f KML {} {}'.format(output_path, aux_file)
+        subprocess.call(command, shell=True)
+        os.remove(aux_file)
 
     def _set_json_geometry(self, geometry_name):
         """Transforma la geometría del GeoDataFrame a formato JSON."""

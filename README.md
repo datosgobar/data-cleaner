@@ -170,13 +170,14 @@ Para guardar el `pandas.DataFrame` en cualquier momento, probablemente luego de 
 ```python
 dc.save(output_path)
 ```
-Si se trata de un `GeoDataFrame`, puede guardarse el archivo en formatos **CSV** y **GeoJSON**.
+Si se trata de un `GeoDataFrame`, puede guardarse el archivo en formatos **CSV**, **GeoJSON**, y **KML**.
 Para CSVs, se puede especificar el nombre para la columna de geometría con un argumento opcional. El nombre por defecto es "geojson".
 
 ```python
 dc = DataCleaner('samples/provincias/provincias.shp')
-dc.save('provincias.csv', geometry_name='geojson')  # Guarda un CSV con columna de geometría.
-dc.save('provincias.geojson') o dc.save('provincias.json')  # Guarda un GeoJSON.
+dc.save('provincias.csv', geometry_name='geojson')  # Guarda un archivo CSV con columna de geometría.
+dc.save('provincias.geojson') o dc.save('provincias.json')  # Guarda un archivo GeoJSON.
+dc.save('provincias.kml')  # Guarda un archivo KML.
 ```
 
 El método `DataCleaner.save()` redirige al método `pandas.DataFrame.to_csv()`, y por lo tanto tienen los mismos argumentos.

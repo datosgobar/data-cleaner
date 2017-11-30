@@ -102,7 +102,7 @@ class DataCleanerShapefileConversionTestCase(unittest.TestCase):
         dc = DataCleaner(self.input_path)
         dc.save(output_path)
 
-        assert os.path.isfile(output_path)
+        assert os.path.exists(output_path)
 
 
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):

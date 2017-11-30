@@ -21,7 +21,9 @@ from unidecode import unidecode
 import unicodecsv
 import warnings
 import inspect
+import os
 import re
+import subprocess
 from functools import partial
 
 from fingerprint_keyer import group_fingerprint_strings
@@ -234,8 +236,7 @@ Método que llamó al normalizador de campos: {}
         comillas dobles como caracter de enclosing."""
 
         if isinstance(self.df, gpd.GeoDataFrame):
-
-            # convierte la proyección, si puede
+            # Convierte la proyección, si puede.
             if geometry_crs:
                 try:
                     self.df.crs = self.source_crs
@@ -243,21 +244,39 @@ Método que llamó al normalizador de campos: {}
                 except Exception as e:
                     print(e)
                     print("Se procede sin re-proyectar las coordenadas.")
-
-            # convierte la geometría a GeoJson
-            features = json.loads(self.df.geometry.to_json())['features']
-            geometries = [feature['geometry'] for feature in features]
-
-            # convierte cada geometría en un string JSON válido
-            self.df[geometry_name] = [json.dumps(geometry)
-                                      for geometry in geometries]
-
-            del self.df['geometry']
+            
+            if output_path.endswith('.csv'):
+                self._set_json_geometry(geometry_name)
+  
+            # Guarda el archivo en formato GeoJSON o KML.
+            if output_path.endswith('json'):  # Acepta .json y .geojson.
+                self.df.to_file(output_path, driver='GeoJSON')
+                return
+            elif output_path.endswith('kml'):
+                self._save_to_kml(output_path)
+                return
 
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
             sep=self.OUTPUT_SEPARATOR,
             quotechar=self.OUTPUT_QUOTECHAR)
+
+    def _save_to_kml(self, output_path):
+        aux_file = output_path + '.json'
+        self.df.to_file(aux_file, driver='GeoJSON')
+        command = 'ogr2ogr -f KML {} {}'.format(output_path, aux_file)
+        subprocess.call(command, shell=True)
+        os.remove(aux_file)
+
+    def _set_json_geometry(self, geometry_name):
+        """Transforma la geometría del GeoDataFrame a formato JSON."""
+        geojson = self.df.geometry.to_json()
+        features = json.loads(geojson)['features']
+        geometries = [feature['geometry'] for feature in features]
+        # Convierte cada geometría en un string JSON válido.
+        self.df[geometry_name] = [json.dumps(geometry)
+                                  for geometry in geometries]
+        del self.df['geometry']
 
     def _update_series(self, field, new_series,
                        keep_original=False, prefix=None, sufix=None):

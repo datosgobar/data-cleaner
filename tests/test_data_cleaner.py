@@ -102,7 +102,9 @@ class DataCleanerShapefileConversionTestCase(unittest.TestCase):
         dc = DataCleaner(self.input_path)
         dc.save(output_path)
 
-        assert os.path.exists(output_path)
+        with open(output_path) as kml_file:
+            kml = kml_file.read()
+            assert kml.startswith('<?xml version="1.0" encoding="utf-8" ?>')
 
 
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):

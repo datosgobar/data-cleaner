@@ -54,12 +54,12 @@ class DataCleaner(object):
     DEFAULT_SUFIX = "normalizado"
 
     def __init__(self, input_path, ignore_dups=False, **kwargs):
-        """Carga un CSV a limpiar en un DataFrame, normalizando sus columnas.
+        """Carga datos a limpiar en un DataFrame, normalizando sus columnas.
 
         Args:
-            input_path (str): Ruta al CSV que se va a limpiar.
+            input_path (str): Ruta al archivo que se va a limpiar.
             ignore_dups (bool): Ignora los duplicados en colunas
-            kwargs: todos los mismos argumentos que puede tomar `pandas.read_csv`
+            kwargs: Todos los argumentos que puede tomar `pandas.read_csv`
         """
         default_args = {
             'encoding': self.INPUT_DEFAULT_ENCODING,

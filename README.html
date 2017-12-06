@@ -1,0 +1,692 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>data-cleaner &#8212; documentación de data-cleaner - 0.1.15</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.15',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="Referencia de la API" href="data_cleaner.html" />
+    <link rel="prev" title="Documentación de data-cleaner" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="data-cleaner">
+<span id="data-cleaner"></span><h1>data-cleaner<a class="headerlink" href="#data-cleaner" title="Enlazar permanentemente con este título">¶</a></h1>
+<p><a class="reference external" href="https://coveralls.io/github/datosgobar/data-cleaner?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/datosgobar/data-cleaner/badge.svg?branch=master" /></a>
+<a class="reference external" href="https://travis-ci.org/datosgobar/data-cleaner"><img alt="Build Status" src="https://travis-ci.org/datosgobar/data-cleaner.svg?branch=master" /></a>
+<a class="reference external" href="http://badge.fury.io/py/data-cleaner"><img alt="PyPI" src="https://badge.fury.io/py/data-cleaner.svg" /></a>
+<a class="reference external" href="https://waffle.io/datosgobar/data-cleaner"><img alt="Stories in Ready" src="https://badge.waffle.io/datosgobar/data-cleaner.png?label=ready&amp;title=Ready" /></a>
+<a class="reference external" href="http://data-cleaner.readthedocs.org/en/latest/?badge=latest"><img alt="Documentation Status" src="http://readthedocs.org/projects/data-cleaner/badge/?version=latest" /></a></p>
+<p>Paquete para limpieza de datos, según los <a class="reference external" href="https://github.com/datosgobar/documentacion-estandares/tree/master/datos/limpieza">estándares de limpieza de la SSIPyGA</a> - Gobierno Abierto Argentina</p>
+<p><em>Nota: Este paquete aún se encuentra en etapa temprana de desarrollo y la interface podría sufrir modificaciones significativas.</em></p>
+<ul class="simple">
+<li>Para referencia detallada de este paquete leer la <a class="reference external" href="http://data-cleaner.readthedocs.org/en/latest/">documentación</a> *</li>
+</ul>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*<ul class="simple">
+<li><a class="reference external" href="#instalaci%C3%B3n">Instalación</a><ul>
+<li><a class="reference external" href="#dependencias">Dependencias</a></li>
+<li><a class="reference external" href="#tests">Tests</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#uso-de-data-cleaner">Uso de data-cleaner</a><ul>
+<li><a class="reference external" href="#lista-de-reglas">Lista de reglas</a></li>
+<li><a class="reference external" href="#m%C3%A9todos-de-limpieza">Métodos de limpieza</a></li>
+<li><a class="reference external" href="#encoding-del-input-y-otros">Encoding del input, y otros</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#limpieza-autom%C3%A1tica">Limpieza automática</a><ul>
+<li><a class="reference external" href="#formato-del-archivo-limpio">Formato del archivo limpio</a></li>
+<li><a class="reference external" href="#nombres-de-los-campos">Nombres de los campos</a></li>
+<li><a class="reference external" href="#saltos-de-l%C3%ADnea">Saltos de línea</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#template-de-script-de-limpieza">Template de script de limpieza</a></li>
+<li><a class="reference external" href="#reglas-de-limpieza">Reglas de limpieza</a><ul>
+<li><a class="reference external" href="#renombrar-columnas-renombrar_columnas">Renombrar columnas (<em>renombrar_columnas</em>)</a></li>
+<li><a class="reference external" href="#remover-columnas-remover_columnas">Remover columnas (<em>remover_columnas</em>)</a></li>
+<li><a class="reference external" href="#capitalizar-nombres-propios-nombre_propio">Capitalizar nombres propios (<em>nombre_propio</em>)</a></li>
+<li><a class="reference external" href="#dar-formato-a-correo-electr%C3%B3nico-mail_format">Dar formato a correo electrónico (<em>mail_format</em>)</a></li>
+<li><a class="reference external" href="#normalizar-strings-string">Normalizar strings (<em>string</em>)</a></li>
+<li><a class="reference external" href="#reemplazar-listas-de-strings-por-valores-predefinidos-reemplazar">Reemplazar listas de strings por valores predefinidos (<em>reemplazar</em>)</a></li>
+<li><a class="reference external" href="#reemplazar-partes-de-valores-substrings-por-otros-reemplazar_string">Reemplazar partes de valores (substrings) por otros (<em>reemplazar_string</em>)</a></li>
+<li><a class="reference external" href="#normalizar-fecha-completa-fecha_completa">Normalizar fecha completa (<em>fecha_completa</em>)</a></li>
+<li><a class="reference external" href="#normalizar-fecha-simple-fecha_simple">Normalizar fecha simple (<em>fecha_simple</em>)</a></li>
+<li><a class="reference external" href="#normalizar-fecha-separada-en-m%C3%BAltiples-campos-fecha_separada">Normalizar fecha separada en múltiples campos (<em>fecha_separada</em>)</a></li>
+<li><a class="reference external" href="#separar-campos-mediante-un-separador-simple-string_simple_split">Separar campos mediante un separador simple (<em>string_simple_split</em>)</a></li>
+<li><a class="reference external" href="#separar-campos-mediante-una-expresi%C3%B3n-regular-string_regex_split">Separar campos mediante una expresión regular (<em>string_regex_split</em>)</a></li>
+<li><a class="reference external" href="#separar-campos-mediante-una-parsing-expression-grammar-string_peg_split">Separar campos mediante una parsing expression grammar (<em>string_peg_split</em>)</a></li>
+<li><a class="reference external" href="#manipular-y-reemplazar-contenido-de-campos-mediante-una-expression-regular-string_regex_substitute">Manipular y reemplazar contenido de campos mediante una expression regular (<em>string_regex_substitute</em>)</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#contacto">Contacto</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update --><div class="section" id="instalacion">
+<span id="instalacion"></span><h2>Instalación<a class="headerlink" href="#instalacion" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Para uso simple:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">data_cleaner</span>
+</pre></div>
+</div>
+<p>Para desarrollo:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">package_directory</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+<div class="section" id="dependencias">
+<span id="dependencias"></span><h3>Dependencias<a class="headerlink" href="#dependencias" title="Enlazar permanentemente con este título">¶</a></h3>
+<ul class="simple">
+<li>Python 2.7</li>
+</ul>
+<p>Si se va a instalar python desde cero, se recomienda instalar la distribución de <strong>Anaconda</strong> con Python 2.7, ya que viene con varias librerías preinstaladas.</p>
+</div>
+<div class="section" id="tests">
+<span id="tests"></span><h3>Tests<a class="headerlink" href="#tests" title="Enlazar permanentemente con este título">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">nosetests</span></code> en el root del repositorio clonado (sólo para desarrollo)</p>
+</div>
+</div>
+<div class="section" id="uso-de-data-cleaner">
+<span id="uso-de-data-cleaner"></span><h2>Uso de data-cleaner<a class="headerlink" href="#uso-de-data-cleaner" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="lista-de-reglas">
+<span id="lista-de-reglas"></span><h3>Lista de reglas<a class="headerlink" href="#lista-de-reglas" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Se puede limpiar un CSV a través de una <strong>lista de reglas</strong>. El siguiente ejemplo toma un csv, capitaliza todos los strings en la columna &quot;dependencia&quot; y convierte todas las fechas de la columna &quot;fecha_completa_audiencia&quot; que sigan el formato <em>19-02-2016 09:11</em> al estándar ISO 8601 <em>2016-02-19T09:11:00-03:00</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">data_cleaner</span> <span class="kn">import</span> <span class="n">DataCleaner</span>
+
+<span class="n">input_path</span> <span class="o">=</span> <span class="s2">&quot;samples/example.csv&quot;</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="s2">&quot;samples/clean_example.csv&quot;</span>
+
+<span class="n">rules</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;nombre_propio&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;dependencia&quot;</span><span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;fecha_completa&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;fecha_completa_audiencia&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;time_format&quot;</span><span class="p">:</span> <span class="s2">&quot;DD-MM-YYYY HH:mm&quot;</span><span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+
+<span class="n">dc</span> <span class="o">=</span> <span class="n">DataCleaner</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
+<span class="n">dc</span><span class="o">.</span><span class="n">clean_file</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>También se pueden limpiar los datos sin guardar el csv, para analizarlos en memoria.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">dc</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span>
+<span class="n">dc</span><span class="o">.</span><span class="n">df</span>  <span class="c1"># accede al DataFrame donde están los datos</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="metodos-de-limpieza">
+<span id="metodos-de-limpieza"></span><h3>Métodos de limpieza<a class="headerlink" href="#metodos-de-limpieza" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Las reglas de limpieza del cleaner también se pueden utilizar como métodos individuales que devuelven una <code class="docutils literal"><span class="pre">pandas.DataSeries</span></code> o un `pandas.DataFrame (en el caso en que el método genere múltiples columnas nuevas).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>dependencia_clean = dc.nombre_propio(&quot;dependencia&quot;)
+
+print dependencia_clean
+
+0    Presidencia De La Nación
+1    Presidencia De La Nación
+2    Presidencia De La Nación
+3    Presidencia De La Nación
+4    Presidencia De La Nación
+Name: dependencia, dtype: object
+</pre></div>
+</div>
+<p>Método de limpieza con parámetros.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">fecha_audiencia_clean</span> <span class="o">=</span> <span class="n">dc</span><span class="o">.</span><span class="n">fecha_completa</span><span class="p">(</span><span class="s2">&quot;fecha_audiencia&quot;</span><span class="p">,</span>
+                                          <span class="s2">&quot;DD-MM-YYYY HH:mm&quot;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">fecha_audiencia_clean</span>
+
+<span class="mi">0</span>    <span class="mi">2013</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">12</span><span class="n">T10</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">-</span><span class="mo">03</span><span class="p">:</span><span class="mo">00</span>
+<span class="mi">1</span>    <span class="mi">2014</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">13</span><span class="n">T10</span><span class="p">:</span><span class="mi">50</span><span class="p">:</span><span class="mo">00</span><span class="o">-</span><span class="mo">03</span><span class="p">:</span><span class="mo">00</span>
+<span class="mi">2</span>                          <span class="n">NaN</span>
+<span class="mi">3</span>                          <span class="n">NaN</span>
+<span class="mi">4</span>                          <span class="n">NaN</span>
+<span class="n">Name</span><span class="p">:</span> <span class="n">fecha_audiencia</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">object</span>
+</pre></div>
+</div>
+<p>Si se desea que la limpieza practicada perdure en el objeto, se debe especificar el keyword argument <code class="docutils literal"><span class="pre">inplace=True</span></code>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>dc.nombre_propio(&quot;dependencia&quot;, inplace=True)
+
+print dc.df.dependencia
+
+0    Presidencia De La Nación
+1    Presidencia De La Nación
+2    Presidencia De La Nación
+3    Presidencia De La Nación
+4    Presidencia De La Nación
+Name: dependencia, dtype: object
+</pre></div>
+</div>
+<p>En todo momento se puede acceder al <code class="docutils literal"><span class="pre">pandas.DataFrame</span></code> que contiene la tabla de datos, donde se verán reflejados los cambios luego de aplicar métodos de limpieza con el parámetro <code class="docutils literal"><span class="pre">inplace=True</span></code>.
+Cuando se carga un archivo <code class="docutils literal"><span class="pre">.shp</span></code> al <code class="docutils literal"><span class="pre">DataCleaner</span></code>, éste contiene un objeto <code class="docutils literal"><span class="pre">geopandas.GeoDataFrame</span></code>, que extiende la funcionalidad de <code class="docutils literal"><span class="pre">pandas</span></code> para trabajar con geometrías.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">dc</span><span class="o">.</span><span class="n">df</span>  <span class="c1"># Accede al pandas.DataFrame o geopandas.GeoDataFrame del cleaner.</span>
+</pre></div>
+</div>
+<p>Para guardar el <code class="docutils literal"><span class="pre">pandas.DataFrame</span></code> en cualquier momento, probablemente luego de probar y aplicar algunas transformaciones, usar:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">dc</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Si se trata de un <code class="docutils literal"><span class="pre">GeoDataFrame</span></code>, se puede especificar el nombre para la columna de geometría con un argumento opcional. El nombre por defecto es &quot;geojson&quot;.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">dc</span> <span class="o">=</span> <span class="n">DataCleaner</span><span class="p">(</span><span class="s1">&#39;samples/provincias/provincias.shp&#39;</span><span class="p">)</span>
+<span class="n">dc</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">geometry_name</span><span class="o">=</span><span class="s1">&#39;geojson&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>El método <code class="docutils literal"><span class="pre">DataCleaner.save()</span></code> redirige al método <code class="docutils literal"><span class="pre">pandas.DataFrame.to_csv()</span></code>, y por lo tanto tienen los mismos argumentos.</p>
+</div>
+<div class="section" id="encoding-del-input-y-otros">
+<span id="encoding-del-input-y-otros"></span><h3>Encoding del input, y otros<a class="headerlink" href="#encoding-del-input-y-otros" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Se asume que el input es un csv codificado en <em>utf-8</em>, separado por comas y que usa comillas dobles para el <em>enclosing</em>. Si alguno de estos parámetros (especialmente el <em>encoding</em>) es diferente, debe especificarse.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">dc</span> <span class="o">=</span> <span class="n">DataCleaner</span><span class="p">(</span><span class="s2">&quot;ugly.csv&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;latin1&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">quotechar</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="limpieza-automatica">
+<span id="limpieza-automatica"></span><h2>Limpieza automática<a class="headerlink" href="#limpieza-automatica" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="formato-del-archivo-limpio">
+<span id="formato-del-archivo-limpio"></span><h3>Formato del archivo limpio<a class="headerlink" href="#formato-del-archivo-limpio" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Luego de la limpieza, los datos se guardan siempre en un archivo <em>CSV</em>, codificado en <em>utf-8</em> separado por <em>&quot;,&quot;</em> y usando <em>'&quot;'</em> como caracter de citas.</p>
+</div>
+<div class="section" id="nombres-de-los-campos">
+<span id="nombres-de-los-campos"></span><h3>Nombres de los campos<a class="headerlink" href="#nombres-de-los-campos" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Los nombres de los campos se normalizan automáticamente. Sólo el uso de caracteres alfanuméricos ASCII y &quot;_&quot; está permitido. Los campos deben nombrarse con palabras en minúsculas separadas por guión bajo. Para esto el objeto:</p>
+<ul class="simple">
+<li>Reemplaza espacios y &quot;-&quot; por &quot;_&quot;</li>
+<li>Reemplaza todos los caracteres alfanuméricos por su versión ASCII más próxima</li>
+<li>Remueve todos los caracteres especiales que no sean &quot;_&quot;</li>
+</ul>
+</div>
+<div class="section" id="saltos-de-linea">
+<span id="saltos-de-linea"></span><h3>Saltos de línea<a class="headerlink" href="#saltos-de-linea" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>No se permiten saltos de línea en los valores, al momento de crear un objeto ^DataCleaner^ se reemplazan todos los saltos de línea que estén dentro del caracter de <em>enclosing</em> (usualmente comillas dobles '&quot;') por un espacio &quot; &quot;.</p>
+</div>
+</div>
+<div class="section" id="template-de-script-de-limpieza">
+<span id="template-de-script-de-limpieza"></span><h2>Template de <em>script</em> de limpieza<a class="headerlink" href="#template-de-script-de-limpieza" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Para realizar la limpieza de un archivo CSV de datos con <code class="docutils literal"><span class="pre">data-cleaner</span></code> se sugiere utilizar el <a class="reference external" href="templates/cleaning_script.py">template de script de limpieza</a>. Este permite correr la limpieza desde la línea de comandos e implementar pasos de limpieza personalizados que exceden las funcionalidades del paquete.</p>
+</div>
+<div class="section" id="reglas-de-limpieza">
+<span id="reglas-de-limpieza"></span><h2>Reglas de limpieza<a class="headerlink" href="#reglas-de-limpieza" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Son diccionarios cuyas <em>keys</em> son los nombres de las reglas de limpieza y cuyos <em>values</em> son:
+(a) lista de columnas donde aplicar la regla -en el caso en que la regla no requiera otros parámetros- o
+(b) lista de parámetros que necesita la regla para funcionar -donde el primer parámetro es siempre el campo donde aplicar la regla-.</p>
+<div class="section" id="renombrar-columnas-renombrar-columnas">
+<span id="renombrar-columnas-renombrar-columnas"></span><h3>Renombrar columnas (<em>renombrar_columnas</em>)<a class="headerlink" href="#renombrar-columnas-renombrar-columnas" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Renombra columnas de la tabla de datos.</p>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;renombrar_columnas&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_actual_1&quot;</span><span class="p">,</span> <span class="s2">&quot;new_field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_nueva_1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_actual_2&quot;</span><span class="p">,</span> <span class="s2">&quot;new_field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_nueva_2&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_actual_3&quot;</span><span class="p">,</span> <span class="s2">&quot;new_field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_nueva_3&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;renombrar_columnas&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;aut_dependencia&quot;</span><span class="p">,</span> <span class="s2">&quot;new_field&quot;</span><span class="p">:</span> <span class="s2">&quot;dependencia&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;sujeto_obligado_audiencia&quot;</span><span class="p">,</span> <span class="s2">&quot;new_field&quot;</span><span class="p">:</span> <span class="s2">&quot;sujeto_obligado&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="remover-columnas-remover-columnas">
+<span id="remover-columnas-remover-columnas"></span><h3>Remover columnas (<em>remover_columnas</em>)<a class="headerlink" href="#remover-columnas-remover-columnas" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Remueve campos de la tabla de datos.</p>
+<p>Entre otras cosas, se puede utilizar para remover los campos originales -no recomendado- que dieron origen a múltiples campos nuevos cuando se utilizó alguna regla de <em>split</em>.</p>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;remover_columnas&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_a_remover_1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_a_remover_2&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;remover_columnas&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;dependencia&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;fecha_completa_audiencia&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="capitalizar-nombres-propios-nombre-propio">
+<span id="capitalizar-nombres-propios-nombre-propio"></span><h3>Capitalizar nombres propios (<em>nombre_propio</em>)<a class="headerlink" href="#capitalizar-nombres-propios-nombre-propio" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Normaliza todas las palabras que encuentra poniéndolas en minúsculas y capitalizando la primera letra de cada una.</p>
+<p>Se aplica a todos aquellos campos de datos que tengan nombres de personas. En el caso de direcciones, ciudades, países, organismos e instituciones debe aplicarse con mucha cautela, existen casos donde esta regla de limpieza hace más mal que bien (ej.: las instituciones pueden tener siglas, que no corresponde capitalizar).</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+<li><strong>sufix</strong>: Sufijo para agregar a la nueva columna limpia (Default: &quot;clean&quot;)</li>
+<li><strong>lower_words</strong>: Lista de palabras que deben mantenerse en minúsculas, sin aplicar capitalización (Default: [&quot;el&quot;, &quot;los&quot;, &quot;la&quot;, &quot;las&quot;, &quot;de&quot;, &quot;del&quot;, &quot;en&quot;, &quot;y&quot;])</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;nombre_propio&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_2&quot;</span><span class="p">,</span> <span class="s2">&quot;lower_words&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;lower_word1&quot;</span><span class="p">,</span> <span class="s2">&quot;lower_word2&quot;</span><span class="p">]}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;nombre_propio&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;dependencia&quot;</span><span class="p">,</span> <span class="s2">&quot;lower_words&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="s2">&quot;la&quot;</span><span class="p">]}</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;dependencia&quot;</span><span class="p">,</span> <span class="s2">&quot;lower_words&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;dependencia&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dar-formato-a-correo-electronico-mail-format">
+<span id="dar-formato-a-correo-electronico-mail-format"></span><h3>Dar formato a correo electrónico (<em>mail_format</em>)<a class="headerlink" href="#dar-formato-a-correo-electronico-mail-format" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Analiza todas las direcciones de correo electrónico en cada fila de una campo y les da el formato estandar definido. Es decir, las pasa todas a minúsculas y las separa con comas.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: True para conservar la columna original / False para removerla (Default: False)</li>
+<li><strong>sufix</strong>: Sufijo para agregar a la nueva columna limpia (Default: &quot;clean&quot;)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;mail_format&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_2&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;mail_format&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;correo_electronico&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="normalizar-strings-string">
+<span id="normalizar-strings-string"></span><h3>Normalizar strings (<em>string</em>)<a class="headerlink" href="#normalizar-strings-string" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Utiliza el algoritmo <em>Key Collision Fingerprint</em> para clusterizar strings con el mismo contenido, normalizando capitalización, acentos, caracteres especiales, etc.</p>
+<p>Este algoritmo busca unificar la forma de escribir strings que contienen idénticas palabras (cadenas de caracteres alfanuméricos separados por espacios) pero difieren en otros aspectos. <a class="reference external" href="https://github.com/OpenRefine/OpenRefine/wiki/Clustering-In-Depth#key-collision-methods">Para más detalle ver Key Collision Methods de OpenRefine</a>. La implementación que se utiliza es una adaptación de <a class="reference external" href="https://github.com/tweirick/okstate_bioinformatics_command_line_programs/blob/master/misc_programs/FingerprintKeyer.py">esta</a>, publicada en Github por Tyler Weirick.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>sort_tokens</strong>: <code class="docutils literal"><span class="pre">False</span></code> (default) para no ordenar las palabras al crear el <em>fingerprint</em> de un string. Esto ubicará a &quot;Sol Geriátrico&quot; y &quot;Geriátrico Sol&quot; en clusters separados, sin unificar el <em>string</em> en un sentido o en otro. Si se especifica <code class="docutils literal"><span class="pre">True</span></code>, ambos <em>strings</em> se reescribirían de una de las dos maneras.</li>
+<li><strong>remove_duplicates</strong>: <code class="docutils literal"><span class="pre">False</span></code> (default) para evitar remover tokens duplicados. Esto ubicará a &quot;Sol Sol Geriátrico&quot; en un cluster distinto a &quot;Sol Geriátrico&quot;, sin elegir una forma de escribir el <em>string</em> para ambos casos. Si se especifica <code class="docutils literal"><span class="pre">True</span></code>, ambos <em>strings</em> se escribirían de una de las dos maneras.</li>
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+<li><strong>sufix</strong>: Sufijo para agregar a la nueva columna limpia (Default: &quot;clean&quot;)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;string&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna_2&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;string&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;dependencia&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;lugar_audiencia&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;sujeto_obligado&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;solicitante&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reemplazar-listas-de-strings-por-valores-predefinidos-reemplazar">
+<span id="reemplazar-listas-de-strings-por-valores-predefinidos-reemplazar"></span><h3>Reemplazar listas de strings por valores predefinidos (<em>reemplazar</em>)<a class="headerlink" href="#reemplazar-listas-de-strings-por-valores-predefinidos-reemplazar" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Reemplaza listas de <em>strings</em> por un valor predefinido que el usuario decide que representa a todas. Solo sirve para reemplazar valores <strong>completos</strong></p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+<li><strong>sufix</strong>: Sufijo para agregar a la nueva columna limpia (Default: &quot;clean&quot;)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;reemplazar&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+     <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;replacements&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Nuevo1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Viejo&quot;</span><span class="p">],</span> <span class="s2">&quot;Nuevo2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ViejoA&quot;</span><span class="p">,</span> <span class="s2">&quot;ViejoB&quot;</span><span class="p">]}</span>
+    <span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;reemplazar&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+    <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;tipo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;replacements&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Servicios&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Serv&quot;</span><span class="p">],</span> <span class="s2">&quot;Otros&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Otro&quot;</span><span class="p">,</span> <span class="s2">&quot;Loc&quot;</span><span class="p">]}</span>
+    <span class="p">}</span>
+<span class="p">]}</span>
+
+</pre></div>
+</div>
+<p>En este ejemplo si el campo <em>tipo</em> tuviese el valor &quot;Serv de venta&quot; no sería reemplazado, mientras que si tuviese el valor &quot;Serv&quot; sería reemplazado por &quot;Servicios&quot;</p>
+</div>
+<div class="section" id="reemplazar-partes-de-valores-substrings-por-otros-reemplazar-string">
+<span id="reemplazar-partes-de-valores-substrings-por-otros-reemplazar-string"></span><h3>Reemplazar partes de valores (substrings) por otros (<em>reemplazar_string</em>)<a class="headerlink" href="#reemplazar-partes-de-valores-substrings-por-otros-reemplazar-string" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Reemplaza listas de substrings por otro substring. A diferencia del método <em>reemplazar</em> que reemplaza directamente valores completos, <em>reemplazar_string</em> hace reemplazos parciales. Es una versión más sencilla de <em>string_regex_substitute</em> que no permite evaluar expresiones regulares.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+<li><strong>sufix</strong>: Sufijo para agregar a la nueva columna limpia (Default: &quot;clean&quot;)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;reemplazar_string&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+     <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;replacements&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Nuevo1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Viejo&quot;</span><span class="p">],</span> <span class="s2">&quot;Nuevo2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ViejoA&quot;</span><span class="p">,</span> <span class="s2">&quot;ViejoB&quot;</span><span class="p">]}</span>
+    <span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;reemplazar_string&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+    <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;tipo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;replacements&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Servicios&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Serv&quot;</span><span class="p">],</span> <span class="s2">&quot;Otros&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Otro&quot;</span><span class="p">,</span> <span class="s2">&quot;Loc&quot;</span><span class="p">]}</span>
+    <span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p>En este ejemplo si el campo <em>tipo</em> tuviese el valor &quot;Serv de venta&quot; sería reemplazado por &quot;Servicios de Venta&quot;.</p>
+</div>
+<div class="section" id="normalizar-fecha-completa-fecha-completa">
+<span id="normalizar-fecha-completa-fecha-completa"></span><h3>Normalizar fecha completa (<em>fecha_completa</em>)<a class="headerlink" href="#normalizar-fecha-completa-fecha-completa" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Estandariza un campo <strong>con fecha y hora</strong> a su representación en el estándar ISO 8601 (<strong>YYYY-MM-DDTHH:MM:SS[.mmmmmm][+HH:MM]</strong>).</p>
+<p>Ej.: <strong>05-02-2016 14:53</strong> a <strong>2016-02-05T14:53:00-03:00</strong></p>
+<p>Para el <em>parsing</em> de fechas se utiliza la librería <a class="reference external" href="http://crsmithdev.com/arrow/"><em>arrow</em></a>. En la regla debe especificarse el formato temporal en que la fecha está expresada en la tabla de datos original. El resultado siempre se convertirá a ISO 8601 cuando sea posible, ante cualquier error se dejará la celda vacía.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;fecha_completa&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna&quot;</span><span class="p">,</span> <span class="s2">&quot;time_format&quot;</span><span class="p">:</span> <span class="s2">&quot;DD-MM-YYYY HH:mm&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;fecha_completa&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;fecha_completa_audiencia&quot;</span><span class="p">,</span> <span class="s2">&quot;time_format&quot;</span><span class="p">:</span> <span class="s2">&quot;DD-MM-YYYY HH:mm&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="normalizar-fecha-simple-fecha-simple">
+<span id="normalizar-fecha-simple-fecha-simple"></span><h3>Normalizar fecha simple (<em>fecha_simple</em>)<a class="headerlink" href="#normalizar-fecha-simple-fecha-simple" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Estandariza un campo sin hora, día o mes a su representación en el estándar ISO 8601, obviando aquella parte de la representación ISO para la que no se cuenta con datos suficientes.</p>
+<p>Ej.: <strong>05-02-2016</strong> a <strong>2016-02-05</strong>
+Ej.: <strong>02-2016</strong> a <strong>2016-02</strong></p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;fecha_simple&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna1&quot;</span><span class="p">,</span> <span class="s2">&quot;time_format&quot;</span><span class="p">:</span> <span class="s2">&quot;DD-MM-YYYY&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;columna2&quot;</span><span class="p">,</span> <span class="s2">&quot;time_format&quot;</span><span class="p">:</span> <span class="s2">&quot;MM-YYYY&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;fecha_simple&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;fecha&quot;</span><span class="p">,</span> <span class="s2">&quot;time_format&quot;</span><span class="p">:</span> <span class="s2">&quot;DD-MM-YYYY&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;mes&quot;</span><span class="p">,</span> <span class="s2">&quot;time_format&quot;</span><span class="p">:</span> <span class="s2">&quot;MM-YYYY&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="normalizar-fecha-separada-en-multiples-campos-fecha-separada">
+<span id="normalizar-fecha-separada-en-multiples-campos-fecha-separada"></span><h3>Normalizar fecha separada en múltiples campos (<em>fecha_separada</em>)<a class="headerlink" href="#normalizar-fecha-separada-en-multiples-campos-fecha-separada" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Estandariza una fecha completa donde distintos componentes de la misma están separados en varios campos, a su representación en el estándar ISO 8601.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;fecha_separada&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;campo1&quot;</span><span class="p">,</span> <span class="s2">&quot;DD-MM-YYYY&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;campo2&quot;</span><span class="p">,</span> <span class="s2">&quot;HH:mm&quot;</span><span class="p">]],</span>
+     <span class="s2">&quot;new_field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;audiencia&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;fecha_separada&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;fecha_audiencia&quot;</span><span class="p">,</span> <span class="s2">&quot;DD-MM-YYYY&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;hora_audiencia&quot;</span><span class="p">,</span> <span class="s2">&quot;HH:mm&quot;</span><span class="p">]],</span> <span class="s2">&quot;new_field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;audiencia&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="separar-campos-mediante-un-separador-simple-string-simple-split">
+<span id="separar-campos-mediante-un-separador-simple-string-simple-split"></span><h3>Separar campos mediante un separador simple (<em>string_simple_split</em>)<a class="headerlink" href="#separar-campos-mediante-un-separador-simple-string-simple-split" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Separa <em>strings</em> de un campo en múltiples campos, mediante separadores simples.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;string_simple_split&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;campo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;separators&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;separador_A&quot;</span><span class="p">,</span> <span class="s2">&quot;separador_B&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;new_field_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sufijo_nuevo_campo_1&quot;</span><span class="p">,</span> <span class="s2">&quot;sufijo_nuevo_campo_2&quot;</span><span class="p">]}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;string_simple_split&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;sujeto_obligado&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;separators&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;, Cargo:&quot;</span><span class="p">,</span> <span class="s2">&quot;Cargo:&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;new_field_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;nombre&quot;</span><span class="p">,</span> <span class="s2">&quot;cargo&quot;</span><span class="p">]}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="separar-campos-mediante-una-expresion-regular-string-regex-split">
+<span id="separar-campos-mediante-una-expresion-regular-string-regex-split"></span><h3>Separar campos mediante una expresión regular (<em>string_regex_split</em>)<a class="headerlink" href="#separar-campos-mediante-una-expresion-regular-string-regex-split" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>(NO IMPLEMENTADO)</p>
+</div>
+<div class="section" id="separar-campos-mediante-una-parsing-expression-grammar-string-peg-split">
+<span id="separar-campos-mediante-una-parsing-expression-grammar-string-peg-split"></span><h3>Separar campos mediante una parsing expression grammar (<em>string_peg_split</em>)<a class="headerlink" href="#separar-campos-mediante-una-parsing-expression-grammar-string-peg-split" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Utiliza <em>parsing expression grammars</em> para separar strings de un campo en múltiples campos.</p>
+<p>Las PEG son una forma de utilizar expresiones regulares de más alto nivel, que facilita la creación de reglas bastante complejas. La librería que se utiliza en este paquete es <a class="reference external" href="http://parsley.readthedocs.org/en/latest/reference.html"><strong>parsley</strong></a>.</p>
+<p>Todas las PEG que se escriban para este paquete, deben contener una regla <code class="docutils literal"><span class="pre">values</span></code> cuyo <em>output</em> sea una lista de los valores que se quiere extraer. Cuando la PEG utilizada falle, el paquete dejará un valor nulo para esa celda.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;string_peg_split&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;campo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;grammar&quot;</span><span class="p">:</span> <span class="s2">&quot;grammar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;new_field_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sufijo_nuevo_campo_1&quot;</span><span class="p">,</span> <span class="s2">&quot;sufijo_nuevo_campo_2&quot;</span><span class="p">]}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplo:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;string_peg_split&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+    <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;solicitante&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;grammar&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    allowed_char = anything:x ?(x not in &#39;1234567890() &#39;)</span>
+<span class="s2">    nombre = ~(&#39;DNI&#39;) &lt;allowed_char+&gt;:n ws -&gt; n.strip()</span>
+<span class="s2">    number = &lt;digit+&gt;:num -&gt; int(num)</span>
+
+<span class="s2">    nom_comp = &lt;nombre+&gt;:nc -&gt; nc.strip()</span>
+<span class="s2">    cargo = &#39;(&#39; &lt;nombre+&gt;:c &#39;)&#39; -&gt; c.strip()</span>
+<span class="s2">    dni = &#39;,&#39;? ws &#39;DNI&#39; ws number:num -&gt; num</span>
+
+<span class="s2">    values = nom_comp:n ws cargo?:c ws dni?:d ws anything* -&gt; [n, c, d]</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;new_field_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;nombre&quot;</span><span class="p">,</span> <span class="s2">&quot;cargo&quot;</span><span class="p">,</span> <span class="s2">&quot;dni&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="manipular-y-reemplazar-contenido-de-campos-mediante-una-expresion-regular-string-regex-substitute">
+<span id="manipular-y-reemplazar-contenido-de-campos-mediante-una-expresion-regular-string-regex-substitute"></span><h3>Manipular y reemplazar contenido de campos mediante una expresión regular (<em>string_regex_substitute</em>)<a class="headerlink" href="#manipular-y-reemplazar-contenido-de-campos-mediante-una-expresion-regular-string-regex-substitute" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Es análogo al método sub de la libreria de python <a class="reference external" href="https://docs.python.org/2/library/re.html#re.sub"><strong>re</strong></a>.</p>
+<p>Argumentos opcionales:</p>
+<ul class="simple">
+<li><strong>keep_original</strong>: <code class="docutils literal"><span class="pre">True</span></code> para conservar la columna original / <code class="docutils literal"><span class="pre">False</span></code> para removerla (Default: False)</li>
+<li><strong>sufix</strong>: Sufijo para agregar a la nueva columna limpia (Default: &quot;clean&quot;)</li>
+</ul>
+<p><strong>Especificación:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;string_regex_substitute&quot;</span><span class="p">:[</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;campo1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regex_str_match&quot;</span><span class="p">:</span> <span class="s2">&quot;str_regex_match1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regex_str_sub&quot;</span><span class="p">:</span> <span class="s2">&quot;str_regex_replace1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;campo2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regex_str_match&quot;</span><span class="p">:</span> <span class="s2">&quot;str_regex_match2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regex_str_sub&quot;</span><span class="p">:</span> <span class="s2">&quot;str_regex_replace2&quot;</span><span class="p">}</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p><strong>Ejemplos:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>Reemplaza punto y comas por comas:
+{&quot;string_regex_substitute&quot;:[
+    {&quot;field&quot;: &quot;norma_competencias_objetivos&quot;,
+    &quot;regex_str_match&quot;: &quot;;&quot;,
+    &quot;regex_str_sub&quot;: &quot;,&quot;}
+]}
+
+Cambia el orden de una cadena entre paréntesis:
+{&quot;string_regex_substitute&quot;:[
+    {&quot;field&quot;: &quot;nombre_cargo&quot;,
+    &quot;regex_str_match&quot;: &quot;(?P&lt;cargo&gt;\(.+\))(?P&lt;nombre&gt;.+)&quot;,
+    &quot;regex_str_sub&quot;: &quot;\g&lt;nombre&gt; \g&lt;cargo&gt;&quot;}
+]}
+&quot;(presidente)Juan José Perez.&quot; pasaría a ser &quot;Juan José Perez. (presidente)&quot;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="contacto">
+<span id="contacto"></span><h2>Contacto<a class="headerlink" href="#contacto" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Te invitamos a [creanos un issue](https://github.com/datosgobar/data-cleaner/issues/new?title=Encontre un bug en data-cleaner) en caso de que encuentres algún bug o tengas feedback de alguna parte de <code class="docutils literal"><span class="pre">data-cleaner</span></code>.</p>
+<p>Para todo lo demás, podés mandarnos tu comentario o consulta a <a class="reference external" href="mailto:datos&#37;&#52;&#48;modernizacion&#46;gob&#46;ar">datos<span>&#64;</span>modernizacion<span>&#46;</span>gob<span>&#46;</span>ar</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Tabla de Contenidos</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">data-cleaner</a><ul>
+<li><a class="reference internal" href="#instalacion">Instalación</a><ul>
+<li><a class="reference internal" href="#dependencias">Dependencias</a></li>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#uso-de-data-cleaner">Uso de data-cleaner</a><ul>
+<li><a class="reference internal" href="#lista-de-reglas">Lista de reglas</a></li>
+<li><a class="reference internal" href="#metodos-de-limpieza">Métodos de limpieza</a></li>
+<li><a class="reference internal" href="#encoding-del-input-y-otros">Encoding del input, y otros</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#limpieza-automatica">Limpieza automática</a><ul>
+<li><a class="reference internal" href="#formato-del-archivo-limpio">Formato del archivo limpio</a></li>
+<li><a class="reference internal" href="#nombres-de-los-campos">Nombres de los campos</a></li>
+<li><a class="reference internal" href="#saltos-de-linea">Saltos de línea</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#template-de-script-de-limpieza">Template de <em>script</em> de limpieza</a></li>
+<li><a class="reference internal" href="#reglas-de-limpieza">Reglas de limpieza</a><ul>
+<li><a class="reference internal" href="#renombrar-columnas-renombrar-columnas">Renombrar columnas (<em>renombrar_columnas</em>)</a></li>
+<li><a class="reference internal" href="#remover-columnas-remover-columnas">Remover columnas (<em>remover_columnas</em>)</a></li>
+<li><a class="reference internal" href="#capitalizar-nombres-propios-nombre-propio">Capitalizar nombres propios (<em>nombre_propio</em>)</a></li>
+<li><a class="reference internal" href="#dar-formato-a-correo-electronico-mail-format">Dar formato a correo electrónico (<em>mail_format</em>)</a></li>
+<li><a class="reference internal" href="#normalizar-strings-string">Normalizar strings (<em>string</em>)</a></li>
+<li><a class="reference internal" href="#reemplazar-listas-de-strings-por-valores-predefinidos-reemplazar">Reemplazar listas de strings por valores predefinidos (<em>reemplazar</em>)</a></li>
+<li><a class="reference internal" href="#reemplazar-partes-de-valores-substrings-por-otros-reemplazar-string">Reemplazar partes de valores (substrings) por otros (<em>reemplazar_string</em>)</a></li>
+<li><a class="reference internal" href="#normalizar-fecha-completa-fecha-completa">Normalizar fecha completa (<em>fecha_completa</em>)</a></li>
+<li><a class="reference internal" href="#normalizar-fecha-simple-fecha-simple">Normalizar fecha simple (<em>fecha_simple</em>)</a></li>
+<li><a class="reference internal" href="#normalizar-fecha-separada-en-multiples-campos-fecha-separada">Normalizar fecha separada en múltiples campos (<em>fecha_separada</em>)</a></li>
+<li><a class="reference internal" href="#separar-campos-mediante-un-separador-simple-string-simple-split">Separar campos mediante un separador simple (<em>string_simple_split</em>)</a></li>
+<li><a class="reference internal" href="#separar-campos-mediante-una-expresion-regular-string-regex-split">Separar campos mediante una expresión regular (<em>string_regex_split</em>)</a></li>
+<li><a class="reference internal" href="#separar-campos-mediante-una-parsing-expression-grammar-string-peg-split">Separar campos mediante una parsing expression grammar (<em>string_peg_split</em>)</a></li>
+<li><a class="reference internal" href="#manipular-y-reemplazar-contenido-de-campos-mediante-una-expresion-regular-string-regex-substitute">Manipular y reemplazar contenido de campos mediante una expresión regular (<em>string_regex_substitute</em>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contacto">Contacto</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="capítulo anterior">Documentación de <strong>data-cleaner</strong></a></li>
+      <li>Next: <a href="data_cleaner.html" title="próximo capítulo">Referencia de la API</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>Esta página</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/README.md.txt"
+            rel="nofollow">Mostrar el código</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Ir a" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Gobierno Abierto Argentina.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

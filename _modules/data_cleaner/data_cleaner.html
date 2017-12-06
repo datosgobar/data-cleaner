@@ -1,0 +1,812 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>data_cleaner.data_cleaner &#8212; documentación de data-cleaner - 0.1.15</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.15',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/translations.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Índice" href="../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Código fuente para data_cleaner.data_cleaner</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Cleaner de CSVs a partir de reglas de limpieza.</span>
+
+<span class="sd">La clase DataCleaner permite limpiar archivos CSVs con datos a partir de la</span>
+<span class="sd">aplicación de reglas de limpieza.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">with_statement</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">pycrs</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">dateutil</span> <span class="k">import</span> <span class="n">tz</span>
+<span class="kn">import</span> <span class="nn">arrow</span>
+<span class="kn">import</span> <span class="nn">parsley</span>
+<span class="kn">from</span> <span class="nn">unidecode</span> <span class="k">import</span> <span class="n">unidecode</span>
+<span class="kn">import</span> <span class="nn">unicodecsv</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+
+<span class="kn">from</span> <span class="nn">fingerprint_keyer</span> <span class="k">import</span> <span class="n">group_fingerprint_strings</span>
+<span class="kn">from</span> <span class="nn">fingerprint_keyer</span> <span class="k">import</span> <span class="n">get_best_replacements</span><span class="p">,</span> <span class="n">replace_by_key</span>
+<span class="kn">from</span> <span class="nn">capitalizer</span> <span class="k">import</span> <span class="n">capitalize</span>
+
+
+<div class="viewcode-block" id="DuplicatedField"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DuplicatedField">[documentos]</a><span class="k">class</span> <span class="nc">DuplicatedField</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Salta cuando hay un campo duplicado en el dataset.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Crea mensaje de error.&quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;El campo &#39;</span><span class="si">{}</span><span class="s2">&#39; está duplicado. Campos duplicados no permitidos.&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DuplicatedField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataCleaner"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner">[documentos]</a><span class="k">class</span> <span class="nc">DataCleaner</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Crea un objeto DataCleaner cargando un CSV en un DataFrame y expone</span>
+<span class="sd">    reglas de limpieza para operar sobre las columnas del objeto y retornar un</span>
+<span class="sd">    CSV limplio.&quot;&quot;&quot;</span>
+
+    <span class="n">OUTPUT_ENCODING</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">OUTPUT_SEPARATOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="n">OUTPUT_QUOTECHAR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+    <span class="n">INPUT_DEFAULT_ENCODING</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">INPUT_DEFAULT_SEPARATOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="n">INPUT_DEFAULT_QUOTECHAR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+    <span class="n">DEFAULT_SUFIX</span> <span class="o">=</span> <span class="s2">&quot;normalizado&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="n">ignore_dups</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Carga datos a limpiar en un DataFrame, normalizando sus columnas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_path (str): Ruta al archivo que se va a limpiar.</span>
+<span class="sd">            ignore_dups (bool): Ignora los duplicados en colunas</span>
+<span class="sd">            kwargs: Todos los argumentos que puede tomar `pandas.read_csv`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;encoding&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">INPUT_DEFAULT_ENCODING</span><span class="p">,</span>
+            <span class="s1">&#39;sep&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">INPUT_DEFAULT_SEPARATOR</span><span class="p">,</span>
+            <span class="s1">&#39;quotechar&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">INPUT_DEFAULT_QUOTECHAR</span>
+        <span class="p">}</span>
+        <span class="n">default_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># chequea que no haya fields con nombre duplicado</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_dups</span> <span class="ow">and</span> <span class="n">input_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_assert_no_duplicates</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span>
+                                       <span class="n">encoding</span><span class="o">=</span><span class="n">default_args</span><span class="p">[</span><span class="s1">&#39;encoding&#39;</span><span class="p">],</span>
+                                       <span class="n">sep</span><span class="o">=</span><span class="n">default_args</span><span class="p">[</span><span class="s1">&#39;sep&#39;</span><span class="p">],</span>
+                                       <span class="n">quotechar</span><span class="o">=</span><span class="n">default_args</span><span class="p">[</span><span class="s1">&#39;quotechar&#39;</span><span class="p">])</span>
+
+        <span class="c1"># lee el SHP a limpiar</span>
+        <span class="k">if</span> <span class="n">input_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.shp&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span>
+                <span class="n">input_path</span><span class="p">,</span>
+                <span class="n">encoding</span><span class="o">=</span><span class="n">default_args</span><span class="p">[</span><span class="s1">&#39;encoding&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># lee la proyección del .prj, si puede</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">projection_path</span> <span class="o">=</span> <span class="n">input_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.shp&#39;</span><span class="p">,</span> <span class="s1">&#39;.prj&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">source_crs</span> <span class="o">=</span> <span class="n">pycrs</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+                    <span class="n">projection_path</span><span class="p">)</span><span class="o">.</span><span class="n">to_proj4</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">source_crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">crs</span>
+
+        <span class="c1"># lee el CSV a limpiar</span>
+        <span class="k">elif</span> <span class="n">input_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">default_args</span><span class="p">)</span>
+
+        <span class="c1"># lee el XLSX a limpiar</span>
+        <span class="k">elif</span> <span class="n">input_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.xlsx&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;xlrd&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">default_args</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> no es un formato soportado.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">input_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># limpieza automática</span>
+        <span class="c1"># normaliza los nombres de los campos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_fields</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="c1"># remueve todos los saltos de línea</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">applymap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remove_line_breaks</span><span class="p">)</span>
+
+        <span class="c1"># guarda PEGs compiladas para optimizar performance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grammars</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="o">.</span><span class="vm">__func__</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">to_csv</span><span class="o">.</span><span class="vm">__func__</span><span class="o">.</span><span class="vm">__doc__</span>
+
+    <span class="k">def</span> <span class="nf">_assert_no_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">quotechar</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">input_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+                <span class="n">reader</span> <span class="o">=</span> <span class="n">unicodecsv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span>
+                                           <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">,</span>
+                                           <span class="n">delimiter</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+                                           <span class="n">quotechar</span><span class="o">=</span><span class="n">quotechar</span><span class="p">)</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+                <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">fields</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">DuplicatedField</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+
+        <span class="c1"># TODO: Implementar chequeo de que no hay duplicados para XLSX</span>
+        <span class="k">elif</span> <span class="n">input_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.xlsx&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_normalize_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_normalize_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Normaliza un string para ser nombre de campo o sufijo de dataset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Nombre original del campo o sufijo de datset.</span>
+<span class="sd">            sep (str): Separador para el nombre normalizado.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Nombre de campo o sufijo de datset normalizado.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">unicode</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="c1"># reemplaza caracteres que no sean unicode</span>
+        <span class="n">norm_field</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">norm_field</span> <span class="o">=</span> <span class="n">norm_field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+        <span class="n">norm_field</span> <span class="o">=</span> <span class="n">norm_field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+        <span class="n">norm_field</span> <span class="o">=</span> <span class="n">norm_field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+        <span class="n">norm_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camel_convert</span><span class="p">(</span><span class="n">norm_field</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># remueve caracteres que no sean alfanuméricos o &quot;_&quot;</span>
+        <span class="n">norm_field</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">char</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">norm_field</span>
+                             <span class="k">if</span> <span class="n">char</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+
+        <span class="c1"># emite un Warning si tuvo que normalizar el field</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="o">!=</span> <span class="n">norm_field</span><span class="p">:</span>
+            <span class="n">caller_rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_normalize_field_caller</span><span class="p">(</span>
+                <span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+
+<span class="s2">El campo &quot;</span><span class="si">{}</span><span class="s2">&quot; no sigue las convenciones para escribir</span>
+<span class="s2">campos (sólo se admiten caracteres alfanuméricos ASCII en</span>
+<span class="s2">minúsculas, con palabras separadas por &quot;</span><span class="si">{}</span><span class="s2">&quot;). DataCleaner</span>
+<span class="s2">normaliza automáticamente los campos en estos casos, lo</span>
+<span class="s2">que puede llevar a resultados inesperados.</span>
+
+<span class="s2">El nuevo nombre del campo normalizado es: &quot;</span><span class="si">{}</span><span class="s2">&quot;.</span>
+<span class="s2">Método que llamó al normalizador de campos: </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">norm_field</span><span class="p">,</span> <span class="n">caller_rule</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">norm_field</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_camel_convert</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;([a-z0-9])([A-Z])&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\1_\2&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_normalize_field_caller</span><span class="p">(</span><span class="n">curframe</span><span class="p">):</span>
+        <span class="n">curframe</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">()</span>
+        <span class="n">calframe</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getouterframes</span><span class="p">(</span><span class="n">curframe</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">calframe</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;_normalize_fields&quot;</span><span class="p">:</span>
+            <span class="n">caller_rule</span> <span class="o">=</span> <span class="n">calframe</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">caller_rule</span> <span class="o">=</span> <span class="n">calframe</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">caller_rule</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_remove_line_breaks</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">replace_char</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="n">unicode</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">unicode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">replace_char</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+    <span class="c1"># Métodos GLOBALES</span>
+<div class="viewcode-block" id="DataCleaner.clean"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.clean">[documentos]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Aplica las reglas de limpieza al objeto en memoria.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules (list): Lista de reglas de limpieza.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">rule_item</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rule_item</span><span class="p">:</span>
+                <span class="n">rule_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="n">rule_item</span><span class="p">[</span><span class="n">rule</span><span class="p">]:</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;inplace&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">rule_method</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataCleaner.clean_file"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.clean_file">[documentos]</a>    <span class="k">def</span> <span class="nf">clean_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Aplica las reglas de limpieza y guarda los datos en un csv.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules (list): Lista de reglas de limpieza.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataCleaner.save"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.save">[documentos]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">geometry_name</span><span class="o">=</span><span class="s1">&#39;geojson&#39;</span><span class="p">,</span>
+             <span class="n">geometry_crs</span><span class="o">=</span><span class="s1">&#39;epsg:4326&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Guarda los datos en un nuevo CSV con formato estándar.</span>
+
+<span class="sd">        El CSV se guarda codificado en UTF-8, separado con &quot;,&quot; y usando &#39;&quot;&#39;</span>
+<span class="sd">        comillas dobles como caracter de enclosing.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">):</span>
+            <span class="c1"># Convierte la proyección, si puede.</span>
+            <span class="k">if</span> <span class="n">geometry_crs</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_crs</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">to_crs</span><span class="p">({</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">geometry_crs</span><span class="p">})</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Se procede sin re-proyectar las coordenadas.&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">output_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_json_geometry</span><span class="p">(</span><span class="n">geometry_name</span><span class="p">)</span>
+  
+            <span class="c1"># Guarda el archivo en formato GeoJSON o KML.</span>
+            <span class="k">if</span> <span class="n">output_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;json&#39;</span><span class="p">):</span>  <span class="c1"># Acepta .json y .geojson.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GeoJSON&#39;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">elif</span> <span class="n">output_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;kml&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_save_to_kml</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+                <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+            <span class="n">output_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">OUTPUT_ENCODING</span><span class="p">,</span>
+            <span class="n">sep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">OUTPUT_SEPARATOR</span><span class="p">,</span>
+            <span class="n">quotechar</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">OUTPUT_QUOTECHAR</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_save_to_kml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
+        <span class="n">aux_file</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">aux_file</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GeoJSON&#39;</span><span class="p">)</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="s1">&#39;ogr2ogr -f KML </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">aux_file</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">aux_file</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_json_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geometry_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transforma la geometría del GeoDataFrame a formato JSON.&quot;&quot;&quot;</span>
+        <span class="n">geojson</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">geojson</span><span class="p">)[</span><span class="s1">&#39;features&#39;</span><span class="p">]</span>
+        <span class="n">geometries</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">]</span>
+        <span class="c1"># Convierte cada geometría en un string JSON válido.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">geometry_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
+                                  <span class="k">for</span> <span class="n">geometry</span> <span class="ow">in</span> <span class="n">geometries</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_update_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">new_series</span><span class="p">,</span>
+                       <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Agrega o pisa una serie nueva en el DataFrame.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_series</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_field</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">elem</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="p">[</span><span class="n">prefix</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="p">]</span>
+                                  <span class="k">if</span> <span class="n">elem</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_loc</span><span class="p">(</span><span class="n">field</span><span class="p">),</span>
+                           <span class="n">new_field</span><span class="p">,</span> <span class="n">new_series</span><span class="p">)</span>
+
+    <span class="c1"># Métodos INDIVIDUALES de LIMPIEZA</span>
+<div class="viewcode-block" id="DataCleaner.remover_columnas"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.remover_columnas">[documentos]</a>    <span class="k">def</span> <span class="nf">remover_columnas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remueve columnas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.DataFrame: Data frame con las columnas removidas.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No existe el campo &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+        <span class="n">removed_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">removed_df</span>
+
+        <span class="k">return</span> <span class="n">removed_df</span></div>
+
+<div class="viewcode-block" id="DataCleaner.renombrar_columnas"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.renombrar_columnas">[documentos]</a>    <span class="k">def</span> <span class="nf">renombrar_columnas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">new_field</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renombra una columna.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a renombrar.</span>
+<span class="sd">            field (str): Nuevo nombre</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.DataFrame: Data frame con las columnas renombradas.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">new_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">new_field</span><span class="p">)</span>
+        <span class="n">renamed_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">new_field</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">renamed_df</span>
+
+        <span class="k">return</span> <span class="n">renamed_df</span></div>
+
+<div class="viewcode-block" id="DataCleaner.nombre_propio"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.nombre_propio">[documentos]</a>    <span class="k">def</span> <span class="nf">nombre_propio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lower_words</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para todos los nombres propios.</span>
+
+<span class="sd">        Capitaliza los nombres de países, ciudades, personas, instituciones y</span>
+<span class="sd">        similares.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sufix</span> <span class="o">=</span> <span class="n">sufix</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SUFIX</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">capitalized</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">capitalize</span><span class="p">,</span> <span class="n">lower_words</span><span class="o">=</span><span class="n">lower_words</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="n">sufix</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">capitalized</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">capitalized</span></div>
+
+<div class="viewcode-block" id="DataCleaner.string"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.string">[documentos]</a>    <span class="k">def</span> <span class="nf">string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">remove_duplicates</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para todos los strings.</span>
+
+<span class="sd">        Aplica un algoritimo de clustering para normalizar strings que son</span>
+<span class="sd">        demasiado parecidos, sin pérdida de información.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sufix</span> <span class="o">=</span> <span class="n">sufix</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SUFIX</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+        <span class="n">clusters</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">group_fingerprint_strings</span><span class="p">(</span>
+            <span class="n">series</span><span class="p">,</span> <span class="n">sort_tokens</span><span class="o">=</span><span class="n">sort_tokens</span><span class="p">,</span>
+            <span class="n">remove_duplicates</span><span class="o">=</span><span class="n">remove_duplicates</span><span class="p">)</span>
+        <span class="n">replacements</span> <span class="o">=</span> <span class="n">get_best_replacements</span><span class="p">(</span><span class="n">clusters</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
+        <span class="n">parsed_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">replace_by_key</span><span class="p">(</span><span class="n">replacements</span><span class="p">,</span> <span class="n">series</span><span class="p">))</span>
+        <span class="n">parsed_series</span> <span class="o">=</span> <span class="n">parsed_series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="n">sufix</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">parsed_series</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parsed_series</span></div>
+
+<div class="viewcode-block" id="DataCleaner.mail_format"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.mail_format">[documentos]</a>    <span class="k">def</span> <span class="nf">mail_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para dar formato a las direcciones de correo electronico.</span>
+
+<span class="sd">        Lleva todas las cadenas a minusculas y luego si hay varias las separa</span>
+<span class="sd">        por comas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sufix</span> <span class="o">=</span> <span class="n">sufix</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SUFIX</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;[a-z_0-9\.]+@[a-z_0-9\.]+&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="n">sufix</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">series</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">series</span></div>
+
+<div class="viewcode-block" id="DataCleaner.reemplazar"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.reemplazar">[documentos]</a>    <span class="k">def</span> <span class="nf">reemplazar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replacements</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reemplaza listas de valores por un nuevo valor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar</span>
+<span class="sd">            replacements (dict): {&quot;new_value&quot;: [&quot;old_value1&quot;, &quot;old_value2&quot;]}</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sufix</span> <span class="o">=</span> <span class="n">sufix</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SUFIX</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">new_value</span><span class="p">,</span> <span class="n">old_values</span> <span class="ow">in</span> <span class="n">replacements</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">old_values</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+
+        <span class="n">encoded_series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OUTPUT_ENCODING</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="n">sufix</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">encoded_series</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">encoded_series</span></div>
+
+<div class="viewcode-block" id="DataCleaner.reemplazar_string"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.reemplazar_string">[documentos]</a>    <span class="k">def</span> <span class="nf">reemplazar_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replacements</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reemplaza listas de strings por un nuevo string.</span>
+<span class="sd">           A diferencias de la funcion reemplazar hace reemplazos parciales.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar</span>
+<span class="sd">            replacements (dict): {&quot;new_value&quot;: [&quot;old_value1&quot;, &quot;old_value2&quot;]}</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sufix</span> <span class="o">=</span> <span class="n">sufix</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SUFIX</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">new_value</span><span class="p">,</span> <span class="n">old_values</span> <span class="ow">in</span> <span class="n">replacements</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="c1"># for old_value in sorted(old_values, key=len, reverse=True):</span>
+            <span class="k">for</span> <span class="n">old_value</span> <span class="ow">in</span> <span class="n">old_values</span><span class="p">:</span>
+                <span class="n">replace_function</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_safe_replace</span><span class="p">,</span>
+                                           <span class="n">old_value</span><span class="o">=</span><span class="n">old_value</span><span class="p">,</span>
+                                           <span class="n">new_value</span><span class="o">=</span><span class="n">new_value</span><span class="p">)</span>
+                <span class="n">series</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">replace_function</span><span class="p">,</span> <span class="n">series</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="n">sufix</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">series</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">series</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_safe_replace</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">unicode</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataCleaner.fecha_completa"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.fecha_completa">[documentos]</a>    <span class="k">def</span> <span class="nf">fecha_completa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">time_format</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para fechas completas que están en un sólo campo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar.</span>
+<span class="sd">            time_format (str): Formato temporal del campo.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">parsed_series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_datetime</span><span class="p">,</span>
+                                     <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">time_format</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;isodatetime&quot;</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">parsed_series</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parsed_series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OUTPUT_ENCODING</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataCleaner.fecha_simple"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.fecha_simple">[documentos]</a>    <span class="k">def</span> <span class="nf">fecha_simple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">time_format</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para fechas sin hora, sin día o sin mes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar.</span>
+<span class="sd">            time_format (str): Formato temporal del campo.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">parsed_series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_date</span><span class="p">,</span>
+                                     <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">time_format</span><span class="p">,))</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;isodate&quot;</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">parsed_series</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parsed_series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OUTPUT_ENCODING</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_datetime</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">time_format</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">datetime</span> <span class="o">=</span> <span class="n">arrow</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span> <span class="n">time_format</span><span class="p">,</span>
+                <span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">gettz</span><span class="p">(</span><span class="s2">&quot;America/Argentina/Buenos Aires&quot;</span><span class="p">),</span> <span class="n">locale</span><span class="o">=</span><span class="s1">&#39;es&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_date</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">time_format</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">datetime</span> <span class="o">=</span> <span class="n">arrow</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span> <span class="n">time_format</span><span class="p">,</span>
+                <span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">gettz</span><span class="p">(</span><span class="s2">&quot;America/Argentina/Buenos Aires&quot;</span><span class="p">))</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;D&quot;</span> <span class="ow">in</span> <span class="n">time_format</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">date</span>
+            <span class="k">elif</span> <span class="s2">&quot;M&quot;</span> <span class="ow">in</span> <span class="n">time_format</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+<div class="viewcode-block" id="DataCleaner.fecha_separada"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.fecha_separada">[documentos]</a>    <span class="k">def</span> <span class="nf">fecha_separada</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">new_field_name</span><span class="p">,</span> <span class="n">keep_original</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para fechas completas que están separadas en varios campos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar.</span>
+<span class="sd">            new_field_name (str): Sufijo para construir nombre del nuevo field.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">]</span>
+        <span class="n">time_format</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">])</span>
+
+        <span class="n">concat_series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field_names</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="n">parsed_series</span> <span class="o">=</span> <span class="n">concat_series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_datetime</span><span class="p">,</span>
+                                            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">time_format</span><span class="p">,))</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;isodatetime_&quot;</span> <span class="o">+</span> <span class="n">new_field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parsed_series</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">remover_columnas</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parsed_series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OUTPUT_ENCODING</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataCleaner.string_simple_split"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.string_simple_split">[documentos]</a>    <span class="k">def</span> <span class="nf">string_simple_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">separators</span><span class="p">,</span> <span class="n">new_field_names</span><span class="p">,</span>
+                            <span class="n">keep_original</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para separar un campo a partir de separadores simples.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar</span>
+<span class="sd">            separators (list): Strings separadores.</span>
+<span class="sd">            new_field_names (list): Sufijos de los nuevos campos para los</span>
+<span class="sd">                valores separados.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">parsed_df</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_split</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">separators</span><span class="p">,))</span>
+
+        <span class="n">parsed_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">field</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">value</span>
+                     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_field_names</span><span class="p">)},</span>
+            <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">parsed_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remover_columnas</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parsed_df</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_split</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">separators</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">separator</span> <span class="ow">in</span> <span class="n">separators</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">separator</span> <span class="ow">in</span> <span class="n">unicode</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">unicode</span><span class="p">(</span><span class="n">split_value</span><span class="p">)</span> <span class="k">for</span> <span class="n">split_value</span> <span class="ow">in</span>
+                          <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)]</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">unicode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span>
+                          <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notnull</span><span class="p">(</span><span class="n">value</span><span class="p">)])</span>
+
+<div class="viewcode-block" id="DataCleaner.string_regex_split"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.string_regex_split">[documentos]</a>    <span class="k">def</span> <span class="nf">string_regex_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">new_field_names</span><span class="p">,</span>
+                           <span class="n">keep_original</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para separar un campo a partir de una expresión regular.</span>
+
+<span class="sd">        TODO!!! Falta implementar este método.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar.</span>
+<span class="sd">            pattern (str): Expresión regular.</span>
+<span class="sd">            new_field_names (list): Sufijos de los nuevos campos para los</span>
+<span class="sd">                valores separados.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DataCleaner.string_peg_split"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.string_peg_split">[documentos]</a>    <span class="k">def</span> <span class="nf">string_peg_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">new_field_names</span><span class="p">,</span>
+                         <span class="n">keep_original</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para separar un campo a partir parsing expression grammars.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar.</span>
+<span class="sd">            grammar (str): Reglas para compilar una PEG.</span>
+<span class="sd">            new_field_names (list): Sufijos de los nuevos campos para los</span>
+<span class="sd">                valores separados.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">parsed_df</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_split_with_peg</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">grammar</span><span class="p">,))</span>
+
+        <span class="n">parsed_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">field</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">value</span>
+                     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_field_names</span><span class="p">)},</span>
+            <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">parsed_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remover_columnas</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parsed_df</span></div>
+
+    <span class="k">def</span> <span class="nf">_split_with_peg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">grammar</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">grammar</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammars</span><span class="p">:</span>
+            <span class="n">comp_grammar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammars</span><span class="p">[</span><span class="n">grammar</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">comp_grammar</span> <span class="o">=</span> <span class="n">parsley</span><span class="o">.</span><span class="n">makeGrammar</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grammars</span><span class="p">[</span><span class="n">grammar</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp_grammar</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">comp_grammar</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">unicode</span><span class="p">(</span><span class="n">split_value</span><span class="p">)</span> <span class="k">for</span> <span class="n">split_value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataCleaner.string_regex_substitute"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.string_regex_substitute">[documentos]</a>    <span class="k">def</span> <span class="nf">string_regex_substitute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex_str_match</span><span class="p">,</span>
+                                <span class="n">regex_str_sub</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Regla para manipular y reeemplazar datos de un campo con regex.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): Campo a limpiar.</span>
+<span class="sd">            regex_str_match (str): Expresion regular a buscar</span>
+<span class="sd">            regex_str_sub (str): Expresion regular para el reemplazo.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de strings limpios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sufix</span> <span class="o">=</span> <span class="n">sufix</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SUFIX</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">replaced</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">regex_str_match</span><span class="p">,</span> <span class="n">regex_str_sub</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_series</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">sufix</span><span class="o">=</span><span class="n">sufix</span><span class="p">,</span>
+                                <span class="n">keep_original</span><span class="o">=</span><span class="n">keep_original</span><span class="p">,</span>
+                                <span class="n">new_series</span><span class="o">=</span><span class="n">replaced</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">replaced</span></div>
+
+<div class="viewcode-block" id="DataCleaner.simplificar_geometria"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.data_cleaner.DataCleaner.simplificar_geometria">[documentos]</a>    <span class="k">def</span> <span class="nf">simplificar_geometria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Simplifica una geometría para que resulte</span>
+<span class="sd">           en un objeto de menor tamaño y complejidad,</span>
+<span class="sd">           que a la vez retenga sus características esenciales.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance (float): Nivel de tolerancia en la transformación.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series: Serie de geometrías.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">geometry</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;El dataframe no es de tipo GeoDataFrame.&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Código de módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Ir a" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Gobierno Abierto Argentina.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,153 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>data_cleaner.capitalizer &#8212; documentación de data-cleaner - 0.1.15</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.15',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/translations.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Índice" href="../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Código fuente para data_cleaner.capitalizer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Nomalizacion de strings.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+
+
+<span class="n">LOWER_WORDS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;el&quot;</span><span class="p">,</span> <span class="s2">&quot;los&quot;</span><span class="p">,</span> <span class="s2">&quot;la&quot;</span><span class="p">,</span> <span class="s2">&quot;las&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;de&quot;</span><span class="p">,</span> <span class="s2">&quot;del&quot;</span><span class="p">,</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span>
+<span class="p">]</span>
+
+<span class="n">IGNORE_WORDS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;S/N&quot;</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="normalize_word"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.capitalizer.normalize_word">[documentos]</a><span class="k">def</span> <span class="nf">normalize_word</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">lower_words</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Normaliza una palabra, capitalizándola cuando corresponde.</span>
+
+<span class="sd">    Si contiene signos de puntacion se capitaliza dentro de esas strings.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        word (str): Palabra</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Palabra normalizada</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lower_words</span> <span class="o">=</span> <span class="n">lower_words</span> <span class="ow">or</span> <span class="n">LOWER_WORDS</span>
+
+    <span class="k">for</span> <span class="n">character</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">punctuation</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">character</span> <span class="ow">in</span> <span class="n">word</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">capitalize</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">character</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">IGNORE_WORDS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">word</span>
+    <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">lower_words</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">word</span><span class="o">.</span><span class="n">title</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="capitalize"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.capitalizer.capitalize">[documentos]</a><span class="k">def</span> <span class="nf">capitalize</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">lower_words</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Capitaliza una string que puede estar compuesta por varias palabras</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string (str): Palabra</span>
+<span class="sd">        sep (str): Separador</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: String normalizada</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">unicode</span><span class="p">:</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+    <span class="n">words</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">first_word</span> <span class="o">=</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+    <span class="n">partial_normalize_word</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">normalize_word</span><span class="p">,</span> <span class="n">lower_words</span><span class="o">=</span><span class="n">lower_words</span><span class="p">)</span>
+    <span class="n">normalized_words</span> <span class="o">=</span> <span class="p">[</span><span class="n">first_word</span><span class="p">]</span> <span class="o">+</span> <span class="nb">map</span><span class="p">(</span><span class="n">partial_normalize_word</span><span class="p">,</span> <span class="n">words</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">sep</span> <span class="k">if</span> <span class="n">sep</span> <span class="k">else</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">normalized_words</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Código de módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Ir a" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Gobierno Abierto Argentina.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

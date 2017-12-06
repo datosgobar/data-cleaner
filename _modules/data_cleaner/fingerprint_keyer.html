@@ -1,0 +1,199 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>data_cleaner.fingerprint_keyer &#8212; documentación de data-cleaner - 0.1.15</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.15',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/translations.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Índice" href="../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Código fuente para data_cleaner.fingerprint_keyer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Implementa funciones para clusterizar strings.</span>
+
+<span class="sd">Utiliza el algoritmo Key Collision: Fingerprint.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">unidecode</span> <span class="k">import</span> <span class="n">unidecode</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="fingerprint_keyer"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.fingerprint_keyer.fingerprint_keyer">[documentos]</a><span class="k">def</span> <span class="nf">fingerprint_keyer</span><span class="p">(</span><span class="n">key_string</span><span class="p">,</span> <span class="n">sort_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">remove_duplicates</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convierte un string en su fingerprint key representation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        key_string (str): String para convertir en fingerprint key.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Fingerprint correspondiente al input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">key_string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># enforece string type</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">key_string</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">key_string</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">key_string</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+
+    <span class="c1"># remove leading and trailing whitespace, go to lowercase</span>
+    <span class="n">key_string</span> <span class="o">=</span> <span class="n">key_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="c1"># remove all punctuation and control characters</span>
+    <span class="k">for</span> <span class="n">punct</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">key_string</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span><span class="p">)):</span>
+        <span class="n">key_string</span> <span class="o">=</span> <span class="n">key_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">punct</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">key_string</span> <span class="o">=</span> <span class="n">key_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+    <span class="c1"># split the string into whitespace-separated tokens</span>
+    <span class="n">split_key</span> <span class="o">=</span> <span class="n">key_string</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+    <span class="c1"># remove duplicates, if chosen</span>
+    <span class="k">if</span> <span class="n">remove_duplicates</span><span class="p">:</span>
+        <span class="n">dups_removed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">split_key</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dups_removed</span> <span class="o">=</span> <span class="n">split_key</span>
+
+    <span class="c1"># sort the tokens, if chosen</span>
+    <span class="k">if</span> <span class="n">sort_tokens</span><span class="p">:</span>
+        <span class="c1"># sort the tokens</span>
+        <span class="n">sorted_split_key</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dups_removed</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sorted_split_key</span> <span class="o">=</span> <span class="n">dups_removed</span>
+
+    <span class="c1"># join the tokens back together</span>
+    <span class="n">finger_printed_key</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sorted_split_key</span><span class="p">)</span>
+
+    <span class="c1"># normalize extended western characters to their ASCII</span>
+    <span class="c1"># representation (for example &quot;gödel&quot; → &quot;godel&quot;)</span>
+    <span class="n">finger_printed_key</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">finger_printed_key</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">finger_printed_key</span></div>
+
+
+<div class="viewcode-block" id="group_fingerprint_strings"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.fingerprint_keyer.group_fingerprint_strings">[documentos]</a><span class="k">def</span> <span class="nf">group_fingerprint_strings</span><span class="p">(</span><span class="n">raw_strs</span><span class="p">,</span> <span class="n">sort_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="n">remove_duplicates</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Clusteriza un conjunto de strings, según sus fingerprints.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        raw_strs (list): Lista de strings sin procesar.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dict, dict): En el primer dict las keys son los fingerprints y los</span>
+<span class="sd">            valores las strings originales. En el segundo las keys son las</span>
+<span class="sd">            strings sin normalizar y los valores el conteo de la cantidad de</span>
+<span class="sd">            veces que aparecen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">fingerprint_keyer_with_args</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">fingerprint_keyer</span><span class="p">,</span>
+                                          <span class="n">sort_tokens</span><span class="o">=</span><span class="n">sort_tokens</span><span class="p">,</span>
+                                          <span class="n">remove_duplicates</span><span class="o">=</span><span class="n">remove_duplicates</span><span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">raw_str</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">fingerprint_keyer_with_args</span><span class="p">,</span> <span class="n">raw_strs</span><span class="p">),</span>
+                              <span class="n">raw_strs</span><span class="p">):</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">[</span><span class="n">raw_str</span><span class="p">]</span>
+        <span class="n">counts</span><span class="p">[</span><span class="n">raw_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">raw_str</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">counts</span></div>
+
+
+<div class="viewcode-block" id="get_best_replacements"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.fingerprint_keyer.get_best_replacements">[documentos]</a><span class="k">def</span> <span class="nf">get_best_replacements</span><span class="p">(</span><span class="n">clusters</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Selecciona los strings más utilizados por cluster.</span>
+
+<span class="sd">    Itera por cada cluster para determinar la mejor string para reemplazar las</span>
+<span class="sd">    strings originales. De momento solo utiliza un conteo simple pero podria</span>
+<span class="sd">    agregarse algun criterio basado en la capitalizacion de las palabras</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        clusters (dict): {fingerprint: [raw_string_1, raw_string_2]}</span>
+<span class="sd">        counts (dict): {raw_string: cant_veces_utilizada}</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: {fingerprint: string_mas_usada_para_esa_fingerprint}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">key_strings</span><span class="p">)</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">fingerprint</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">key_strings</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">counts</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="replace_by_key"><a class="viewcode-back" href="../../data_cleaner.html#data_cleaner.fingerprint_keyer.replace_by_key">[documentos]</a><span class="k">def</span> <span class="nf">replace_by_key</span><span class="p">(</span><span class="n">replacements</span><span class="p">,</span> <span class="n">raw_strs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reemplaza strings por sus mejores equivalentes.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">replacements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fingerprint_keyer</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">raw_strs</span><span class="p">]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Código de módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Ir a" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Gobierno Abierto Argentina.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

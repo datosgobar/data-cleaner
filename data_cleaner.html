@@ -1,0 +1,699 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Referencia de la API &#8212; documentación de data-cleaner - 0.1.15</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.15',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="prev" title="data-cleaner" href="README.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="referencia-de-la-api">
+<h1>Referencia de la API<a class="headerlink" href="#referencia-de-la-api" title="Enlazar permanentemente con este título">¶</a></h1>
+<div class="section" id="module-data_cleaner.data_cleaner">
+<span id="data-cleaner-data-cleaner-module"></span><h2>data_cleaner.data_cleaner module<a class="headerlink" href="#module-data_cleaner.data_cleaner" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Cleaner de CSVs a partir de reglas de limpieza.</p>
+<p>La clase DataCleaner permite limpiar archivos CSVs con datos a partir de la
+aplicación de reglas de limpieza.</p>
+<dl class="class">
+<dt id="data_cleaner.data_cleaner.DataCleaner">
+<em class="property">class </em><code class="descclassname">data_cleaner.data_cleaner.</code><code class="descname">DataCleaner</code><span class="sig-paren">(</span><em>input_path</em>, <em>ignore_dups=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Crea un objeto DataCleaner cargando un CSV en un DataFrame y expone
+reglas de limpieza para operar sobre las columnas del objeto y retornar un
+CSV limplio.</p>
+<dl class="attribute">
+<dt id="data_cleaner.data_cleaner.DataCleaner.DEFAULT_SUFIX">
+<code class="descname">DEFAULT_SUFIX</code><em class="property"> = u'normalizado'</em><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.DEFAULT_SUFIX" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="data_cleaner.data_cleaner.DataCleaner.INPUT_DEFAULT_ENCODING">
+<code class="descname">INPUT_DEFAULT_ENCODING</code><em class="property"> = 'utf-8'</em><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.INPUT_DEFAULT_ENCODING" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="data_cleaner.data_cleaner.DataCleaner.INPUT_DEFAULT_QUOTECHAR">
+<code class="descname">INPUT_DEFAULT_QUOTECHAR</code><em class="property"> = '&quot;'</em><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.INPUT_DEFAULT_QUOTECHAR" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="data_cleaner.data_cleaner.DataCleaner.INPUT_DEFAULT_SEPARATOR">
+<code class="descname">INPUT_DEFAULT_SEPARATOR</code><em class="property"> = ','</em><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.INPUT_DEFAULT_SEPARATOR" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="data_cleaner.data_cleaner.DataCleaner.OUTPUT_ENCODING">
+<code class="descname">OUTPUT_ENCODING</code><em class="property"> = 'utf-8'</em><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.OUTPUT_ENCODING" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="data_cleaner.data_cleaner.DataCleaner.OUTPUT_QUOTECHAR">
+<code class="descname">OUTPUT_QUOTECHAR</code><em class="property"> = '&quot;'</em><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.OUTPUT_QUOTECHAR" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="data_cleaner.data_cleaner.DataCleaner.OUTPUT_SEPARATOR">
+<code class="descname">OUTPUT_SEPARATOR</code><em class="property"> = ','</em><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.OUTPUT_SEPARATOR" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.clean">
+<code class="descname">clean</code><span class="sig-paren">(</span><em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.clean"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.clean" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Aplica las reglas de limpieza al objeto en memoria.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>rules</strong> (<em>list</em>) – Lista de reglas de limpieza.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.clean_file">
+<code class="descname">clean_file</code><span class="sig-paren">(</span><em>rules</em>, <em>output_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.clean_file"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.clean_file" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Aplica las reglas de limpieza y guarda los datos en un csv.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>rules</strong> (<em>list</em>) – Lista de reglas de limpieza.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.fecha_completa">
+<code class="descname">fecha_completa</code><span class="sig-paren">(</span><em>field</em>, <em>time_format</em>, <em>keep_original=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.fecha_completa"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.fecha_completa" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para fechas completas que están en un sólo campo.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar.</li>
+<li><strong>time_format</strong> (<em>str</em>) – Formato temporal del campo.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.fecha_separada">
+<code class="descname">fecha_separada</code><span class="sig-paren">(</span><em>fields</em>, <em>new_field_name</em>, <em>keep_original=True</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.fecha_separada"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.fecha_separada" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para fechas completas que están separadas en varios campos.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar.</li>
+<li><strong>new_field_name</strong> (<em>str</em>) – Sufijo para construir nombre del nuevo field.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.fecha_simple">
+<code class="descname">fecha_simple</code><span class="sig-paren">(</span><em>field</em>, <em>time_format</em>, <em>keep_original=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.fecha_simple"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.fecha_simple" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para fechas sin hora, sin día o sin mes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar.</li>
+<li><strong>time_format</strong> (<em>str</em>) – Formato temporal del campo.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.mail_format">
+<code class="descname">mail_format</code><span class="sig-paren">(</span><em>field</em>, <em>sufix=None</em>, <em>keep_original=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.mail_format"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.mail_format" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para dar formato a las direcciones de correo electronico.</p>
+<p>Lleva todas las cadenas a minusculas y luego si hay varias las separa
+por comas.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>field</strong> (<em>str</em>) – Campo a limpiar</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body">Serie de strings limpios</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">pandas.Series</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.nombre_propio">
+<code class="descname">nombre_propio</code><span class="sig-paren">(</span><em>field</em>, <em>sufix=None</em>, <em>lower_words=None</em>, <em>keep_original=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.nombre_propio"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.nombre_propio" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para todos los nombres propios.</p>
+<p>Capitaliza los nombres de países, ciudades, personas, instituciones y
+similares.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>field</strong> (<em>str</em>) – Campo a limpiar</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body">Serie de strings limpios</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">pandas.Series</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.reemplazar">
+<code class="descname">reemplazar</code><span class="sig-paren">(</span><em>field</em>, <em>replacements</em>, <em>sufix=None</em>, <em>keep_original=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.reemplazar"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.reemplazar" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Reemplaza listas de valores por un nuevo valor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar</li>
+<li><strong>replacements</strong> (<em>dict</em>) – {«new_value»: [«old_value1», «old_value2»]}</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.reemplazar_string">
+<code class="descname">reemplazar_string</code><span class="sig-paren">(</span><em>field</em>, <em>replacements</em>, <em>sufix=None</em>, <em>keep_original=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.reemplazar_string"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.reemplazar_string" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Reemplaza listas de strings por un nuevo string.</dt>
+<dd>A diferencias de la funcion reemplazar hace reemplazos parciales.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar</li>
+<li><strong>replacements</strong> (<em>dict</em>) – {«new_value»: [«old_value1», «old_value2»]}</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.remover_columnas">
+<code class="descname">remover_columnas</code><span class="sig-paren">(</span><em>field</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.remover_columnas"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.remover_columnas" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Remueve columnas.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>field</strong> (<em>str</em>) – Campo a limpiar</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body">Data frame con las columnas removidas.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">pandas.DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.renombrar_columnas">
+<code class="descname">renombrar_columnas</code><span class="sig-paren">(</span><em>field</em>, <em>new_field</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.renombrar_columnas"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.renombrar_columnas" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Renombra una columna.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a renombrar.</li>
+<li><strong>field</strong> – Nuevo nombre</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Data frame con las columnas renombradas.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>output_path</em>, <em>geometry_name=u'geojson'</em>, <em>geometry_crs=u'epsg:4326'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.save"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.save" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Guarda los datos en un nuevo CSV con formato estándar.</p>
+<p>El CSV se guarda codificado en UTF-8, separado con «,» y usando “»”
+comillas dobles como caracter de enclosing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.simplificar_geometria">
+<code class="descname">simplificar_geometria</code><span class="sig-paren">(</span><em>tolerance=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.simplificar_geometria"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.simplificar_geometria" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Simplifica una geometría para que resulte</dt>
+<dd>en un objeto de menor tamaño y complejidad,
+que a la vez retenga sus características esenciales.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>tolerance</strong> (<em>float</em>) – Nivel de tolerancia en la transformación.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body">Serie de geometrías.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">pandas.Series</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.string">
+<code class="descname">string</code><span class="sig-paren">(</span><em>field</em>, <em>sufix=None</em>, <em>sort_tokens=False</em>, <em>remove_duplicates=False</em>, <em>keep_original=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.string"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.string" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para todos los strings.</p>
+<p>Aplica un algoritimo de clustering para normalizar strings que son
+demasiado parecidos, sin pérdida de información.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>field</strong> (<em>str</em>) – Campo a limpiar.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body">Serie de strings limpios.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">pandas.Series</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.string_peg_split">
+<code class="descname">string_peg_split</code><span class="sig-paren">(</span><em>field</em>, <em>grammar</em>, <em>new_field_names</em>, <em>keep_original=True</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.string_peg_split"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.string_peg_split" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para separar un campo a partir parsing expression grammars.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar.</li>
+<li><strong>grammar</strong> (<em>str</em>) – Reglas para compilar una PEG.</li>
+<li><strong>new_field_names</strong> (<em>list</em>) – Sufijos de los nuevos campos para los
+valores separados.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.string_regex_split">
+<code class="descname">string_regex_split</code><span class="sig-paren">(</span><em>field</em>, <em>pattern</em>, <em>new_field_names</em>, <em>keep_original=True</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.string_regex_split"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.string_regex_split" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para separar un campo a partir de una expresión regular.</p>
+<p>TODO!!! Falta implementar este método.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar.</li>
+<li><strong>pattern</strong> (<em>str</em>) – Expresión regular.</li>
+<li><strong>new_field_names</strong> (<em>list</em>) – Sufijos de los nuevos campos para los
+valores separados.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.string_regex_substitute">
+<code class="descname">string_regex_substitute</code><span class="sig-paren">(</span><em>field</em>, <em>regex_str_match</em>, <em>regex_str_sub</em>, <em>sufix=None</em>, <em>keep_original=True</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.string_regex_substitute"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.string_regex_substitute" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para manipular y reeemplazar datos de un campo con regex.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar.</li>
+<li><strong>regex_str_match</strong> (<em>str</em>) – Expresion regular a buscar</li>
+<li><strong>regex_str_sub</strong> (<em>str</em>) – Expresion regular para el reemplazo.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="data_cleaner.data_cleaner.DataCleaner.string_simple_split">
+<code class="descname">string_simple_split</code><span class="sig-paren">(</span><em>field</em>, <em>separators</em>, <em>new_field_names</em>, <em>keep_original=True</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DataCleaner.string_simple_split"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DataCleaner.string_simple_split" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Regla para separar un campo a partir de separadores simples.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<em>str</em>) – Campo a limpiar</li>
+<li><strong>separators</strong> (<em>list</em>) – Strings separadores.</li>
+<li><strong>new_field_names</strong> (<em>list</em>) – Sufijos de los nuevos campos para los
+valores separados.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">Serie de strings limpios</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="data_cleaner.data_cleaner.DuplicatedField">
+<em class="property">exception </em><code class="descclassname">data_cleaner.data_cleaner.</code><code class="descname">DuplicatedField</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/data_cleaner.html#DuplicatedField"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.data_cleaner.DuplicatedField" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
+<p>Salta cuando hay un campo duplicado en el dataset.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-data_cleaner.capitalizer">
+<span id="data-cleaner-capitalizer-module"></span><h2>data_cleaner.capitalizer module<a class="headerlink" href="#module-data_cleaner.capitalizer" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Nomalizacion de strings.</p>
+<dl class="function">
+<dt id="data_cleaner.capitalizer.capitalize">
+<code class="descclassname">data_cleaner.capitalizer.</code><code class="descname">capitalize</code><span class="sig-paren">(</span><em>string</em>, <em>sep=None</em>, <em>encoding='utf-8'</em>, <em>lower_words=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/capitalizer.html#capitalize"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.capitalizer.capitalize" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Capitaliza una string que puede estar compuesta por varias palabras</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>string</strong> (<em>str</em>) – Palabra</li>
+<li><strong>sep</strong> (<em>str</em>) – Separador</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">String normalizada</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_cleaner.capitalizer.normalize_word">
+<code class="descclassname">data_cleaner.capitalizer.</code><code class="descname">normalize_word</code><span class="sig-paren">(</span><em>word</em>, <em>lower_words=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/capitalizer.html#normalize_word"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.capitalizer.normalize_word" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Normaliza una palabra, capitalizándola cuando corresponde.</p>
+<p>Si contiene signos de puntacion se capitaliza dentro de esas strings.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>word</strong> (<em>str</em>) – Palabra</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body">Palabra normalizada</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-data_cleaner.fingerprint_keyer">
+<span id="data-cleaner-fingerprint-keyer-module"></span><h2>data_cleaner.fingerprint_keyer module<a class="headerlink" href="#module-data_cleaner.fingerprint_keyer" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Implementa funciones para clusterizar strings.</p>
+<p>Utiliza el algoritmo Key Collision: Fingerprint.</p>
+<dl class="function">
+<dt id="data_cleaner.fingerprint_keyer.fingerprint_keyer">
+<code class="descclassname">data_cleaner.fingerprint_keyer.</code><code class="descname">fingerprint_keyer</code><span class="sig-paren">(</span><em>key_string</em>, <em>sort_tokens=False</em>, <em>remove_duplicates=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/fingerprint_keyer.html#fingerprint_keyer"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.fingerprint_keyer.fingerprint_keyer" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Convierte un string en su fingerprint key representation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>key_string</strong> (<em>str</em>) – String para convertir en fingerprint key.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body">Fingerprint correspondiente al input.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_cleaner.fingerprint_keyer.get_best_replacements">
+<code class="descclassname">data_cleaner.fingerprint_keyer.</code><code class="descname">get_best_replacements</code><span class="sig-paren">(</span><em>clusters</em>, <em>counts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/fingerprint_keyer.html#get_best_replacements"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.fingerprint_keyer.get_best_replacements" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Selecciona los strings más utilizados por cluster.</p>
+<p>Itera por cada cluster para determinar la mejor string para reemplazar las
+strings originales. De momento solo utiliza un conteo simple pero podria
+agregarse algun criterio basado en la capitalizacion de las palabras</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><ul class="first simple">
+<li><strong>clusters</strong> (<em>dict</em>) – {fingerprint: [raw_string_1, raw_string_2]}</li>
+<li><strong>counts</strong> (<em>dict</em>) – {raw_string: cant_veces_utilizada}</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first">{fingerprint: string_mas_usada_para_esa_fingerprint}</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_cleaner.fingerprint_keyer.group_fingerprint_strings">
+<code class="descclassname">data_cleaner.fingerprint_keyer.</code><code class="descname">group_fingerprint_strings</code><span class="sig-paren">(</span><em>raw_strs</em>, <em>sort_tokens=False</em>, <em>remove_duplicates=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/fingerprint_keyer.html#group_fingerprint_strings"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.fingerprint_keyer.group_fingerprint_strings" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Clusteriza un conjunto de strings, según sus fingerprints.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parámetros:</th><td class="field-body"><strong>raw_strs</strong> (<em>list</em>) – Lista de strings sin procesar.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><dl class="docutils">
+<dt>En el primer dict las keys son los fingerprints y los</dt>
+<dd>valores las strings originales. En el segundo las keys son las
+strings sin normalizar y los valores el conteo de la cantidad de
+veces que aparecen.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Tipo del valor devuelto:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">(dict, dict)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_cleaner.fingerprint_keyer.replace_by_key">
+<code class="descclassname">data_cleaner.fingerprint_keyer.</code><code class="descname">replace_by_key</code><span class="sig-paren">(</span><em>replacements</em>, <em>raw_strs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner/fingerprint_keyer.html#replace_by_key"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#data_cleaner.fingerprint_keyer.replace_by_key" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Reemplaza strings por sus mejores equivalentes.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Tabla de Contenidos</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Referencia de la API</a><ul>
+<li><a class="reference internal" href="#module-data_cleaner.data_cleaner">data_cleaner.data_cleaner module</a></li>
+<li><a class="reference internal" href="#module-data_cleaner.capitalizer">data_cleaner.capitalizer module</a></li>
+<li><a class="reference internal" href="#module-data_cleaner.fingerprint_keyer">data_cleaner.fingerprint_keyer module</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="README.html" title="capítulo anterior">data-cleaner</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>Esta página</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/data_cleaner.rst.txt"
+            rel="nofollow">Mostrar el código</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Ir a" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Gobierno Abierto Argentina.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/data_cleaner.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

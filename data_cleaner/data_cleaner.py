@@ -244,10 +244,10 @@ Método que llamó al normalizador de campos: {}
                 except Exception as e:
                     print(e)
                     print("Se procede sin re-proyectar las coordenadas.")
-            
+
             if output_path.endswith('.csv'):
                 self._set_json_geometry(geometry_name)
-  
+
             # Guarda el archivo en formato GeoJSON o KML.
             if output_path.endswith('json'):  # Acepta .json y .geojson.
                 self.df.to_file(output_path, driver='GeoJSON')
@@ -708,7 +708,8 @@ Método que llamó al normalizador de campos: {}
 
         return replaced
 
-    def simplificar_geometria(self, tolerance=0.5):
+    def simplificar_geometria(self, tolerance=0.5,
+                              keep_original=True, inplace=False):
         """Simplifica una geometría para que resulte
            en un objeto de menor tamaño y complejidad,
            que a la vez retenga sus características esenciales.

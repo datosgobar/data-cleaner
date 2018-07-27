@@ -30,6 +30,8 @@ from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
 from capitalizer import capitalize
 
+from wrappers import GeorefWrapper
+
 
 class DuplicatedField(ValueError):
     """Salta cuando hay un campo duplicado en el dataset."""
@@ -255,7 +257,6 @@ Método que llamó al normalizador de campos: {}
             elif output_path.endswith('kml'):
                 self._save_to_kml(output_path)
                 return
-
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
             sep=self.OUTPUT_SEPARATOR,
@@ -351,7 +352,6 @@ Método que llamó al normalizador de campos: {}
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
                                 new_series=capitalized)
-
         return capitalized
 
     def string(self, field, sufix=None, sort_tokens=False,
@@ -725,3 +725,33 @@ Método que llamó al normalizador de campos: {}
             return self.df.geometry
         else:
             raise TypeError('El dataframe no es de tipo GeoDataFrame.')
+
+    def normalizar_unidad_territorial(self, field, entity_level,
+                                      keep_original=False, inplace=False):
+        """
+        Args:
+            field (str): Campo a limpiar.
+            entity_level (str): Unidad territorial a Normalizar.
+            keep_original (bool): Específica si conserva la columna original.
+            inplace (bool): Específica si la limpieza perdura en el objeto.
+        """
+        field = self._normalize_field(field)
+        series = self.df[field]
+        series = series.apply(self._parse_entity,
+                                     args=(entity_level,))
+        if inplace:
+            self._update_series(field=field, keep_original=keep_original,
+                                new_series=series)
+        return series
+
+    @staticmethod
+    def _parse_entity(value, entity_level):
+        wrapper = GeorefWrapper()
+        if entity_level in 'provincia':
+            return wrapper.search_state(value)
+        elif entity_level in 'departamento':
+            return wrapper.search_departament(value)
+        elif entity_level in 'municipio':
+            return wrapper.search_municipality(value)
+        elif entity_level in 'localidades':
+            return wrapper.search_locality(value)

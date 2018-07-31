@@ -726,26 +726,37 @@ Método que llamó al normalizador de campos: {}
         else:
             raise TypeError('El dataframe no es de tipo GeoDataFrame.')
 
-    def normalizar_unidad_territorial(self, field, entity_level,
+    def normalizar_unidad_territorial(self, field, entity_level, add_code=False,
                                       keep_original=False, inplace=False):
         """
         Args:
             field (str): Campo a limpiar.
             entity_level (str): Unidad territorial a Normalizar.
+            add_code (bool): Específica si agrega código de entidad.
             keep_original (bool): Específica si conserva la columna original.
             inplace (bool): Específica si la limpieza perdura en el objeto.
         """
         field = self._normalize_field(field)
         series = self.df[field]
-        series = series.apply(self._parse_entity,
-                                     args=(entity_level,))
+        series = series.apply(self._get_entity, args=(entity_level,))
+
         if inplace:
+            self._update_series(field=field, keep_original=keep_original,
+                                new_series=series)
+
+        if add_code:
+            self.df["codigo"] = self._get_code('01') # TODO: obtener código de entidad
+            series = self.df
             self._update_series(field=field, keep_original=keep_original,
                                 new_series=series)
         return series
 
     @staticmethod
-    def _parse_entity(value, entity_level):
+    def _get_code(value):
+        return value
+
+    @staticmethod
+    def _get_entity(value, entity_level):
         wrapper = GeorefWrapper()
         if entity_level in 'provincia':
             return wrapper.search_state(value)

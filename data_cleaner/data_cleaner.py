@@ -13,7 +13,6 @@ from __future__ import with_statement
 import pandas as pd
 import geopandas as gpd
 import pycrs
-import json
 from dateutil import tz
 import arrow
 import parsley
@@ -21,7 +20,6 @@ from unidecode import unidecode
 import unicodecsv
 import warnings
 import inspect
-import os
 import re
 import subprocess
 from functools import partial
@@ -30,7 +28,7 @@ from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
 from capitalizer import capitalize
 
-from wrappers import GeorefWrapper
+from georef_api import *
 
 
 class DuplicatedField(ValueError):
@@ -727,42 +725,95 @@ Método que llamó al normalizador de campos: {}
             raise TypeError('El dataframe no es de tipo GeoDataFrame.')
 
     def normalizar_unidad_territorial(self, field, entity_level, add_code=False,
+                                      add_centroid=False, add_parents=True,
                                       keep_original=False, inplace=False):
-        """
+        """Normaliza y enriquece una unidad territorial del DataFrame.
+
         Args:
             field (str): Campo a limpiar.
-            entity_level (str): Unidad territorial a Normalizar.
+            entity_level (str): Nivel de unidad territorial a normalizar.
             add_code (bool): Específica si agrega código de entidad.
+            add_centroid (bool): Específica si agrega centroide de entidad.
+            add_parents (bool): Específica si agrega entidades padres.
             keep_original (bool): Específica si conserva la columna original.
             inplace (bool): Específica si la limpieza perdura en el objeto.
         """
-        field = self._normalize_field(field)
-        series = self.df[field]
-        series = series.apply(self._get_entity, args=(entity_level,))
+        # TODO: Validar que el nombre de la unidad territorial.
 
-        if inplace:
-            self._update_series(field=field, keep_original=keep_original,
-                                new_series=series)
+        res = self._get_api_response(self.df[field], entity_level)
+        if res:
+            field_normalized = [entity[NAME] for entity in res]
+            if keep_original:
+                self.df[field + '_normalized'] = field_normalized
+            else:
+                self.df[field] = field_normalized
 
-        if add_code:
-            self.df["codigo"] = self._get_code('01') # TODO: obtener código de entidad
-            series = self.df
-            self._update_series(field=field, keep_original=keep_original,
-                                new_series=series)
-        return series
+            if add_code:
+                self.df[entity_level + '_id'] = self._build_properties(ID, res)
+
+            if add_centroid:
+                self.df[entity_level + '_centroid_lat'] = \
+                    self._build_properties('lat', res)
+                self.df[entity_level + "_centroid_lon"] = \
+                    self._build_properties('lon', res)
+
+            if add_parents:
+                if entity_level not in PROV:
+                    self.df[PROV_NAM] = self._build_properties(NAME, res, PROV)
+                    self.df[PROV_ID] = self._build_properties(ID, res, PROV)
+                if entity_level in MUN or entity_level in LOCALITY:
+                    self.df[DEPT_NAM] = self._build_properties(NAME, res, DEPT)
+                    self.df[DEPT_ID] = self._build_properties(ID, res, DEPT)
+                if entity_level in LOCALITY:
+                    self.df[MUN_NAM] = self._build_properties(NAME, res, DEPT)
+                    self.df[MUN_ID] = self._build_properties(ID, res, DEPT)
+
+        return self.df
 
     @staticmethod
-    def _get_code(value):
-        return value
+    def _get_api_response(search_names, entity_level):
+        """Realizar una búsqueda por cada nombre de entidad en el servicio
+        de Georef API.
 
-    @staticmethod
-    def _get_entity(value, entity_level):
+        Args:
+            search_names (pandas.Series): Serie de nombres de unidades 
+            territoriales a consultar.
+            entity_level (str): Nivel de unidad territorial a consultar.
+
+        Returns:
+            entities (list): Lista de resultados de la búsqueda.
+        """
+        entities = []
+        result = False
         wrapper = GeorefWrapper()
-        if entity_level in 'provincia':
-            return wrapper.search_state(value)
-        elif entity_level in 'departamento':
-            return wrapper.search_departament(value)
-        elif entity_level in 'municipio':
-            return wrapper.search_municipality(value)
-        elif entity_level in 'localidades':
-            return wrapper.search_locality(value)
+        for name in search_names.values.tolist():
+            if entity_level in PROV:
+                result = wrapper.search_province(name)
+            elif entity_level in DEPT:
+                result = wrapper.search_departament(name)
+            elif entity_level in MUN:
+                result = wrapper.search_municipality(name)
+            elif entity_level in LOCALITY:
+                result = wrapper.search_locality(name)
+            entities.append(result) if result else entities.append({NAME: name})
+        return entities
+
+    @staticmethod
+    def _build_properties(attribute, results, entity_level=None):
+        """Construye una lista extrayendo el valor de un atributo específico
+        dada una lista con datos de unidades territoriales.
+
+        Args:
+            attribute (str): Nombre del atributo del que se requiere extraer
+            su valor.
+            results (list): Lista de resultados con unidades territoriales.
+            entity_level (str): Nombre de unidad territorial. Si se encuentra
+            presente se accede a los atributos de una entidad anidada.
+        Returns:
+            list: Lista con valores de un atributo específico.
+        """
+        if not entity_level:
+            return [entity[attribute] if attribute in entity else ''
+                    for entity in results]
+        return [entity[entity_level][attribute]
+                if entity_level in entity else '' for entity in results]

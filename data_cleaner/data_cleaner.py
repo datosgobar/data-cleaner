@@ -725,20 +725,19 @@ Método que llamó al normalizador de campos: {}
             raise TypeError('El dataframe no es de tipo GeoDataFrame.')
 
     def normalizar_unidad_territorial(self, field, entity_level, add_code=False,
-                                      add_centroid=False, add_parents=True,
+                                      add_centroid=False, add_parents=None,
                                       keep_original=False, inplace=False):
         """Normaliza y enriquece una unidad territorial del DataFrame.
 
         Args:
             field (str): Campo a limpiar.
             entity_level (str): Nivel de unidad territorial a normalizar.
-            add_code (bool): Específica si agrega código de entidad.
+            add_code (book): Específica si agrega código de entidad.
             add_centroid (bool): Específica si agrega centroide de entidad.
-            add_parents (bool): Específica si agrega entidades padres.
+            add_parents (list): Lista de entidades padres a agregar.
             keep_original (bool): Específica si conserva la columna original.
             inplace (bool): Específica si la limpieza perdura en el objeto.
         """
-        # TODO: Validar que el nombre de la unidad territorial.
 
         res = self._get_api_response(self.df[field], entity_level)
         if res:
@@ -758,15 +757,22 @@ Método que llamó al normalizador de campos: {}
                     self._build_properties('lon', res)
 
             if add_parents:
-                if entity_level not in PROV:
-                    self.df[PROV_NAM] = self._build_properties(NAME, res, PROV)
-                    self.df[PROV_ID] = self._build_properties(ID, res, PROV)
-                if entity_level in MUN or entity_level in LOCALITY:
-                    self.df[DEPT_NAM] = self._build_properties(NAME, res, DEPT)
-                    self.df[DEPT_ID] = self._build_properties(ID, res, DEPT)
-                if entity_level in LOCALITY:
-                    self.df[MUN_NAM] = self._build_properties(NAME, res, DEPT)
-                    self.df[MUN_ID] = self._build_properties(ID, res, DEPT)
+                for parent in add_parents:
+                    if entity_level not in PROV and parent in PROV:
+                        self.df[PROV_NAM] = \
+                            self._build_properties(NAME, res, parent)
+                        self.df[PROV_ID] = \
+                            self._build_properties(ID, res, parent)
+                    if parent in DEPT and entity_level in [MUN, LOCALITY]:
+                        self.df[DEPT_NAM] = \
+                            self._build_properties(NAME, res, parent)
+                        self.df[DEPT_ID] = \
+                            self._build_properties(ID, res, parent)
+                    if parent in MUN and entity_level in LOCALITY:
+                        self.df[MUN_NAM] = \
+                            self._build_properties(NAME, res, parent)
+                        self.df[MUN_ID] = \
+                            self._build_properties(ID, res, parent)
 
         return self.df
 
@@ -795,6 +801,9 @@ Método que llamó al normalizador de campos: {}
                 result = wrapper.search_municipality(name)
             elif entity_level in LOCALITY:
                 result = wrapper.search_locality(name)
+            else:
+                print('"{}" no es una entidad válida.'.format(entity_level))
+                return result
             entities.append(result) if result else entities.append({NAME: name})
         return entities
 

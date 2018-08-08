@@ -726,20 +726,26 @@ Método que llamó al normalizador de campos: {}
 
     def normalizar_unidad_territorial(self, field, entity_level, add_code=False,
                                       add_centroid=False, add_parents=None,
-                                      keep_original=False, inplace=False):
+                                      filters=None, keep_original=False,
+                                      inplace=False):
         """Normaliza y enriquece una unidad territorial del DataFrame.
 
         Args:
-            field (str): Campo a limpiar.
-            entity_level (str): Nivel de unidad territorial a normalizar.
-            add_code (book): Específica si agrega código de entidad.
-            add_centroid (bool): Específica si agrega centroide de entidad.
+            field (str): Nombre del campo a normalizar y limpiar.
+            entity_level (str): Nivel de la unidad territorial.
+            add_code (bool): Específica si agrega código de la entidad.
+            add_centroid (bool): Específica si agrega centroide de la entidad.
             add_parents (list): Lista de entidades padres a agregar.
+            filters (dict): Diccionario con entidades por las cuales filtrar.
             keep_original (bool): Específica si conserva la columna original.
             inplace (bool): Específica si la limpieza perdura en el objeto.
-        """
 
-        res = self._get_api_response(self.df[field], entity_level)
+        Returns:
+            pandas.Series: Serie de unidades territoriales normalizadas y
+                limpias.
+        """
+        res = self._get_api_response(field, entity_level, filters)
+
         if res:
             field_normalized = [entity[NAME] for entity in res]
             if keep_original:
@@ -774,37 +780,45 @@ Método que llamó al normalizador de campos: {}
                         self.df[MUN_ID] = \
                             self._build_properties(ID, res, parent)
 
+            if inplace:
+                # TODO: implementar este método.
+                pass
+
         return self.df
 
-    @staticmethod
-    def _get_api_response(search_names, entity_level):
+    def _get_api_response(self, field, entity_level, filters=None):
         """Realizar una búsqueda por cada nombre de entidad en el servicio
         de Georef API.
 
         Args:
-            search_names (pandas.Series): Serie de nombres de unidades 
-            territoriales a consultar.
-            entity_level (str): Nivel de unidad territorial a consultar.
+            field (str): Nombre del campo a consultar.
+            entity_level (str): Nivel de la unidad territorial a consultar.
+            filters (dict): Lista de entidades padres por las cuales filtrar.
 
         Returns:
-            entities (list): Lista de resultados de la búsqueda.
+            entities (list): Lista con resultados de la búsqueda.
         """
         entities = []
         result = False
+        params = False
         wrapper = GeorefWrapper()
-        for name in search_names.values.tolist():
+
+        for item, row in self.df.iterrows():
+            if filters:
+                params = self._build_filters(row, filters)
             if entity_level in PROV:
-                result = wrapper.search_province(name)
+                result = wrapper.search_province(row[field], params)
             elif entity_level in DEPT:
-                result = wrapper.search_departament(name)
+                result = wrapper.search_departament(row[field], params)
             elif entity_level in MUN:
-                result = wrapper.search_municipality(name)
+                result = wrapper.search_municipality(row[field], params)
             elif entity_level in LOCALITY:
-                result = wrapper.search_locality(name)
+                result = wrapper.search_locality(row[field], params)
             else:
                 print('"{}" no es una entidad válida.'.format(entity_level))
                 return result
-            entities.append(result) if result else entities.append({NAME: name})
+            entities.append(result) if result else entities.append({
+                NAME: row[field]})
         return entities
 
     @staticmethod
@@ -818,6 +832,7 @@ Método que llamó al normalizador de campos: {}
             results (list): Lista de resultados con unidades territoriales.
             entity_level (str): Nombre de unidad territorial. Si se encuentra
             presente se accede a los atributos de una entidad anidada.
+
         Returns:
             list: Lista con valores de un atributo específico.
         """
@@ -826,3 +841,24 @@ Método que llamó al normalizador de campos: {}
                     for entity in results]
         return [entity[entity_level][attribute]
                 if entity_level in entity else '' for entity in results]
+
+    @staticmethod
+    def _build_filters(row, filters):
+        """Contruye un diccionario con filtros de unidades territoriales.
+
+        Args:
+            row (pandas.Series): Serie con strings de unidades territoriales.
+            filters (dict): Diccionario con filtros.
+
+        Returns:
+            params (dict): Diccionario con filtros.
+        """
+        params = {}
+        row = row.fillna(0)  # reemplaza valores 'nan' por 0
+        if PROV + '_field' in filters and row[filters[PROV + '_field']]:
+                params.update({PROV: row[filters[PROV + '_field']]})
+        if DEPT + '_field' in filters and row[filters[DEPT + '_field']]:
+                params.update({DEPT: row[filters[DEPT + '_field']]})
+        if MUN + '_field' in filters and row[filters[MUN + '_field']]:
+                params.update({MUN: row[filters[MUN + '_field']]})
+        return params

@@ -27,25 +27,30 @@ class GeorefWrapper:
     def __init__(self):
         self.url = API_URL
 
-    def search_province(self, search_name):
+    def search_province(self, search_name, filters=None):
         entity = 'provincias'
-        return self._get_response(entity, search_name)
+        return self._get_response(entity, search_name, filters)
 
-    def search_departament(self, search_name):
+    def search_departament(self, search_name, filters=None):
         entity = 'departamentos'
-        return self._get_response(entity, search_name)
+        return self._get_response(entity, search_name, filters)
 
-    def search_municipality(self, search_name):
+    def search_municipality(self, search_name, filters=None):
         entity = 'municipios'
-        return self._get_response(entity, search_name)
+        return self._get_response(entity, search_name, filters)
 
-    def search_locality(self, search_name):
+    def search_locality(self, search_name, filters=None):
         entity = 'localidades'
-        return self._get_response(entity, search_name)
+        return self._get_response(entity, search_name, filters)
 
-    def _get_response(self, entity, search_name, first_element=True):
+    def _get_response(self, entity, search_name, filters=None,
+                      first_element=True):
+        params = {'nombre': search_name, 'max': 1}
         resource = self.url + entity + '?'
-        resource += urllib.urlencode({'nombre': search_name, 'max': 1})
+        if filters:
+            params.update(filters)
+
+        resource += urllib.urlencode(params)
         results = json.loads(urllib.urlopen(resource).read())
         if results[entity] and first_element:
             return self._get_first_element(results, entity)

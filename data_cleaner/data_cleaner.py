@@ -744,8 +744,11 @@ Método que llamó al normalizador de campos: {}
             pandas.Series: Serie de unidades territoriales normalizadas y
                 limpias.
         """
-        res = self._get_api_response(field, entity_level, filters)
+        if filters:
+            if not self._valid_filters(entity_level, filters):
+                return self.df
 
+        res = self._get_api_response(field, entity_level, filters)
         if res:
             field_normalized = [entity[NAME] for entity in res]
             if keep_original:
@@ -802,24 +805,28 @@ Método que llamó al normalizador de campos: {}
         result = False
         params = False
         wrapper = GeorefWrapper()
-
-        for item, row in self.df.iterrows():
-            if filters:
-                params = self._build_filters(row, filters)
-            if entity_level in PROV:
-                result = wrapper.search_province(row[field], params)
-            elif entity_level in DEPT:
-                result = wrapper.search_departament(row[field], params)
-            elif entity_level in MUN:
-                result = wrapper.search_municipality(row[field], params)
-            elif entity_level in LOCALITY:
-                result = wrapper.search_locality(row[field], params)
-            else:
-                print('"{}" no es una entidad válida.'.format(entity_level))
-                return result
-            entities.append(result) if result else entities.append({
-                NAME: row[field]})
-        return entities
+        try:
+            for item, row in self.df.iterrows():
+                if filters:
+                    params = self._build_filters(row, filters)
+                if entity_level in PROV:
+                    result = wrapper.search_province(row[field], params)
+                elif entity_level in DEPT:
+                    result = wrapper.search_departament(row[field], params)
+                elif entity_level in MUN:
+                    result = wrapper.search_municipality(row[field], params)
+                elif entity_level in LOCALITY:
+                    result = wrapper.search_locality(row[field], params)
+                else:
+                    print('"{}" no es una entidad válida.'.format(entity_level))
+                    return result
+                entities.append(result) if result else entities.append({
+                    NAME: row[field]})
+            return entities
+        except KeyError as e:
+            print('Error: No existe el campo "{}".'.format(e))
+        except Exception as e:
+            print(e)
 
     @staticmethod
     def _build_properties(attribute, results, entity_level=None):
@@ -853,12 +860,48 @@ Método que llamó al normalizador de campos: {}
         Returns:
             params (dict): Diccionario con filtros.
         """
+
         params = {}
+        field_prov = PROV + '_field'
+        field_dept = DEPT + '_field'
+        field_mun = MUN + '_field'
         row = row.fillna(0)  # reemplaza valores 'nan' por 0
-        if PROV + '_field' in filters and row[filters[PROV + '_field']]:
-                params.update({PROV: row[filters[PROV + '_field']]})
-        if DEPT + '_field' in filters and row[filters[DEPT + '_field']]:
-                params.update({DEPT: row[filters[DEPT + '_field']]})
-        if MUN + '_field' in filters and row[filters[MUN + '_field']]:
-                params.update({MUN: row[filters[MUN + '_field']]})
+
+        # Si existe el filtro y su valor no es 0 lo agrega al diccionario
+        if field_prov in filters and row[filters[field_prov]]:
+                params.update({PROV: row[filters[field_prov]]})
+        if field_dept in filters and row[filters[field_dept]]:
+                params.update({DEPT: row[filters[field_dept]]})
+        if field_mun in filters and row[filters[field_mun]]:
+                params.update({MUN: row[filters[field_mun]]})
         return params
+
+    @staticmethod
+    def _valid_filters(entity_level, filters):
+        """Valida que los filtros sean consistentes con el nivel de entidad a
+        normalizar.
+
+        Args:
+            entity_level: Nombre de la unidad territorial por la cual filtrar.
+            filters (dict): Diccionario con filtros.
+
+        Returns:
+            bool: Verdadero si los filtros establecidos son válidos.
+        """
+
+        field_prov = PROV + '_field'
+        field_dept = DEPT + '_field'
+        field_mun = MUN + '_field'
+
+        # Verfica que se utilicen keywords válidos
+        for key, value in filters.iteritems():
+            if key not in [field_prov, field_dept, field_mun]:
+                print('"{}" no es keyword válida.'.format(key))
+                return False
+            if entity_level in key:
+                print('"{}" no es un filtro valido para la entidad "{}"'
+                      .format(key, entity_level))
+                return False
+        # TODO: validar la consistencia con el nivel de la entidad.
+
+        return True

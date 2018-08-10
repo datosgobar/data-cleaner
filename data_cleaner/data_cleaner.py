@@ -731,7 +731,7 @@ Método que llamó al normalizador de campos: {}
         """Normaliza y enriquece una unidad territorial del DataFrame.
 
         Args:
-            field (str): Nombre del campo a normalizar y limpiar.
+            field (str): Nombre del campo a normalizar.
             entity_level (str): Nivel de la unidad territorial.
             add_code (bool): Específica si agrega código de la entidad.
             add_centroid (bool): Específica si agrega centroide de la entidad.
@@ -878,7 +878,7 @@ Método que llamó al normalizador de campos: {}
 
     @staticmethod
     def _valid_filters(entity_level, filters):
-        """Valida que los filtros sean consistentes con el nivel de entidad a
+        """Verica que los filtros sean validos con el nivel de entidad a
         normalizar.
 
         Args:
@@ -886,22 +886,24 @@ Método que llamó al normalizador de campos: {}
             filters (dict): Diccionario con filtros.
 
         Returns:
-            bool: Verdadero si los filtros establecidos son válidos.
+            bool: Verdadero si los filtros son válidos.
         """
 
         field_prov = PROV + '_field'
         field_dept = DEPT + '_field'
         field_mun = MUN + '_field'
 
-        # Verfica que se utilicen keywords válidos
+        # Verfica que se utilicen keywords válidos por entidad
         for key, value in filters.iteritems():
             if key not in [field_prov, field_dept, field_mun]:
-                print('"{}" no es keyword válida.'.format(key))
-                return False
-            if entity_level in key:
-                print('"{}" no es un filtro valido para la entidad "{}"'
+                print('"{}" no es un keyword valido.'.format(key))
+                return
+            if entity_level in key or entity_level in PROV:
+                print('"{}" no es un filtro valido para la entidad "{}."'
                       .format(key, entity_level))
-                return False
-        # TODO: validar la consistencia con el nivel de la entidad.
-
+                return
+            if entity_level in DEPT and PROV not in key:
+                print('"{}" no es un filtro valido para la entidad "{}".'
+                      .format(key, entity_level))
+                return
         return True

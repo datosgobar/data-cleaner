@@ -748,8 +748,13 @@ Método que llamó al normalizador de campos: {}
             if not self._valid_filters(entity_level, filters):
                 return self.df
 
-        res = self._get_api_response(field, entity_level, filters)
+        data = self._build_data(field, entity_level, filters)
+        res = self._get_api_response(entity_level, data)
+
         if res:
+            for row in res:
+                print(row[entity_level + 's'])
+
             field_normalized = [entity[NAME] for entity in res]
             if keep_original:
                 self.df[field + '_normalized'] = field_normalized
@@ -789,7 +794,7 @@ Método que llamó al normalizador de campos: {}
 
         return self.df
 
-    def _get_api_response(self, field, entity_level, filters=None):
+    def _get_api_response(self, entity_level, data):
         """Realizar una búsqueda por cada nombre de entidad en el servicio
         de Georef API.
 
@@ -801,32 +806,39 @@ Método que llamó al normalizador de campos: {}
         Returns:
             entities (list): Lista con resultados de la búsqueda.
         """
-        entities = []
-        result = False
-        params = False
+        result = None
         wrapper = GeorefWrapper()
+
+        if entity_level in PROV:
+            result = wrapper.search_province(data)
+        elif entity_level in DEPT:
+            result = wrapper.search_departament(data)
+        elif entity_level in MUN:
+            result = wrapper.search_municipality(data)
+        elif entity_level in LOCALITY:
+            result = wrapper.search_locality(data)
+        else:
+            print('"{}" no es una entidad válida.'.format(entity_level))
+            return False
+        return result
+
+    def _build_data(self, field, entity_level, filters):
+        body = []
+        entity_level = entity_level + 's'
+
         try:
             for item, row in self.df.iterrows():
+                data = {'nombre': row[field]}
                 if filters:
                     params = self._build_filters(row, filters)
-                if entity_level in PROV:
-                    result = wrapper.search_province(row[field], params)
-                elif entity_level in DEPT:
-                    result = wrapper.search_departament(row[field], params)
-                elif entity_level in MUN:
-                    result = wrapper.search_municipality(row[field], params)
-                elif entity_level in LOCALITY:
-                    result = wrapper.search_locality(row[field], params)
-                else:
-                    print('"{}" no es una entidad válida.'.format(entity_level))
-                    return result
-                entities.append(result) if result else entities.append({
-                    NAME: row[field]})
-            return entities
+                    data.update(params)
+                body.append(data)
+            return {entity_level: body}
         except KeyError as e:
             print('Error: No existe el campo "{}".'.format(e))
         except Exception as e:
             print(e)
+        return False
 
     @staticmethod
     def _build_properties(attribute, results, entity_level=None):

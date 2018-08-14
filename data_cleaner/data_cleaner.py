@@ -745,88 +745,50 @@ Método que llamó al normalizador de campos: {}
                 limpias.
         """
         if filters:
-            if not self._valid_filters(entity_level, filters):
+            if not self._validate_filters(entity_level, filters):
                 return self.df
 
         data = self._build_data(field, entity_level, filters)
-
         res = self._get_api_response(entity_level, data)
 
-        if res:
-            idx = 0
-            for row in res:
-                if row[entity_level + 's']:
-                    field_normalized = row[entity_level + 's'][0][NAME]
-                    if keep_original:
-                        self.df[field + '_normalized'][idx] = field_normalized
-                    else:
-                        self.df[field][idx] = field_normalized
-                    idx += 1
+        if not res:
+            return self.df
 
-            if add_code:
-                self.df[entity_level + '_id'] = None
-                idx = 0
-                for row in res:
-                    if row[entity_level + 's']:
-                        self.df[entity_level + '_id'][idx] = \
-                            row[entity_level + 's'][0][ID]
-                    idx += 1
+        if keep_original:
+            field_normalized = str(field + '_normalized')
+            self._update_column(field_normalized, NAME, entity_level, res)
+        else:
+            self._update_column(field, NAME, entity_level, res)
 
-            if add_centroid:
-                self.df[entity_level + '_centroid_lat'] = None
-                self.df[entity_level + '_centroid_lon'] = None
-                idx = 0
-                for row in res:
-                    if row[entity_level + 's']:
-                        self.df[entity_level + '_centroid_lat'][idx] = \
-                            row[entity_level + 's'][0]['lat']
-                        self.df[entity_level + '_centroid_lon'][idx] = \
-                            row[entity_level + 's'][0]['lon']
-                        idx += 1
+        if add_code:
+            column_code = entity_level + '_' + ID
+            self._update_column(column_code, ID, entity_level, res)
 
-            if add_parents:
+        if add_centroid:
+            column_lat = entity_level + '_' + LAT
+            column_lon = entity_level + '_' + LON
+            self._update_column(column_lat, LAT, entity_level, res)
+            self._update_column(column_lon, LON, entity_level, res)
 
-                self.df[PROV_ID] = None
-                self.df[PROV_NAM] = None
-                self.df[DEPT_ID] = None
-                self.df[DEPT_NAM] = None
-                self.df[MUN_ID] = None
-                self.df[MUN_NAM] = None
+        if add_parents:
+            for parent in add_parents:
+                if entity_level not in PROV and parent in PROV:
+                    self._update_column(PROV_ID, PROV_ID, entity_level, res)
+                    self._update_column(PROV_NAM, PROV_NAM, entity_level, res)
 
-                for parent in add_parents:
-                    idx = 0
-                    for row in res:
-                        if row[entity_level + 's']:
-                            if entity_level not in PROV and parent in PROV:
+                if parent in DEPT and entity_level in [MUN, LOCALITY]:
+                    self._update_column(DEPT_ID, DEPT_ID, entity_level, res)
+                    self._update_column(DEPT_NAM, DEPT_NAM, entity_level, res)
 
-                                self.df[PROV_ID][idx] = \
-                                    row[entity_level + 's'][0]['provincia_id']
-                                self.df[PROV_NAM][idx] = \
-                                    row[entity_level + 's'][0][
-                                        'provincia_nombre']
-
-                            if parent in DEPT and entity_level in [MUN, LOCALITY]:
-                                self.df[DEPT_ID][idx] = \
-                                    row[entity_level + 's'][0]['departamento_id']
-                                self.df[DEPT_NAM][idx] = \
-                                    row[entity_level + 's'][0]['departamento_nombre']
-
-                            if parent in MUN and entity_level in LOCALITY:
-                                self.df[MUN_ID][idx] = \
-                                    row[entity_level + 's'][0]['municipio_id']
-                                self.df[MUN_NAM][idx] = \
-                                    row[entity_level + 's'][0]['municipio_nombre']
-                            idx += 1
-            #
-            #     if inplace:
-            #         # TODO: implementar este método.
-            #         pass
+                if parent in MUN and entity_level in LOCALITY:
+                    self._update_column(MUN_ID, MUN_ID, entity_level, res)
+                    self._update_column(MUN_NAM, MUN_NAM, entity_level, res)
 
         return self.df
 
     @staticmethod
-    def _valid_filters(entity_level, filters):
-        """Verica que los filtros sean validos con el nivel de entidad a
+    def _validate_filters(entity_level, filters):
+        """Verifica que los filtros sean validos con el nivel de entidad a
         normalizar.
 
         Args:
@@ -843,29 +805,48 @@ Método que llamó al normalizador de campos: {}
 
         # Verfica que se utilicen keywords válidos por entidad
         for key, value in filters.iteritems():
+
             if key not in [field_prov, field_dept, field_mun]:
-                print('"{}" no es un keyword valido.'.format(key))
+                print('"{}" no es un keyword válido.'.format(key))
                 return
             if entity_level in key or entity_level in PROV:
-                print('"{}" no es un filtro valido para la entidad "{}."'
+                print('"{}" no es un filtro válido para la entidad "{}."'
                       .format(key, entity_level))
                 return
             if entity_level in DEPT and PROV not in key:
-                print('"{}" no es un filtro valido para la entidad "{}".'
+                print('"{}" no es un filtro válido para la entidad "{}".'
                       .format(key, entity_level))
                 return
+
         return True
 
     def _build_data(self, field, entity_level, filters):
+        """Construye un diccionario con una lista de unidades territoriales
+        para realizar consultas a la API de normalización Georef Ar API
+        utilizando el método bulk.
+
+        Args:
+            field (str): Nombre del campo a normalizar.
+            entity_level (str): Nivel de la unidad territorial.
+            filters (dict): Diccionario con entidades por las cuales filtrar.
+
+        Returns:
+            dict: (dict): Diccionario a utilizar para realizar una consulta.
+            En caso de error devuelve False.
+        """
         body = []
-        entity_level = entity_level + 's'
+        entity_level = self._parsed_entity_level(entity_level)
 
         try:
             for item, row in self.df.iterrows():
-                data = {'nombre': row[field], 'max': 1, 'aplanar': True}
+                data = {'nombre': row[field], 'max': 1}
+
+                if PROV not in entity_level:
+                    data.update({'aplanar': True})
                 if filters:
                     filters_builded = self._build_filters(row, filters)
                     data.update(filters_builded)
+
                 body.append(data)
             return {entity_level: body}
         except KeyError as e:
@@ -891,6 +872,7 @@ Método que llamó al normalizador de campos: {}
         field_dept = DEPT + '_field'
         field_mun = MUN + '_field'
         row = row.fillna(0)  # reemplaza valores 'nan' por 0
+
         # Si existe el filtro y su valor no es 0 lo agrega al diccionario
         if field_prov in filters and row[filters[field_prov]]:
                 params.update({PROV: row[filters[field_prov]]})
@@ -900,33 +882,59 @@ Método que llamó al normalizador de campos: {}
                 params.update({MUN: row[filters[field_mun]]})
         return params
 
-    def _get_api_response(self, entity_level, data):
-        """Realizar una búsqueda por cada nombre de entidad en el servicio
-        de Georef API.
+    @staticmethod
+    def _get_api_response(entity_level, data):
+        """Realiza búsquedas sobre un listado de entidades en simultáneo
+        utilizando el método bulk de la API de normalización Georef Ar API.
 
         Args:
-            field (str): Nombre del campo a consultar.
             entity_level (str): Nivel de la unidad territorial a consultar.
-            filters (dict): Lista de entidades padres por las cuales filtrar.
 
         Returns:
-            entities (list): Lista con resultados de la búsqueda.
+            results (list): Lista con resultados de la búsqueda.
         """
         wrapper = GeorefWrapper()
 
         if entity_level in PROV:
-            result = wrapper.search_province(data)
+            results = wrapper.search_province(data)
         elif entity_level in DEPT:
-            result = wrapper.search_departament(data)
+            results = wrapper.search_departament(data)
         elif entity_level in MUN:
-            result = wrapper.search_municipality(data)
+            results = wrapper.search_municipality(data)
         elif entity_level in LOCALITY:
-            result = wrapper.search_locality(data)
+            results = wrapper.search_locality(data)
         else:
             print('"{}" no es una entidad válida.'.format(entity_level))
             return False
-        return result
+        return results
+
+    def _update_column(self, column, attribute, entity_level, results):
+        """Actualiza una columna específica del DataFrame.
+
+        Args:
+            column (str): Nombre de la columna a agregar y/o actualizar.
+            attribute (str): Nombre del atributo del
+            entity_level (str): Nivel de la unidad territorial a consultar.
+            results (list): Resultado de la consulta a la API.
+
+        Return:
+            None
+        """
+        entity_level = self._parsed_entity_level(entity_level)
+
+        if column not in self.df:
+            self.df[column] = None
+
+        idx = 0
+        for row in results:
+            if row[entity_level]:
+                self.df[column][idx] = row[entity_level][0][attribute]
+            idx += 1
 
     @staticmethod
-    def _build_properties(attribute, results, entity_level=None):
-        pass
+    def _parsed_entity_level(entity_level):
+        if LOCALITY not in entity_level:
+            entity_level = entity_level + 's'
+        else:
+            entity_level = entity_level + 'es'
+        return entity_level

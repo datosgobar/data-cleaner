@@ -835,7 +835,7 @@ Método que llamó al normalizador de campos: {}
             En caso de error devuelve False.
         """
         body = []
-        entity_level = self._parsed_entity_level(entity_level)
+        entity_level = self._plural_entity_level(entity_level)
 
         try:
             for item, row in self.df.iterrows():
@@ -920,7 +920,7 @@ Método que llamó al normalizador de campos: {}
         Return:
             None
         """
-        entity_level = self._parsed_entity_level(entity_level)
+        entity_level = self._plural_entity_level(entity_level)
 
         if column not in self.df:
             self.df[column] = None
@@ -932,7 +932,7 @@ Método que llamó al normalizador de campos: {}
             idx += 1
 
     @staticmethod
-    def _parsed_entity_level(entity_level):
+    def _plural_entity_level(entity_level):
         if LOCALITY not in entity_level:
             entity_level = entity_level + 's'
         else:

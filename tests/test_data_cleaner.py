@@ -458,5 +458,38 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         nose.tools.assert_raises(TypeError, dc.simplificar_geometria)
 
 
+class NormalizarUnidadTerritorialTestCase(unittest.TestCase):
+
+    def test_invalidate_filters(self):
+        """Debería encontrar filtros ínvalidos."""
+        entity = 'departamento'
+        test_filters = {
+            "provincia_field": "provincia",
+            "departamento_field": "provincia"
+        }
+        self.assertFalse(DataCleaner._validate_filters(entity, test_filters))
+
+    def test_validate_filters(self):
+        """Debería validar los filtros."""
+        entity = 'localidad'
+        test_filters = {
+            "provincia_field": "provincia",
+            "departamento_field": "departamento",
+            "municipio_field": "municipio",
+        }
+        self.assertTrue(DataCleaner._validate_filters(entity, test_filters))
+
+    def test_parsed_entity_level(self):
+        """Pluraliza una unidad territorial."""
+        test_string = [
+            ("provincia", "provincias"),
+            ("departamento", "departamentos"),
+            ("municipio", "municipios"),
+            ("localidad", "localidades")
+        ]
+        for (inp, outp) in test_string:
+            self.assertEqual(DataCleaner._plural_entity_level(inp), outp)
+
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

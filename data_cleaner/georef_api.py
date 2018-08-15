@@ -21,8 +21,8 @@ MUN = 'municipio'
 MUN_ID = 'municipio_id'
 MUN_NAM = 'municipio_nombre'
 LOCALITY = 'localidad'
-LAT = 'lat'
-LON = 'lon'
+LAT = 'centroide_lat'
+LON = 'centroide_lon'
 
 
 class GeorefWrapper:
@@ -51,7 +51,12 @@ class GeorefWrapper:
         resource = self.url + entity
         data = json.dumps(data)
         headers = {"Content-Type": "application/json"}
-        req = requests.post(resource, data=data, headers=headers)
-        if 'resultados' in req.content:
-            return json.loads(req.content)['resultados']
-        return None
+        try:
+            req = requests.post(resource, data=data, headers=headers)
+            if 'resultados' in req.content:
+                return json.loads(req.content)['resultados']
+            if 'errores' in req.content:
+                msg = json.loads(req.content)['errores'][0][0]['mensaje']
+                return {'error': msg}
+        except Exception as e:
+            return {'error': e}

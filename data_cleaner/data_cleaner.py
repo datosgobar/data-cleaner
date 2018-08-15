@@ -751,8 +751,9 @@ Método que llamó al normalizador de campos: {}
         data = self._build_data(field, entity_level, filters)
         res = self._get_api_response(entity_level, data)
 
-        if not res:
-            return self.df
+        if 'error' in res:
+            print(res['error'])
+            return
 
         if keep_original:
             field_normalized = str(field + '_normalized')
@@ -792,7 +793,7 @@ Método que llamó al normalizador de campos: {}
         normalizar.
 
         Args:
-            entity_level: Nombre de la unidad territorial por la cual filtrar.
+            entity_level: Nivel de la unidad territorial por la cual filtrar.
             filters (dict): Diccionario con filtros.
 
         Returns:
@@ -933,6 +934,14 @@ Método que llamó al normalizador de campos: {}
 
     @staticmethod
     def _plural_entity_level(entity_level):
+        """Pluraliza el nombre de una unidad territorial.
+
+        Args:
+            entity_level (str): Nivel de la unidad territorial a pluralizar.
+
+        Return:
+            entity_level (str): Nombre pluralizado.
+        """
         if LOCALITY not in entity_level:
             entity_level = entity_level + 's'
         else:

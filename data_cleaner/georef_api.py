@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import json
-import urllib
 import os
 import requests
-from requests import Request
 
 
 API_URL = os.environ['API_URL']
@@ -48,15 +46,34 @@ class GeorefWrapper:
         return self._get_response(entity, data)
 
     def _get_response(self, entity, data):
+
+        results = []
+        results_partial = []
+        lenght_data = len([i for i in data[entity] if i])
         resource = self.url + entity
-        data = json.dumps(data)
-        headers = {"Content-Type": "application/json"}
-        try:
-            req = requests.post(resource, data=data, headers=headers)
+
+        if lenght_data > 5000:
+            data = self._getrows_byslice(entity, data[entity], 5000)
+        else:
+            data = [data]
+
+        for row in data:
+            req = requests.post(resource, json=row)
             if 'resultados' in req.content:
-                return json.loads(req.content)['resultados']
-            if 'errores' in req.content:
-                msg = json.loads(req.content)['errores'][0][0]['mensaje']
-                return {'error': msg}
-        except Exception as e:
-            return {'error': e}
+                results_partial.append(json.loads(req.content)['resultados'])
+
+        for row in results_partial:
+            for v in row:
+                if v[entity]:
+                    results.append({entity: [v[entity][0]]})
+                else:
+                    results.append({entity: []})
+        # TODO: Manejo de errores
+        return results
+
+    @staticmethod
+    def _getrows_byslice(entity, seq, rowlen):
+        data_slice = []
+        for start in xrange(0, len(seq), rowlen):
+            data_slice.append({entity: seq[start:start + rowlen]})
+        return data_slice

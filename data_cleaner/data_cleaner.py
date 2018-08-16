@@ -744,6 +744,10 @@ Método que llamó al normalizador de campos: {}
             pandas.Series: Serie de unidades territoriales normalizadas y
                 limpias.
         """
+        if len(self.df) > 100000:
+            print('supera el número permitido de registros a normalizar.')
+            return
+
         if filters:
             if not self._validate_filters(entity_level, filters):
                 return self.df

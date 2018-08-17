@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import json
-import os
 import requests
 
 
-API_URL = os.environ['API_URL']
 ID = 'id'
 NAME = 'nombre'
 PROV = 'provincia'
@@ -27,7 +25,8 @@ class GeorefWrapper:
     """Interfaz para la API REST de Georef."""
 
     def __init__(self):
-        self.url = API_URL
+        self.url = "http://apis.datos.gob.ar/georef/api/"
+        self.max_bulk_len = 5000
 
     def search_province(self, data):
         entity = 'provincias'
@@ -47,29 +46,32 @@ class GeorefWrapper:
 
     def _get_response(self, entity, data):
 
-        results = []
-        results_partial = []
-        lenght_data = len([i for i in data[entity] if i])
+        result = []
+        result_partial = []
+        data_len = len([i for i in data[entity] if i])
         resource = self.url + entity
 
-        if lenght_data > 5000:
-            data = self._getrows_byslice(entity, data[entity], 5000)
+        if data_len > self.max_bulk_len:
+            data = self._getrows_byslice(entity, data[entity], self.max_bulk_len)
         else:
             data = [data]
 
         for row in data:
-            req = requests.post(resource, json=row)
-            if 'resultados' in req.content:
-                results_partial.append(json.loads(req.content)['resultados'])
+            r = requests.post(resource, json=row)
+            if 'resultados' in r.content:
+                result_partial.append(json.loads(r.content)['resultados'])
+            else:
+                error = self._get_first_error(json.loads(r.content)['errores'])
+                return {'error': error}
 
-        for row in results_partial:
+        for row in result_partial:
             for v in row:
                 if v[entity]:
-                    results.append({entity: [v[entity][0]]})
+                    result.append({entity: [v[entity][0]]})
                 else:
-                    results.append({entity: []})
-        # TODO: Manejo de errores
-        return results
+                    result.append({entity: []})
+
+        return result
 
     @staticmethod
     def _getrows_byslice(entity, seq, rowlen):
@@ -77,3 +79,8 @@ class GeorefWrapper:
         for start in xrange(0, len(seq), rowlen):
             data_slice.append({entity: seq[start:start + rowlen]})
         return data_slice
+
+    @staticmethod
+    def _get_first_error(result):
+        idx = next(i for i, j in enumerate(result) if j)
+        return result[idx]

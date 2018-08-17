@@ -844,6 +844,7 @@ Método que llamó al normalizador de campos: {}
 
         try:
             for item, row in self.df.iterrows():
+                row = row.fillna('0')  # reemplaza valores 'nan' por '0'
                 data = {'nombre': row[field], 'max': 1}
 
                 if PROV not in entity_level:
@@ -876,7 +877,7 @@ Método que llamó al normalizador de campos: {}
         field_prov = PROV + '_field'
         field_dept = DEPT + '_field'
         field_mun = MUN + '_field'
-        row = row.fillna(0)  # reemplaza valores 'nan' por 0
+        row = row.fillna(0)
 
         # Si existe el filtro y su valor no es 0 lo agrega al diccionario
         if field_prov in filters and row[filters[field_prov]]:

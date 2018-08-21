@@ -751,7 +751,6 @@ Método que llamó al normalizador de campos: {}
         if filters:
             if not self._validate_filters(entity_level, filters):
                 return self.df
-
         data = self._build_data(field, entity_level, filters)
         res = self._get_api_response(entity_level, data)
 
@@ -934,7 +933,7 @@ Método que llamó al normalizador de campos: {}
         idx = 0
         for row in results:
             if row[entity_level]:
-                self.df[column][idx] = row[entity_level][0][attribute]
+                self.df.loc[idx, column] = row[entity_level][0][attribute]
             idx += 1
 
     @staticmethod

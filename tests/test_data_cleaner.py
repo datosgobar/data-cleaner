@@ -490,6 +490,40 @@ class NormalizarUnidadTerritorialTestCase(unittest.TestCase):
         for (inp, outp) in test_string:
             self.assertEqual(DataCleaner._plural_entity_level(inp), outp)
 
+    def test_build_data(self):
+        """Construye un diccionario con unidades territoriales."""
+        entity = str('localidad')
+        field = str('nombre')
+        test_data = {'localidades': [
+            {'nombre': 'laferrere', 'aplanar': True, 'max': 1}
+        ]}
+
+        input_path = get_input('normalize_unidad_territorial')
+        dc = DataCleaner(input_path)
+        data = dc._build_data(field, entity, filters={})
+        self.assertEqual(data, test_data)
+
+    def test_get_api_response(self):
+        """Realiza un búsquedas sobre una entidad territorial."""
+        entity = 'localidad'
+        data_test = {'localidades': [
+            {'nombre': 'laferrere', 'aplanar': True,
+             'provincia': 'buenos aires', 'max': 1}
+        ]}
+        res_test = [{'localidades': [{
+            'departamento_nombre': 'La Matanza', 'tipo': 'Entidad (E)',
+            'centroide_lon': -58.592533, 'fuente': 'BAHRA',
+            'provincia_id': '06', 'departamento_id': '06427',
+            'municipio_id': '060427', 'centroide_lat': -34.746838,
+            'municipio_nombre': 'La Matanza', 'nombre': 'GREGORIO DE LAFERRERE',
+            'id': '06427010004', 'provincia_nombre': 'Buenos Aires'}
+        ]}]
+
+        input_path = get_input('normalize_unidad_territorial')
+        dc = DataCleaner(input_path)
+        res = dc._get_api_response(entity, data_test)
+        self.assertEqual(res_test, res)
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

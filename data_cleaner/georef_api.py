@@ -16,7 +16,7 @@ DEPT_NAM = 'departamento_nombre'
 MUN = 'municipio'
 MUN_ID = 'municipio_id'
 MUN_NAM = 'municipio_nombre'
-LOCALITY = 'localidad'
+LOC = 'localidad'
 LAT = 'centroide_lat'
 LON = 'centroide_lon'
 
@@ -45,12 +45,12 @@ class GeorefWrapper:
         return self._get_response(entity, data)
 
     def _get_response(self, entity, data):
-
         result = []
         result_partial = []
         data_len = len([i for i in data[entity] if i])
         resource = self.url + entity
 
+        # Valida si es necesario compaginar la data a enviar
         if data_len > self.max_bulk_len:
             data = self._getrows_byslice(entity, data[entity], self.max_bulk_len)
         else:

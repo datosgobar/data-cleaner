@@ -745,50 +745,57 @@ Método que llamó al normalizador de campos: {}
                 limpias.
         """
         if len(self.df) > 100000:
-            print('supera el número permitido de registros a normalizar.')
+            print('El número máximo de unidades a normalizar es de 100000.')
+            return
+
+        if not self._validate_entity_level(entity_level):
+            print('"{}" no es un nivel de entidad válido.'.format(entity_level))
             return
 
         if filters:
             if not self._validate_filters(entity_level, filters):
                 return self.df
+
         data = self._build_data(field, entity_level, filters)
-        res = self._get_api_response(entity_level, data)
+        if data:
+            res = self._get_api_response(entity_level, data)
 
-        if 'error' in res:
-            print(res['error'])
-            return
+            if 'error' in res:
+                print(res['error'])
 
-        if keep_original:
-            field_normalized = str(field + '_normalized')
-            self._update_column(field_normalized, NAME, entity_level, res)
+            if keep_original:
+                field_normalized = str(field + '_normalized')
+                self._update_column(field_normalized, NAME, entity_level, res)
+            else:
+                self._update_column(field, NAME, entity_level, res)
+
+            if add_code:
+                column_code = entity_level + '_' + ID
+                self._update_column(column_code, ID, entity_level, res)
+
+            if add_centroid:
+                column_lat = entity_level + '_' + LAT
+                column_lon = entity_level + '_' + LON
+                self._update_column(column_lat, LAT, entity_level, res)
+                self._update_column(column_lon, LON, entity_level, res)
+
+            if add_parents:
+                for parent in add_parents:
+                    if entity_level not in PROV and parent in PROV:
+                        self._update_column(PROV_ID, PROV_ID, entity_level, res)
+                        self._update_column(PROV_NAM, PROV_NAM, entity_level,
+                                            res)
+                    if parent in DEPT and entity_level in [MUN, LOC]:
+                        self._update_column(DEPT_ID, DEPT_ID, entity_level, res)
+                        self._update_column(DEPT_NAM, DEPT_NAM, entity_level,
+                                            res)
+                    if parent in MUN and entity_level in LOC:
+                        self._update_column(MUN_ID, MUN_ID, entity_level, res)
+                        self._update_column(MUN_NAM, MUN_NAM, entity_level, res)
+
+            return self.df
         else:
-            self._update_column(field, NAME, entity_level, res)
-
-        if add_code:
-            column_code = entity_level + '_' + ID
-            self._update_column(column_code, ID, entity_level, res)
-
-        if add_centroid:
-            column_lat = entity_level + '_' + LAT
-            column_lon = entity_level + '_' + LON
-            self._update_column(column_lat, LAT, entity_level, res)
-            self._update_column(column_lon, LON, entity_level, res)
-
-        if add_parents:
-            for parent in add_parents:
-                if entity_level not in PROV and parent in PROV:
-                    self._update_column(PROV_ID, PROV_ID, entity_level, res)
-                    self._update_column(PROV_NAM, PROV_NAM, entity_level, res)
-
-                if parent in DEPT and entity_level in [MUN, LOCALITY]:
-                    self._update_column(DEPT_ID, DEPT_ID, entity_level, res)
-                    self._update_column(DEPT_NAM, DEPT_NAM, entity_level, res)
-
-                if parent in MUN and entity_level in LOCALITY:
-                    self._update_column(MUN_ID, MUN_ID, entity_level, res)
-                    self._update_column(MUN_NAM, MUN_NAM, entity_level, res)
-
-        return self.df
+            return
 
     @staticmethod
     def _validate_filters(entity_level, filters):
@@ -826,8 +833,8 @@ Método que llamó al normalizador de campos: {}
 
     def _build_data(self, field, entity_level, filters):
         """Construye un diccionario con una lista de unidades territoriales
-        para realizar consultas a la API de normalización Georef Ar API
-        utilizando el método bulk.
+        para realizar consultas a la API de normalización Georef utilizando
+        el método bulk.
 
         Args:
             field (str): Nombre del campo a normalizar.
@@ -849,8 +856,8 @@ Método que llamó al normalizador de campos: {}
                 if filters:
                     filters_builded = self._build_filters(row, filters)
                     data.update(filters_builded)
-
                 body.append(data)
+
             return {entity_level: body}
         except KeyError as e:
             print('Error: No existe el campo "{}".'.format(e))
@@ -888,27 +895,25 @@ Método que llamó al normalizador de campos: {}
     @staticmethod
     def _get_api_response(entity_level, data):
         """Realiza búsquedas sobre un listado de entidades en simultáneo
-        utilizando el método bulk de la API de normalización Georef Ar API.
+        utilizando el método bulk de la API de normalización Georef.
 
         Args:
             entity_level (str): Nivel de la unidad territorial a consultar.
+            data (dict): Diccionario que contiene un listado de unidades
+                territoriales.
 
         Returns:
             results (list): Lista con resultados de la búsqueda.
         """
         wrapper = GeorefWrapper()
-
         if entity_level in PROV:
             results = wrapper.search_province(data)
         elif entity_level in DEPT:
             results = wrapper.search_departament(data)
         elif entity_level in MUN:
             results = wrapper.search_municipality(data)
-        elif entity_level in LOCALITY:
-            results = wrapper.search_locality(data)
         else:
-            print('"{}" no es una entidad válida.'.format(entity_level))
-            return False
+            results = wrapper.search_locality(data)
         return results
 
     def _update_column(self, column, attribute, entity_level, results):
@@ -944,8 +949,22 @@ Método que llamó al normalizador de campos: {}
         Return:
             entity_level (str): Nombre pluralizado.
         """
-        if LOCALITY not in entity_level:
+        if LOC not in entity_level:
             entity_level = entity_level + 's'
         else:
             entity_level = entity_level + 'es'
         return entity_level
+
+    @staticmethod
+    def _validate_entity_level(entity_level):
+        """Válida el nivel de la unidad territorial.
+
+        Args:
+            entity_level (str): Nivel de la unidad territorial a validar.
+
+        Return:
+            bool: Verdadero si es un nivel de entidad válida.
+        """
+        if entity_level in [PROV, DEPT, MUN, LOC]:
+            return True
+        return False

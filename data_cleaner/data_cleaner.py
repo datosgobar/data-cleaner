@@ -844,10 +844,8 @@ Método que llamó al normalizador de campos: {}
         try:
             for item, row in self.df.iterrows():
                 row = row.fillna('0')  # reemplaza valores 'nan' por '0'
-                data = {'nombre': row[field], 'max': 1}
+                data = {'nombre': row[field], 'max': 1, 'aplanar': True}
 
-                if PROV not in entity_level:
-                    data.update({'aplanar': True})
                 if filters:
                     filters_builded = self._build_filters(row, filters)
                     data.update(filters_builded)

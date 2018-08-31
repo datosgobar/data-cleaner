@@ -13,7 +13,6 @@ from __future__ import with_statement
 import pandas as pd
 import geopandas as gpd
 import pycrs
-import json
 from dateutil import tz
 import arrow
 import parsley
@@ -21,7 +20,6 @@ from unidecode import unidecode
 import unicodecsv
 import warnings
 import inspect
-import os
 import re
 import subprocess
 from functools import partial
@@ -29,6 +27,8 @@ from functools import partial
 from fingerprint_keyer import group_fingerprint_strings
 from fingerprint_keyer import get_best_replacements, replace_by_key
 from capitalizer import capitalize
+
+from georef_api import *
 
 
 class DuplicatedField(ValueError):
@@ -255,7 +255,6 @@ Método que llamó al normalizador de campos: {}
             elif output_path.endswith('kml'):
                 self._save_to_kml(output_path)
                 return
-
         self.df.set_index(self.df.columns[0]).to_csv(
             output_path, encoding=self.OUTPUT_ENCODING,
             sep=self.OUTPUT_SEPARATOR,
@@ -351,7 +350,6 @@ Método que llamó al normalizador de campos: {}
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
                                 new_series=capitalized)
-
         return capitalized
 
     def string(self, field, sufix=None, sort_tokens=False,
@@ -725,3 +723,248 @@ Método que llamó al normalizador de campos: {}
             return self.df.geometry
         else:
             raise TypeError('El dataframe no es de tipo GeoDataFrame.')
+
+    def normalizar_unidad_territorial(self, field, entity_level, add_code=False,
+                                      add_centroid=False, add_parents=None,
+                                      filters=None, keep_original=False,
+                                      inplace=False):
+        """Normaliza y enriquece una unidad territorial del DataFrame.
+
+        Args:
+            field (str): Nombre del campo a normalizar.
+            entity_level (str): Nivel de la unidad territorial.
+            add_code (bool): Específica si agrega código de la entidad.
+            add_centroid (bool): Específica si agrega centroide de la entidad.
+            add_parents (list): Lista de entidades padres a agregar.
+            filters (dict): Diccionario con entidades por las cuales filtrar.
+            keep_original (bool): Específica si conserva la columna original.
+            inplace (bool): Específica si la limpieza perdura en el objeto.
+
+        Returns:
+            pandas.Series: Serie de unidades territoriales normalizadas y
+                limpias.
+        """
+        if len(self.df) > 100000:
+            print('El número máximo de unidades a normalizar es de 100000.')
+            return
+
+        if not self._validate_entity_level(entity_level):
+            print('"{}" no es un nivel de entidad válido.'.format(entity_level))
+            return
+
+        if filters:
+            if not self._validate_filters(entity_level, filters):
+                return self.df
+
+        data = self._build_data(field, entity_level, filters)
+        if data:
+            res = self._get_api_response(entity_level, data)
+
+            if 'error' in res:
+                print(res['error'])
+
+            if keep_original:
+                field_normalized = str(field + '_normalized')
+                self._update_column(field_normalized, NAME, entity_level, res)
+            else:
+                self._update_column(field, NAME, entity_level, res)
+
+            if add_code:
+                column_code = entity_level + '_' + ID
+                self._update_column(column_code, ID, entity_level, res)
+
+            if add_centroid:
+                column_lat = entity_level + '_' + LAT
+                column_lon = entity_level + '_' + LON
+                self._update_column(column_lat, LAT, entity_level, res)
+                self._update_column(column_lon, LON, entity_level, res)
+
+            if add_parents:
+                for parent in add_parents:
+                    if entity_level not in PROV and parent in PROV:
+                        self._update_column(PROV_ID, PROV_ID, entity_level, res)
+                        self._update_column(PROV_NAM, PROV_NAM, entity_level,
+                                            res)
+                    if parent in DEPT and entity_level in [MUN, LOC]:
+                        self._update_column(DEPT_ID, DEPT_ID, entity_level, res)
+                        self._update_column(DEPT_NAM, DEPT_NAM, entity_level,
+                                            res)
+                    if parent in MUN and entity_level in LOC:
+                        self._update_column(MUN_ID, MUN_ID, entity_level, res)
+                        self._update_column(MUN_NAM, MUN_NAM, entity_level, res)
+
+            return self.df
+        else:
+            return
+
+    @staticmethod
+    def _validate_filters(entity_level, filters):
+        """Verifica que los filtros sean validos con el nivel de entidad a
+        normalizar.
+
+        Args:
+            entity_level: Nivel de la unidad territorial por la cual filtrar.
+            filters (dict): Diccionario con filtros.
+
+        Returns:
+            bool: Verdadero si los filtros son válidos.
+        """
+
+        field_prov = PROV + '_field'
+        field_dept = DEPT + '_field'
+        field_mun = MUN + '_field'
+
+        # Verfica que se utilicen keywords válidos por entidad
+        for key, value in filters.iteritems():
+
+            if key not in [field_prov, field_dept, field_mun]:
+                print('"{}" no es un keyword válido.'.format(key))
+                return
+            if entity_level in key or entity_level in PROV:
+                print('"{}" no es un filtro válido para la entidad "{}."'
+                      .format(key, entity_level))
+                return
+            if entity_level in DEPT and PROV not in key:
+                print('"{}" no es un filtro válido para la entidad "{}".'
+                      .format(key, entity_level))
+                return
+
+        return True
+
+    def _build_data(self, field, entity_level, filters):
+        """Construye un diccionario con una lista de unidades territoriales
+        para realizar consultas a la API de normalización Georef utilizando
+        el método bulk.
+
+        Args:
+            field (str): Nombre del campo a normalizar.
+            entity_level (str): Nivel de la unidad territorial.
+            filters (dict): Diccionario con entidades por las cuales filtrar.
+
+        Returns:
+            dict: (dict): Diccionario a utilizar para realizar una consulta.
+            En caso de error devuelve False.
+        """
+        body = []
+        entity_level = self._plural_entity_level(entity_level)
+
+        try:
+            for item, row in self.df.iterrows():
+                row = row.fillna('0')  # reemplaza valores 'nan' por '0'
+                data = {'nombre': row[field], 'max': 1, 'aplanar': True}
+
+                if filters:
+                    filters_builded = self._build_filters(row, filters)
+                    data.update(filters_builded)
+                body.append(data)
+
+            return {entity_level: body}
+        except KeyError as e:
+            print('Error: No existe el campo "{}".'.format(e))
+        except Exception as e:
+            print(e)
+        return False
+
+    @staticmethod
+    def _build_filters(row, filters):
+        """Contruye un diccionario con filtros de unidades territoriales.
+
+        Args:
+            row (pandas.Series): Serie con strings de unidades territoriales.
+            filters (dict): Diccionario con filtros.
+
+        Returns:
+            params (dict): Diccionario con filtros.
+        """
+
+        params = {}
+        field_prov = PROV + '_field'
+        field_dept = DEPT + '_field'
+        field_mun = MUN + '_field'
+        row = row.fillna(0)
+
+        # Si existe el filtro y su valor no es 0 lo agrega al diccionario
+        if field_prov in filters and row[filters[field_prov]]:
+                params.update({PROV: row[filters[field_prov]]})
+        if field_dept in filters and row[filters[field_dept]]:
+                params.update({DEPT: row[filters[field_dept]]})
+        if field_mun in filters and row[filters[field_mun]]:
+                params.update({MUN: row[filters[field_mun]]})
+        return params
+
+    @staticmethod
+    def _get_api_response(entity_level, data):
+        """Realiza búsquedas sobre un listado de entidades en simultáneo
+        utilizando el método bulk de la API de normalización Georef.
+
+        Args:
+            entity_level (str): Nivel de la unidad territorial a consultar.
+            data (dict): Diccionario que contiene un listado de unidades
+                territoriales.
+
+        Returns:
+            results (list): Lista con resultados de la búsqueda.
+        """
+        wrapper = GeorefWrapper()
+        if entity_level in PROV:
+            results = wrapper.search_province(data)
+        elif entity_level in DEPT:
+            results = wrapper.search_departament(data)
+        elif entity_level in MUN:
+            results = wrapper.search_municipality(data)
+        else:
+            results = wrapper.search_locality(data)
+        return results
+
+    def _update_column(self, column, attribute, entity_level, results):
+        """Actualiza una columna específica del DataFrame.
+
+        Args:
+            column (str): Nombre de la columna a agregar y/o actualizar.
+            attribute (str): Nombre del atributo del
+            entity_level (str): Nivel de la unidad territorial a consultar.
+            results (list): Resultado de la consulta a la API.
+
+        Return:
+            None
+        """
+        entity_level = self._plural_entity_level(entity_level)
+
+        if column not in self.df:
+            self.df[column] = None
+
+        idx = 0
+        for row in results:
+            if row[entity_level]:
+                self.df.loc[idx, column] = row[entity_level][0][attribute]
+            idx += 1
+
+    @staticmethod
+    def _plural_entity_level(entity_level):
+        """Pluraliza el nombre de una unidad territorial.
+
+        Args:
+            entity_level (str): Nivel de la unidad territorial a pluralizar.
+
+        Return:
+            entity_level (str): Nombre pluralizado.
+        """
+        if LOC not in entity_level:
+            entity_level = entity_level + 's'
+        else:
+            entity_level = entity_level + 'es'
+        return entity_level
+
+    @staticmethod
+    def _validate_entity_level(entity_level):
+        """Válida el nivel de la unidad territorial.
+
+        Args:
+            entity_level (str): Nivel de la unidad territorial a validar.
+
+        Return:
+            bool: Verdadero si es un nivel de entidad válida.
+        """
+        if entity_level in [PROV, DEPT, MUN, LOC]:
+            return True
+        return False

@@ -113,6 +113,14 @@ class DataCleanerShapefileConversionTestCase(unittest.TestCase):
 class DataCleanerSingleMethodsTestCase(unittest.TestCase):
     """Testea métodos individuales de limpieza del DataCleaner."""
 
+    def test_get_encoding(self):
+        input_path = BASE_DIR + '/input/non_unicode.csv'
+
+        dc = DataCleaner(input_path)
+        encoding = dc._get_file_encoding(input_path)
+
+        self.assertNotEqual(encoding, 'utf-8')
+
     def test_cleaning_fields(self):
         input_path = get_input("fields")
         output_path = get_output("fields")

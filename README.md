@@ -46,6 +46,8 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
   - [Separar campos mediante una expresión regular (*string_regex_split*)](#separar-campos-mediante-una-expresi%C3%B3n-regular-string_regex_split)
   - [Separar campos mediante una parsing expression grammar (*string_peg_split*)](#separar-campos-mediante-una-parsing-expression-grammar-string_peg_split)
   - [Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)](#manipular-y-reemplazar-contenido-de-campos-mediante-una-expression-regular-string_regex_substitute)
+  - [Simplificar un objeto con datos de geometría (líneas, polígonos, etc.)](#simplificar-un-objeto-con-datos-de-geometría-líneas-polígonos-etc)
+  - [Normalizar y enriquecer unidades territoriales](#normalizar-y-enriquecer-unidades-territoriales)
 - [Contacto](#contacto)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -625,6 +627,63 @@ y complejidad, que a la vez retenga sus características esenciales.
 ```python
 {"simplificar_geometria": [
     {"tolerance": 0.5}
+]}
+```
+
+### Normalizar y enriquecer unidades territoriales
+
+Normaliza y enriquece unidades territoriales utilizando la [API del Servicio de Normalización de Datos Geográficos](https://georef-ar-api.readthedocs.io/es/latest/).
+
+Argumentos obligatorios:
+
+* **field**: Nombre del campo a normalizar.
+* **entity_level**: Nivel de la unidad territorial (Entidades válidas: "provincias", "departamentos", "municipios", "localidades").
+
+Argumentos opcionales:
+
+* **add_code**: `True` para agregar el código de la entidad (Default: "False")
+* **add_centroid**: `True` para agregar el centroide de la entidad (Default: "False")
+* **add_parents**: Lista de entidades padres a agregar (Default: "None")
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: "False")
+* **filters**: Diccionario con entidades por las cuales filtrar (Default: "None". _Keywords_ válidos: "provincia_field", "departamento_field", "municipio_field").
+
+**Especificación**
+
+```python
+{"normalizar_unidad_territorial": [
+    {
+        "field": "campo",
+        "entity_level": "nivel_entidad"
+    }
+]}
+```
+
+**Ejemplos:**
+
+```python
+{"normalizar_unidad_territorial": [
+        {
+            "field": "nombre",
+            "entity_level": "provincia"
+        }
+]}
+```
+
+```python
+{"normalizar_unidad_territorial": [
+        {
+            "field": "nombre",
+            "entity_level": "localidad",
+            "add_code": True,
+            "add_centroid": True,
+            "add_parents": ['provincia', 'departamento', 'municipio'],
+            "keep_original": True,
+            "filters": {
+                "provincia_field": "provincia",
+                "departamento_field": "departamento",
+                "municipio_field": "municipio"
+            }
+        }
 ]}
 ```
 

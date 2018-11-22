@@ -8,7 +8,7 @@ import requests
 from requests import Request
 
 
-API_URL = os.environ['API_URL']
+API_URL = "https://apis.datos.gob.ar/georef/api"
 ID = 'id'
 NAME = 'nombre'
 PROV = 'provincia'

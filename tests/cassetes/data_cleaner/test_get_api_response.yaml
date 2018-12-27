@@ -1,0 +1,39 @@
+interactions:
+- request:
+    body: !!python/unicode '{"localidades": [{"nombre": "laferrere", "aplanar": true,
+      "provincia": "buenos aires", "max": 1}]}'
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['98']
+      Content-Type: [application/json]
+      User-Agent: [python-requests/2.18.4]
+    method: POST
+    uri: http://apis.datos.gob.ar/georef/api/localidades
+  response:
+    body: {string: !!python/unicode '{"resultados":[{"cantidad":1,"inicio":0,"localidades":[{"centroide_lat":-34.746838,"centroide_lon":-58.592533,"departamento_id":"06427","departamento_nombre":"La
+        Matanza","id":"06427010004","municipio_id":"060427","municipio_nombre":"La
+        Matanza","nombre":"GREGORIO DE LAFERRERE","provincia_id":"06","provincia_nombre":"Buenos
+        Aires","tipo":"Entidad (E)"}],"total":1}]}
+
+'}
+    headers:
+      access-control-allow-origin: ['*']
+      connection: [keep-alive]
+      content-length: ['369']
+      content-type: [application/json]
+      date: ['Thu, 27 Dec 2018 14:07:21 GMT']
+      server: [nginx/1.10.3 (Ubuntu)]
+      x-kong-proxy-latency: ['55']
+      x-kong-upstream-latency: ['12']
+      x-ratelimit-limit-day: ['216000']
+      x-ratelimit-limit-hour: ['18000']
+      x-ratelimit-limit-minute: ['600']
+      x-ratelimit-limit-second: ['20']
+      x-ratelimit-remaining-day: ['209675']
+      x-ratelimit-remaining-hour: ['16416']
+      x-ratelimit-remaining-minute: ['597']
+      x-ratelimit-remaining-second: ['19']
+    status: {code: 200, message: OK}
+version: 1

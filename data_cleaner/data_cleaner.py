@@ -18,6 +18,7 @@ import arrow
 import parsley
 from unidecode import unidecode
 import unicodecsv
+import chardet
 import warnings
 import inspect
 import re
@@ -62,7 +63,7 @@ class DataCleaner(object):
             kwargs: Todos los argumentos que puede tomar `pandas.read_csv`
         """
         default_args = {
-            'encoding': self.INPUT_DEFAULT_ENCODING,
+            'encoding': self._get_file_encoding(input_path),
             'sep': self.INPUT_DEFAULT_SEPARATOR,
             'quotechar': self.INPUT_DEFAULT_QUOTECHAR
         }
@@ -81,7 +82,6 @@ class DataCleaner(object):
                 input_path,
                 encoding=default_args['encoding']
             )
-
             # lee la proyección del .prj, si puede
             try:
                 projection_path = input_path.replace('.shp', '.prj')
@@ -134,6 +134,21 @@ class DataCleaner(object):
         # TODO: Implementar chequeo de que no hay duplicados para XLSX
         elif input_path.endswith('.xlsx'):
             pass
+
+    def _get_file_encoding(self, file_path):
+        """Detecta la codificación de un archivo con cierto nivel de confianza
+           y devuelve esta codificación o el valor por defecto.
+
+        Args:
+            file_path (str): Ruta del archivo.
+
+        Returns:
+            str: Codificación del archivo.
+        """
+        with open(file_path, 'rb') as f:
+            info = chardet.detect(f.read())
+        return (info['encoding'] if info['confidence'] > 0.75
+                else self.INPUT_DEFAULT_ENCODING)
 
     def _normalize_fields(self, fields):
         return [self._normalize_field(field) for field in fields]

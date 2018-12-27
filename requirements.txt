@@ -1,3 +1,4 @@
+chardet==3.0.4
 pandas>=0.20.3
 geopandas==0.2.1
 parsley>=1.2

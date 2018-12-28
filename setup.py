@@ -35,7 +35,7 @@ test_requirements = [
 setup(
     name='data_cleaner',
     version='0.1.20',
-    description="Paquete para limpieza de datos, según estándares de la SSIPyGA - Gobierno Abierto Argentina",
+    description="Paquete para limpieza de datos, según estándares del equipo de Datos Argentina",
     long_description=readme + '\n\n' + history,
     author="Datos Argentina",
     author_email='datos@modernizacion.gob.ar',

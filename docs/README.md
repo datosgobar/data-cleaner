@@ -46,6 +46,8 @@ Paquete para limpieza de datos, según los [estándares de limpieza de la SSIPyG
   - [Separar campos mediante una expresión regular (*string_regex_split*)](#separar-campos-mediante-una-expresi%C3%B3n-regular-string_regex_split)
   - [Separar campos mediante una parsing expression grammar (*string_peg_split*)](#separar-campos-mediante-una-parsing-expression-grammar-string_peg_split)
   - [Manipular y reemplazar contenido de campos mediante una expression regular (*string_regex_substitute*)](#manipular-y-reemplazar-contenido-de-campos-mediante-una-expression-regular-string_regex_substitute)
+  - [Simplificar un objeto con datos de geometría (líneas, polígonos, etc.)](#simplificar-un-objeto-con-datos-de-geometría-líneas-polígonos-etc)
+  - [Normalizar y enriquecer unidades territoriales](#normalizar-y-enriquecer-unidades-territoriales)
 - [Contacto](#contacto)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -170,11 +172,14 @@ Para guardar el `pandas.DataFrame` en cualquier momento, probablemente luego de 
 ```python
 dc.save(output_path)
 ```
-Si se trata de un `GeoDataFrame`, se puede especificar el nombre para la columna de geometría con un argumento opcional. El nombre por defecto es "geojson".
+Si se trata de un `GeoDataFrame`, puede guardarse el archivo en formatos **CSV**, **GeoJSON**, y **KML**.
+Para CSVs, se puede especificar el nombre para la columna de geometría con un argumento opcional. El nombre por defecto es "geojson".
 
 ```python
 dc = DataCleaner('samples/provincias/provincias.shp')
-dc.save(output_path, geometry_name='geojson')
+dc.save('provincias.csv', geometry_name='geojson')  # Guarda un archivo CSV con columna de geometría.
+dc.save('provincias.geojson') o dc.save('provincias.json')  # Guarda un archivo GeoJSON.
+dc.save('provincias.kml')  # Guarda un archivo KML.
 ```
 
 El método `DataCleaner.save()` redirige al método `pandas.DataFrame.to_csv()`, y por lo tanto tienen los mismos argumentos.
@@ -603,6 +608,83 @@ Cambia el orden de una cadena entre paréntesis:
     "regex_str_sub": "\g<nombre> \g<cargo>"}
 ]}
 "(presidente)Juan José Perez." pasaría a ser "Juan José Perez. (presidente)"
+```
+
+### Simplificar un objeto con datos de geometría (líneas, polígonos, etc.)
+Simplifica una geometría para que resulte en un objeto de menor tamaño
+y complejidad, que a la vez retenga sus características esenciales.
+
+**Especificación:**
+
+```python
+{"simplificar_geometria": [
+    {"tolerance": nivel}
+]}
+```
+
+**Ejemplos:**
+
+```python
+{"simplificar_geometria": [
+    {"tolerance": 0.5}
+]}
+```
+
+### Normalizar y enriquecer unidades territoriales
+
+Normaliza y enriquece unidades territoriales utilizando la [API del Servicio de Normalización de Datos Geográficos](https://georef-ar-api.readthedocs.io/es/latest/).
+
+Argumentos obligatorios:
+
+* **field**: Nombre del campo a normalizar.
+* **entity_level**: Nivel de la unidad territorial (Entidades válidas: "provincias", "departamentos", "municipios", "localidades").
+
+Argumentos opcionales:
+
+* **add_code**: `True` para agregar el código de la entidad (Default: "False")
+* **add_centroid**: `True` para agregar el centroide de la entidad (Default: "False")
+* **add_parents**: Lista de entidades padres a agregar (Default: "None")
+* **keep_original**: `True` para conservar la columna original / `False` para removerla (Default: "False")
+* **filters**: Diccionario con entidades por las cuales filtrar (Default: "None". _Keywords_ válidos: "provincia_field", "departamento_field", "municipio_field").
+
+**Especificación**
+
+```python
+{"normalizar_unidad_territorial": [
+    {
+        "field": "campo",
+        "entity_level": "nivel_entidad"
+    }
+]}
+```
+
+**Ejemplos:**
+
+```python
+{"normalizar_unidad_territorial": [
+        {
+            "field": "nombre",
+            "entity_level": "provincia"
+        }
+]}
+```
+
+```python
+{"normalizar_unidad_territorial": [
+        {
+            "field": "nombre",
+            "entity_level": "localidad",
+            "add_code": True,
+            "add_centroid": True,
+            "add_parents": ['provincia', 'departamento', 'municipio'],
+            "keep_original": True,
+            "filters": {
+                "provincia_field": "provincia",
+                "departamento_field": "departamento",
+                "municipio_field": "municipio"
+            }
+        }
+]}
 ```
 
 ## Contacto

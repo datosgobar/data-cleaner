@@ -11,3 +11,4 @@ numpy>=1.9.2
 unicodecsv>=0.14.1
 xlrd
 pycrs
+requests

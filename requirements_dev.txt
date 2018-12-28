@@ -11,5 +11,5 @@ cryptography==2.0.3
 PyYAML==3.11
 recommonmark>=0.4.0
 travis-sphinx>=1.4.1
-
+vcrpy
 

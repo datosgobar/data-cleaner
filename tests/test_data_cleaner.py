@@ -64,10 +64,7 @@ def nan_to_empty_string_list(iterable):
 
 def raw_csv(file_path):
     with open(file_path, 'rb') as csvfile:
-        return [
-            row
-            for row in csv.reader(csvfile)
-        ]
+        return [row for row in csv.reader(csvfile)]
 
 
 # @unittest.skip("skip")

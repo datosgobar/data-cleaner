@@ -93,7 +93,7 @@ class DataCleaner(object):
 
         # lee el CSV a limpiar
         elif input_path.endswith('.csv'):
-            self.df = pd.read_csv(input_path, **default_args)
+            self.df = pd.read_csv(input_path, dtype=str, **default_args)
 
         # lee el XLSX a limpiar
         elif input_path.endswith('.xlsx'):

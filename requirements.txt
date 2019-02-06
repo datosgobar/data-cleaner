@@ -12,3 +12,4 @@ unicodecsv>=0.14.1
 xlrd
 pycrs
 requests
+six>=1.12.0

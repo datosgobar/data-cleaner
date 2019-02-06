@@ -24,11 +24,10 @@ import inspect
 import re
 import subprocess
 from functools import partial
-
+from future.utils import iteritems
 from .fingerprint_keyer import group_fingerprint_strings
 from .fingerprint_keyer import get_best_replacements, replace_by_key
 from .capitalizer import capitalize
-
 from .georef_api import *
 
 
@@ -436,7 +435,7 @@ Método que llamó al normalizador de campos: {}
         field = self._normalize_field(field)
         series = self.df[field]
 
-        for new_value, old_values in replacements.iteritems():
+        for new_value, old_values in iteritems(replacements):
             series = series.replace(old_values, new_value)
 
         encoded_series = series.str.encode(self.OUTPUT_ENCODING)
@@ -464,7 +463,7 @@ Método que llamó al normalizador de campos: {}
         field = self._normalize_field(field)
         series = self.df[field]
 
-        for new_value, old_values in replacements.iteritems():
+        for new_value, old_values in iteritems(replacements):
             # for old_value in sorted(old_values, key=len, reverse=True):
             for old_value in old_values:
                 replace_function = partial(self._safe_replace,
@@ -828,7 +827,7 @@ Método que llamó al normalizador de campos: {}
         field_mun = MUN + '_field'
 
         # Verfica que se utilicen keywords válidos por entidad
-        for key, value in filters.iteritems():
+        for key, value in iteritems(filters):
 
             if key not in [field_prov, field_dept, field_mun]:
                 print('"{}" no es un keyword válido.'.format(key))

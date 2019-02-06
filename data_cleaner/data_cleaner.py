@@ -25,11 +25,11 @@ import re
 import subprocess
 from functools import partial
 
-from fingerprint_keyer import group_fingerprint_strings
-from fingerprint_keyer import get_best_replacements, replace_by_key
-from capitalizer import capitalize
+from .fingerprint_keyer import group_fingerprint_strings
+from .fingerprint_keyer import get_best_replacements, replace_by_key
+from .capitalizer import capitalize
 
-from georef_api import *
+from .georef_api import *
 
 
 class DuplicatedField(ValueError):

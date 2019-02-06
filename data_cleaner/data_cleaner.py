@@ -120,12 +120,12 @@ class DataCleaner(object):
     def _assert_no_duplicates(self, input_path, encoding, sep, quotechar):
 
         if input_path.endswith('.csv'):
-            with open(input_path, 'r') as csvfile:
+            with open(input_path, 'rb') as csvfile:
                 reader = unicodecsv.reader(csvfile,
                                            encoding=encoding,
                                            delimiter=sep,
                                            quotechar=quotechar)
-                fields = reader.next()
+                fields = next(reader, [])
 
                 for col in fields:
                     if fields.count(col) > 1:

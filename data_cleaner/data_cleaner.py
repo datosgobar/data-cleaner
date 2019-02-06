@@ -180,7 +180,7 @@ class DataCleaner(object):
         if field != norm_field:
             caller_rule = self._get_normalize_field_caller(
                 inspect.currentframe())
-            msg = """
+            msg = u"""
 
 El campo "{}" no sigue las convenciones para escribir
 campos (sólo se admiten caracteres alfanuméricos ASCII en
@@ -190,7 +190,7 @@ que puede llevar a resultados inesperados.
 
 El nuevo nombre del campo normalizado es: "{}".
 Método que llamó al normalizador de campos: {}
-""".format(field, sep, norm_field, caller_rule).encode("utf-8")
+""".format(field, sep, norm_field, caller_rule)
             warnings.warn(msg)
 
         return norm_field

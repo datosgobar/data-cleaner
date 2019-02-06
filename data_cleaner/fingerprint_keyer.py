@@ -54,11 +54,11 @@ def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
         sorted_split_key = dups_removed
 
     # join the tokens back together
-    finger_printed_key = " ".join(sorted_split_key)
+    finger_printed_key = u" ".join(sorted_split_key)
 
     # normalize extended western characters to their ASCII
     # representation (for example "gödel" → "godel")
-    finger_printed_key = unidecode(finger_printed_key.decode("utf-8"))
+    finger_printed_key = unidecode(finger_printed_key)
 
     return finger_printed_key
 

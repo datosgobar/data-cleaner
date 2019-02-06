@@ -18,7 +18,7 @@ import vcr
 import geopandas as gpd
 from data_cleaner import DataCleaner
 from data_cleaner.data_cleaner import DuplicatedField
-from rules.integration import rules
+from .rules.integration import rules
 import csv
 
 BASE_DIR = os.path.dirname(__file__)

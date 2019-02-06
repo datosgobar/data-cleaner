@@ -115,8 +115,6 @@ class DataCleaner(object):
         # guarda PEGs compiladas para optimizar performance
         self.grammars = {}
 
-        self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
-
     def _assert_no_duplicates(self, input_path, encoding, sep, quotechar):
 
         if input_path.endswith('.csv'):

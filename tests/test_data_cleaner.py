@@ -20,6 +20,7 @@ from data_cleaner import DataCleaner
 from data_cleaner.data_cleaner import DuplicatedField
 from .rules.integration import rules
 import csv
+import six
 
 BASE_DIR = os.path.dirname(__file__)
 VCR = vcr.VCR(path_transformer=vcr.VCR.ensure_suffix('.yaml'),
@@ -46,13 +47,13 @@ def nan_safe_list(iterable):
     for element in iterable:
         if pd.isnull(element):
             safe_list.append(None)
-        elif (type(element) is str or type(element) is unicode):
+        elif isinstance(element, six.string_types):
             if element == "None":
                 safe_list.append(None)
             else:
                 safe_list.append(element)
         else:
-            safe_list.append(unicode(int(element)))
+            safe_list.append(six.u(int(element)))
 
     return safe_list
 

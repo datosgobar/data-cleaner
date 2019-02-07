@@ -6,6 +6,7 @@
 import string
 import pandas as pd
 from functools import partial
+import six
 
 
 LOWER_WORDS = [
@@ -54,14 +55,14 @@ def capitalize(string, sep=None, encoding="utf-8", lower_words=None):
     if pd.isnull(string):
         return pd.np.nan
 
-    if type(string) is not str or type(string) is not unicode:
-        string = unicode(string)
+    if not isinstance(string, six.text_type):
+        string = six.u(string)
 
     words = string.split(sep)
     if len(words) == 0:
         return ""
     first_word = words[0].title()
     partial_normalize_word = partial(normalize_word, lower_words=lower_words)
-    normalized_words = [first_word] + map(partial_normalize_word, words[1:])
+    normalized_words = [first_word] + list(map(partial_normalize_word, words[1:]))
 
     return (sep if sep else " ").join(normalized_words)

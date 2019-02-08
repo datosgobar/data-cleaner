@@ -12,6 +12,9 @@ from __future__ import with_statement
 import unittest
 import nose
 
+import sys
+sys.path.insert(0, '')
+
 from data_cleaner.capitalizer import normalize_word
 from data_cleaner.capitalizer import capitalize
 

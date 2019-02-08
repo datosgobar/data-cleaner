@@ -10,6 +10,7 @@ import string
 from unidecode import unidecode
 from functools import partial
 import pandas as pd
+import six
 
 
 def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
@@ -25,17 +26,21 @@ def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
         return pd.np.nan
 
     # enforece string type
-    if type(key_string) != str:
-        key_string = unicode(key_string).encode('utf8')
+    if not isinstance(key_string, six.binary_type):
+        key_string = six.text_type(key_string).encode('utf8')
 
     # remove leading and trailing whitespace, go to lowercase
     key_string = key_string.strip().lower()
 
     # remove all punctuation and control characters
-    for punct in (set(key_string) & set(string.punctuation)):
-        key_string = key_string.replace(punct, "")
+    empty_str = six.text_type('').encode('utf8')
+    for punct in (set(key_string) & set(six.text_type(string.punctuation).encode('utf8'))):
+        if six.PY3:
+            punct = chr(punct)
+        encoded_punct = six.text_type(punct).encode('utf8')
+        key_string = key_string.replace(encoded_punct, empty_str)
 
-    key_string = key_string.replace("\t", " ")
+    key_string = key_string.replace(u"\t".encode('utf8'), u" ".encode('utf8'))
 
     # split the string into whitespace-separated tokens
     split_key = key_string.split()
@@ -54,11 +59,11 @@ def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
         sorted_split_key = dups_removed
 
     # join the tokens back together
-    finger_printed_key = u" ".join(sorted_split_key)
+    finger_printed_key = u" ".encode('utf8').join(sorted_split_key)
 
     # normalize extended western characters to their ASCII
     # representation (for example "gödel" → "godel")
-    finger_printed_key = unidecode(finger_printed_key)
+    finger_printed_key = unidecode(finger_printed_key.decode("utf-8"))
 
     return finger_printed_key
 

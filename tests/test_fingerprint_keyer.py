@@ -12,6 +12,9 @@ from __future__ import with_statement
 import unittest
 import nose
 
+import sys
+sys.path.insert(0, '')
+
 from data_cleaner.fingerprint_keyer import fingerprint_keyer
 from data_cleaner.fingerprint_keyer import group_fingerprint_strings
 from data_cleaner.fingerprint_keyer import get_best_replacements

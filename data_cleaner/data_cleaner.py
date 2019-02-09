@@ -439,14 +439,12 @@ Método que llamó al normalizador de campos: {}
         for new_value, old_values in iteritems(replacements):
             series = series.replace(old_values, new_value)
 
-        encoded_series = series.str.encode(self.OUTPUT_ENCODING)
-
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
-                                new_series=encoded_series)
+                                new_series=series)
 
-        return encoded_series
+        return series
 
     def reemplazar_string(self, field, replacements, sufix=None,
                           keep_original=False, inplace=False):
@@ -506,7 +504,7 @@ Método que llamó al normalizador de campos: {}
                                 keep_original=keep_original,
                                 new_series=parsed_series)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        return parsed_series
 
     def fecha_simple(self, field, time_format, keep_original=False,
                      inplace=False):
@@ -529,7 +527,7 @@ Método que llamó al normalizador de campos: {}
                                 keep_original=keep_original,
                                 new_series=parsed_series)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        return parsed_series
 
     @staticmethod
     def _parse_datetime(value, time_format):
@@ -586,7 +584,7 @@ Método que llamó al normalizador de campos: {}
                 for field in field_names:
                     self.remover_columnas(field)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        return parsed_series
 
     def string_simple_split(self, field, separators, new_field_names,
                             keep_original=True, inplace=False):

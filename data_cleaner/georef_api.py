@@ -58,7 +58,7 @@ class GeorefWrapper:
 
         for row in data:
             r = requests.post(resource, json=row)
-            if 'resultados' in r.content:
+            if b'resultados' in r.content:
                 result_partial.append(json.loads(r.content)['resultados'])
             else:
                 error = self._get_first_error(json.loads(r.content)['errores'])
@@ -76,7 +76,7 @@ class GeorefWrapper:
     @staticmethod
     def _getrows_byslice(entity, seq, rowlen):
         data_slice = []
-        for start in xrange(0, len(seq), rowlen):
+        for start in range(0, len(seq), rowlen):
             data_slice.append({entity: seq[start:start + rowlen]})
         return data_slice
 

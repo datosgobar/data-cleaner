@@ -58,7 +58,7 @@ class GeorefWrapper:
 
         for row in data:
             r = requests.post(resource, json=row)
-            if b'resultados' in r.content:
+            if 'resultados' in r.content.decode('utf8'):
                 result_partial.append(json.loads(r.content)['resultados'])
             else:
                 error = self._get_first_error(json.loads(r.content)['errores'])

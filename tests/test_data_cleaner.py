@@ -16,6 +16,8 @@ import os
 import pandas as pd
 import vcr
 import geopandas as gpd
+import sys
+sys.path.insert(0, '')
 from data_cleaner import DataCleaner
 from data_cleaner.data_cleaner import DuplicatedField
 from .rules.integration import rules
@@ -53,7 +55,7 @@ def nan_safe_list(iterable):
             else:
                 safe_list.append(element)
         else:
-            safe_list.append(six.u(int(element)))
+            safe_list.append(six.text_type(int(element)))
 
     return safe_list
 
@@ -64,7 +66,7 @@ def nan_to_empty_string_list(iterable):
 
 
 def raw_csv(file_path):
-    with open(file_path, 'rb') as csvfile:
+    with open(file_path, 'r') as csvfile:
         return [row for row in csv.reader(csvfile)]
 
 

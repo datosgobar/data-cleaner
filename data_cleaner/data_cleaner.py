@@ -46,12 +46,12 @@ class DataCleaner(object):
     reglas de limpieza para operar sobre las columnas del objeto y retornar un
     CSV limplio."""
 
-    OUTPUT_ENCODING = six.u("utf-8")
-    OUTPUT_SEPARATOR = six.u(",")
-    OUTPUT_QUOTECHAR = six.u('"')
-    INPUT_DEFAULT_ENCODING = six.u("utf-8")
-    INPUT_DEFAULT_SEPARATOR = six.u(",")
-    INPUT_DEFAULT_QUOTECHAR = six.u('"')
+    OUTPUT_ENCODING = str("utf-8")
+    OUTPUT_SEPARATOR = str(",")
+    OUTPUT_QUOTECHAR = str('"')
+    INPUT_DEFAULT_ENCODING = str("utf-8")
+    INPUT_DEFAULT_SEPARATOR = str(",")
+    INPUT_DEFAULT_QUOTECHAR = str('"')
     DEFAULT_SUFIX = "normalizado"
 
     def __init__(self, input_path, ignore_dups=False, **kwargs):
@@ -162,7 +162,7 @@ class DataCleaner(object):
             str: Nombre de campo o sufijo de datset normalizado.
         """
         if not isinstance(field, six.string_types):
-            field = six.u(field)
+            field = six.text_type(field)
 
         # reemplaza caracteres que no sean unicode
         norm_field = unidecode(field).strip()
@@ -180,7 +180,7 @@ class DataCleaner(object):
         if field != norm_field:
             caller_rule = self._get_normalize_field_caller(
                 inspect.currentframe())
-            msg = u"""
+            msg = six.text_type("""
 
 El campo "{}" no sigue las convenciones para escribir
 campos (sólo se admiten caracteres alfanuméricos ASCII en
@@ -190,7 +190,7 @@ que puede llevar a resultados inesperados.
 
 El nuevo nombre del campo normalizado es: "{}".
 Método que llamó al normalizador de campos: {}
-""".format(field, sep, norm_field, caller_rule)
+""").format(field, sep, norm_field, caller_rule)
             warnings.warn(msg)
 
         return norm_field
@@ -214,7 +214,7 @@ Método que llamó al normalizador de campos: {}
     @staticmethod
     def _remove_line_breaks(value, replace_char=" "):
         if isinstance(value, six.string_types):
-            return six.u(value).replace('\n', replace_char)
+            return six.text_type(value).replace('\n', replace_char)
         else:
             return value
 
@@ -439,12 +439,14 @@ Método que llamó al normalizador de campos: {}
         for new_value, old_values in iteritems(replacements):
             series = series.replace(old_values, new_value)
 
+        encoded_series = series.str.encode(self.OUTPUT_ENCODING)
+
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
-                                new_series=series)
+                                new_series=encoded_series)
 
-        return series
+        return encoded_series
 
     def reemplazar_string(self, field, replacements, sufix=None,
                           keep_original=False, inplace=False):
@@ -482,7 +484,7 @@ Método que llamó al normalizador de campos: {}
         if pd.isnull(string):
             return pd.np.nan
         else:
-            return six.u(string).replace(old_value, new_value)
+            return six.text_type(string).replace(old_value, new_value)
 
     def fecha_completa(self, field, time_format, keep_original=False,
                        inplace=False):
@@ -504,7 +506,7 @@ Método que llamó al normalizador de campos: {}
                                 keep_original=keep_original,
                                 new_series=parsed_series)
 
-        return parsed_series
+        return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     def fecha_simple(self, field, time_format, keep_original=False,
                      inplace=False):
@@ -527,7 +529,7 @@ Método que llamó al normalizador de campos: {}
                                 keep_original=keep_original,
                                 new_series=parsed_series)
 
-        return parsed_series
+        return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     @staticmethod
     def _parse_datetime(value, time_format):
@@ -571,7 +573,7 @@ Método que llamó al normalizador de campos: {}
         time_format = " ".join([field[1] for field in fields])
 
         concat_series = self.df[field_names].apply(
-            lambda x: u' '.join(x.map(six.text_type)),
+            lambda x: ' '.join(x.map(six.text_type)),
             axis=1
         )
 
@@ -584,7 +586,7 @@ Método que llamó al normalizador de campos: {}
                 for field in field_names:
                     self.remover_columnas(field)
 
-        return parsed_series
+        return parsed_series.str.encode(self.OUTPUT_ENCODING)
 
     def string_simple_split(self, field, separators, new_field_names,
                             keep_original=True, inplace=False):
@@ -620,12 +622,12 @@ Método que llamó al normalizador de campos: {}
     def _split(value, separators):
         values = []
         for separator in separators:
-            if separator in six.u(value):
-                values = [six.u(split_value) for split_value in
+            if separator in six.text_type(value):
+                values = [six.text_type(split_value) for split_value in
                           value.split(separator)]
                 break
 
-        return pd.Series([six.u(value).strip() for value in values
+        return pd.Series([six.text_type(value).strip() for value in values
                           if pd.notnull(value)])
 
     def string_regex_split(self, field, pattern, new_field_names,
@@ -688,7 +690,7 @@ Método que llamó al normalizador de campos: {}
         except:
             values = []
 
-        values = [six.u(split_value) for split_value in values]
+        values = [six.text_type(split_value) for split_value in values]
 
         return pd.Series(values)
 
@@ -775,7 +777,7 @@ Método que llamó al normalizador de campos: {}
                 print(res['error'])
 
             if keep_original:
-                field_normalized = six.u(field + '_normalized')
+                field_normalized = six.text_type(field + '_normalized')
                 self._update_column(field_normalized, NAME, entity_level, res)
             else:
                 self._update_column(field, NAME, entity_level, res)

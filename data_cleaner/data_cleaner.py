@@ -18,7 +18,7 @@ import arrow
 import parsley
 from unidecode import unidecode
 import unicodecsv
-import chardet
+import cchardet
 import warnings
 import inspect
 import re
@@ -146,7 +146,7 @@ class DataCleaner(object):
             str: Codificación del archivo.
         """
         with open(file_path, 'rb') as f:
-            info = chardet.detect(f.read())
+            info = cchardet.detect(f.read())
         return (info['encoding'] if info['confidence'] > 0.75
                 else self.INPUT_DEFAULT_ENCODING)
 

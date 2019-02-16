@@ -17,6 +17,9 @@ install:
 - pip install python-coveralls
 - pip install coveralls
 language: python
+matrix:
+  allow_failures:
+  - python: '3.5'
 notifications:
   slack: ssipyga:yyz0hyWmiaoGGnprhjqDXUwk
 python:

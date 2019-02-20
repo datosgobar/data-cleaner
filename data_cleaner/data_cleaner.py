@@ -18,18 +18,20 @@ import arrow
 import parsley
 from unidecode import unidecode
 import unicodecsv
-import chardet
+import cchardet
 import warnings
 import inspect
 import re
 import subprocess
 from functools import partial
+from future.utils import iteritems
+import six
 
-from fingerprint_keyer import group_fingerprint_strings
-from fingerprint_keyer import get_best_replacements, replace_by_key
-from capitalizer import capitalize
+from .fingerprint_keyer import group_fingerprint_strings
+from .fingerprint_keyer import get_best_replacements, replace_by_key
+from .capitalizer import capitalize
 
-from georef_api import *
+from .georef_api import *
 
 
 class DuplicatedField(ValueError):
@@ -93,7 +95,7 @@ class DataCleaner(object):
 
         # lee el CSV a limpiar
         elif input_path.endswith('.csv'):
-            self.df = pd.read_csv(input_path, dtype=str, **default_args)
+            self.df = pd.read_csv(input_path, dtype=six.text_type, **default_args)
 
         # lee el XLSX a limpiar
         elif input_path.endswith('.xlsx'):
@@ -115,17 +117,15 @@ class DataCleaner(object):
         # guarda PEGs compiladas para optimizar performance
         self.grammars = {}
 
-        self.save.__func__.__doc__ = pd.DataFrame.to_csv.__func__.__doc__
-
     def _assert_no_duplicates(self, input_path, encoding, sep, quotechar):
 
         if input_path.endswith('.csv'):
-            with open(input_path, 'r') as csvfile:
+            with open(input_path, 'rb') as csvfile:
                 reader = unicodecsv.reader(csvfile,
                                            encoding=encoding,
                                            delimiter=sep,
                                            quotechar=quotechar)
-                fields = reader.next()
+                fields = next(reader, [])
 
                 for col in fields:
                     if fields.count(col) > 1:
@@ -146,7 +146,7 @@ class DataCleaner(object):
             str: Codificación del archivo.
         """
         with open(file_path, 'rb') as f:
-            info = chardet.detect(f.read())
+            info = cchardet.detect(f.read())
         return (info['encoding'] if info['confidence'] > 0.75
                 else self.INPUT_DEFAULT_ENCODING)
 
@@ -163,8 +163,8 @@ class DataCleaner(object):
         Returns:
             str: Nombre de campo o sufijo de datset normalizado.
         """
-        if type(field) is not str and type(field) is not unicode:
-            field = unicode(field)
+        if not isinstance(field, six.string_types):
+            field = six.text_type(field)
 
         # reemplaza caracteres que no sean unicode
         norm_field = unidecode(field).strip()
@@ -192,7 +192,7 @@ que puede llevar a resultados inesperados.
 
 El nuevo nombre del campo normalizado es: "{}".
 Método que llamó al normalizador de campos: {}
-""".format(field, sep, norm_field, caller_rule).encode("utf-8")
+""".format(field, sep, norm_field, caller_rule)
             warnings.warn(msg)
 
         return norm_field
@@ -215,8 +215,8 @@ Método que llamó al normalizador de campos: {}
 
     @staticmethod
     def _remove_line_breaks(value, replace_char=" "):
-        if type(value) == unicode or type(value) == str:
-            return unicode(value).replace('\n', replace_char)
+        if isinstance(value, six.string_types):
+            return six.text_type(value).replace('\n', replace_char)
         else:
             return value
 
@@ -438,17 +438,15 @@ Método que llamó al normalizador de campos: {}
         field = self._normalize_field(field)
         series = self.df[field]
 
-        for new_value, old_values in replacements.iteritems():
+        for new_value, old_values in iteritems(replacements):
             series = series.replace(old_values, new_value)
-
-        encoded_series = series.str.encode(self.OUTPUT_ENCODING)
 
         if inplace:
             self._update_series(field=field, sufix=sufix,
                                 keep_original=keep_original,
-                                new_series=encoded_series)
+                                new_series=series)
 
-        return encoded_series
+        return series
 
     def reemplazar_string(self, field, replacements, sufix=None,
                           keep_original=False, inplace=False):
@@ -466,7 +464,7 @@ Método que llamó al normalizador de campos: {}
         field = self._normalize_field(field)
         series = self.df[field]
 
-        for new_value, old_values in replacements.iteritems():
+        for new_value, old_values in iteritems(replacements):
             # for old_value in sorted(old_values, key=len, reverse=True):
             for old_value in old_values:
                 replace_function = partial(self._safe_replace,
@@ -486,7 +484,7 @@ Método que llamó al normalizador de campos: {}
         if pd.isnull(string):
             return pd.np.nan
         else:
-            return unicode(string).replace(old_value, new_value)
+            return six.text_type(string).replace(old_value, new_value)
 
     def fecha_completa(self, field, time_format, keep_original=False,
                        inplace=False):
@@ -508,7 +506,7 @@ Método que llamó al normalizador de campos: {}
                                 keep_original=keep_original,
                                 new_series=parsed_series)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        return parsed_series
 
     def fecha_simple(self, field, time_format, keep_original=False,
                      inplace=False):
@@ -531,7 +529,7 @@ Método que llamó al normalizador de campos: {}
                                 keep_original=keep_original,
                                 new_series=parsed_series)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        return parsed_series
 
     @staticmethod
     def _parse_datetime(value, time_format):
@@ -575,7 +573,7 @@ Método que llamó al normalizador de campos: {}
         time_format = " ".join([field[1] for field in fields])
 
         concat_series = self.df[field_names].apply(
-            lambda x: ' '.join(x.map(str)),
+            lambda x: ' '.join(x.map(six.text_type)),
             axis=1
         )
 
@@ -588,7 +586,7 @@ Método que llamó al normalizador de campos: {}
                 for field in field_names:
                     self.remover_columnas(field)
 
-        return parsed_series.str.encode(self.OUTPUT_ENCODING)
+        return parsed_series
 
     def string_simple_split(self, field, separators, new_field_names,
                             keep_original=True, inplace=False):
@@ -624,12 +622,12 @@ Método que llamó al normalizador de campos: {}
     def _split(value, separators):
         values = []
         for separator in separators:
-            if separator in unicode(value):
-                values = [unicode(split_value) for split_value in
+            if separator in six.text_type(value):
+                values = [six.text_type(split_value) for split_value in
                           value.split(separator)]
                 break
 
-        return pd.Series([unicode(value).strip() for value in values
+        return pd.Series([six.text_type(value).strip() for value in values
                           if pd.notnull(value)])
 
     def string_regex_split(self, field, pattern, new_field_names,
@@ -692,7 +690,7 @@ Método que llamó al normalizador de campos: {}
         except:
             values = []
 
-        values = [unicode(split_value) for split_value in values]
+        values = [six.text_type(split_value) for split_value in values]
 
         return pd.Series(values)
 
@@ -779,7 +777,7 @@ Método que llamó al normalizador de campos: {}
                 print(res['error'])
 
             if keep_original:
-                field_normalized = str(field + '_normalized')
+                field_normalized = six.text_type(field + '_normalized')
                 self._update_column(field_normalized, NAME, entity_level, res)
             else:
                 self._update_column(field, NAME, entity_level, res)
@@ -830,7 +828,7 @@ Método que llamó al normalizador de campos: {}
         field_mun = MUN + '_field'
 
         # Verfica que se utilicen keywords válidos por entidad
-        for key, value in filters.iteritems():
+        for key, value in iteritems(filters):
 
             if key not in [field_prov, field_dept, field_mun]:
                 print('"{}" no es un keyword válido.'.format(key))

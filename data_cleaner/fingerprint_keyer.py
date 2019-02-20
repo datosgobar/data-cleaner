@@ -10,6 +10,7 @@ import string
 from unidecode import unidecode
 from functools import partial
 import pandas as pd
+import six
 
 
 def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
@@ -25,8 +26,8 @@ def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
         return pd.np.nan
 
     # enforece string type
-    if type(key_string) != str:
-        key_string = unicode(key_string).encode('utf8')
+    if not isinstance(key_string, six.text_type):
+        key_string = six.text_type(key_string)
 
     # remove leading and trailing whitespace, go to lowercase
     key_string = key_string.strip().lower()
@@ -58,9 +59,7 @@ def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
 
     # normalize extended western characters to their ASCII
     # representation (for example "gödel" → "godel")
-    finger_printed_key = unidecode(finger_printed_key.decode("utf-8"))
-
-    return finger_printed_key
+    return unidecode(finger_printed_key)
 
 
 def group_fingerprint_strings(raw_strs, sort_tokens=False,

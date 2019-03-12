@@ -16,9 +16,13 @@ import os
 import pandas as pd
 import vcr
 import geopandas as gpd
+import sys
+sys.path.insert(0, '')
 from data_cleaner import DataCleaner
 from data_cleaner.data_cleaner import DuplicatedField
-from rules.integration import rules
+from .rules.integration import rules
+import csv
+import six
 
 BASE_DIR = os.path.dirname(__file__)
 VCR = vcr.VCR(path_transformer=vcr.VCR.ensure_suffix('.yaml'),
@@ -45,13 +49,13 @@ def nan_safe_list(iterable):
     for element in iterable:
         if pd.isnull(element):
             safe_list.append(None)
-        elif (type(element) is str or type(element) is unicode):
+        elif isinstance(element, six.string_types):
             if element == "None":
                 safe_list.append(None)
             else:
                 safe_list.append(element)
         else:
-            safe_list.append(unicode(int(element)))
+            safe_list.append(six.text_type(int(element)))
 
     return safe_list
 
@@ -59,6 +63,11 @@ def nan_safe_list(iterable):
 def nan_to_empty_string_list(iterable):
     """Retorna una lista convirtiendo valores nulos a None."""
     return [i if pd.notnull(i) else "" for i in iterable]
+
+
+def raw_csv(file_path):
+    with open(file_path, 'r') as csvfile:
+        return [row for row in csv.reader(csvfile)]
 
 
 # @unittest.skip("skip")
@@ -544,6 +553,20 @@ class NormalizarUnidadTerritorialTestCase(unittest.TestCase):
         print(res)
         self.assertEqual(res_test, res)
 
+
+class DataCleanerDataIntegrityTestCase(unittest.TestCase):
+    """Testea que la integridad de los datasets se mantenga."""
+    input_path = BASE_DIR + '/input/to_clean_coordinates.csv'
+
+    def test_float_integrity(self):
+        output_path = BASE_DIR + '/output/clean_coordinates.csv'
+
+        dc = DataCleaner(self.input_path)
+        dc.clean_file([], output_path)
+
+        raw_input = raw_csv(self.input_path)
+        raw_output = raw_csv(output_path)
+        self.assertEqual(raw_input, raw_output)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

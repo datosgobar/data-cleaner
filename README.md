@@ -67,7 +67,7 @@ pip install -e .
 
 ### Dependencias
 
-* Python 2.7
+* Python 3.6
 
 Si se va a instalar python desde cero, se recomienda instalar la distribución de **Anaconda** con Python 2.7, ya que viene con varias librerías preinstaladas.
 

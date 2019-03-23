@@ -34,7 +34,7 @@ test_requirements = [
 
 setup(
     name='data_cleaner',
-    version='0.1.20',
+    version='0.1.21',
     description="Paquete para limpieza de datos, según estándares del equipo de Datos Argentina",
     long_description=readme + '\n\n' + history,
     author="Datos Argentina",
@@ -56,8 +56,8 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: ISC License (ISCL)',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
     tests_require=test_requirements

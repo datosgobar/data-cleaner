@@ -338,7 +338,7 @@ Método que llamó al normalizador de campos: {}
         if all_fields:
             removed_df = self.df.drop_duplicates().reset_index(drop=True)
         else:
-            removed_df = self.df.drop_duplicates(fields).reset_index(drop=True)
+            removed_df = self.df.drop_duplicates(subset=fields).reset_index(drop=True)
 
         if inplace:
             self.df = removed_df

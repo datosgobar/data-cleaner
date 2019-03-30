@@ -336,9 +336,9 @@ Método que llamó al normalizador de campos: {}
             pandas.DataFrame: Data frame con las columnas removidas.
         """
         if all_fields:
-            removed_df = self.df.drop_duplicates()
+            removed_df = self.df.drop_duplicates().reset_index(drop=True)
         else:
-            removed_df = self.df.drop_duplicates(fields)
+            removed_df = self.df.drop_duplicates(fields).reset_index(drop=True)
 
         if inplace:
             self.df = removed_df

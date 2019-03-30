@@ -265,6 +265,36 @@ Entre otras cosas, se puede utilizar para remover los campos originales -no reco
 ]}
 ```
 
+### Remover filas duplicadas (*remover_filas_duplicadas*)
+Remueve filas duplicadas de la tabla de datos.
+
+Se puede usar para eliminar filas duplicadas basandose en comparacion de todas las columnas de la tabla o en base a un
+subconjunto de columnas
+
+**Especificación:**
+
+Comparación en base a todas las columnas
+```python
+{"remover_filas_duplicadas": [
+    {"all_fields": True},
+]}
+```
+
+Comparación en base a un subconjunto de columnas
+```python
+{"remover_filas_duplicadas": [
+    {"all_fields": False, "fields": ["col1", "col2"]},
+]}
+```
+
+**Ejemplo:**
+
+```python
+{"remover_columnas": [
+    {"all_field": False, "fields": ["id"]}
+]}
+```
+
 ### Capitalizar nombres propios (*nombre_propio*)
 Normaliza todas las palabras que encuentra poniéndolas en minúsculas y capitalizando la primera letra de cada una.
 

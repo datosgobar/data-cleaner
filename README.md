@@ -290,7 +290,7 @@ Comparación en base a un subconjunto de columnas
 **Ejemplo:**
 
 ```python
-{"remover_columnas": [
+{"remover_filas_duplicadas": [
     {"all_field": False, "fields": ["id"]}
 ]}
 ```

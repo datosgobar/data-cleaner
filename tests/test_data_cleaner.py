@@ -170,6 +170,26 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
 
         self.assertNotIn(field, df.columns)
 
+    def test_remover_filas_duplicadas(self):
+        input_path = get_input("filas_duplicadas")
+        output_path = get_output("filas_duplicadas")
+
+        dc = DataCleaner(input_path)
+        df = dc.remover_filas_duplicadas(all_fields=True)
+        expected_df = DataCleaner(output_path).df
+
+        self.assertTrue(df.equals(expected_df))
+
+    def test_remover_filas_duplicadas_based_on_field(self):
+        input_path = get_input("filas_duplicadas_con_id")
+        output_path = get_output("filas_duplicadas_con_id")
+
+        dc = DataCleaner(input_path)
+        df = dc.remover_filas_duplicadas(all_fields=False, fields=["id"])
+        expected_df = DataCleaner(output_path).df
+
+        self.assertTrue(df.equals(expected_df))
+
     def test_renombrar_columnas(self):
         input_path = get_input("nombre_propio")
         field = "dependencia"

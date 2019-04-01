@@ -324,6 +324,27 @@ Método que llamó al normalizador de campos: {}
 
         return removed_df
 
+    def remover_filas_duplicadas(self, all_fields=True, fields=None, inplace=False):
+        """Remueve filas duplicadas.
+
+        Args:
+            all_fields (bool): Si es true, se usan todas las columnas y se ignora el argumento fields
+            fields (list): Lista de nombres de columnas a ser usadas para identificar filas duplicadas
+            inplace (bool): Específica si la limpieza perdura en el objeto.
+
+        Returns:
+            pandas.DataFrame: Data frame con las columnas removidas.
+        """
+        if all_fields:
+            removed_df = self.df.drop_duplicates().reset_index(drop=True)
+        else:
+            removed_df = self.df.drop_duplicates(subset=fields).reset_index(drop=True)
+
+        if inplace:
+            self.df = removed_df
+
+        return removed_df
+
     def renombrar_columnas(self, field, new_field, inplace=False):
         """Renombra una columna.
 

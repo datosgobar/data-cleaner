@@ -20,12 +20,13 @@ language: python
 matrix:
   allow_failures:
   - python: '3.5'
+  - python: '3.6'
 notifications:
   slack: ssipyga:yyz0hyWmiaoGGnprhjqDXUwk
 python:
-- '2.7'
 - '3.5'
 - '3.6'
+- '3.7'
 script:
 - nosetests --with-coverage
 - travis-sphinx build --source=docs -n

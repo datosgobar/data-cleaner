@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.0 (2019-08-08)
+------------------
+
+* Se completa migración a python 3.7 y se discontinúa soporte a python 2. Se actualizan todas las dependencias.
+
 0.1.19 (2017-9-5)
 ------------------
 

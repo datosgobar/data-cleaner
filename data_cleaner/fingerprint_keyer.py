@@ -10,7 +10,6 @@ import string
 from unidecode import unidecode
 from functools import partial
 import pandas as pd
-import six
 
 
 def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
@@ -26,8 +25,8 @@ def fingerprint_keyer(key_string, sort_tokens=False, remove_duplicates=False):
         return pd.np.nan
 
     # enforece string type
-    if not isinstance(key_string, six.text_type):
-        key_string = six.text_type(key_string)
+    if not isinstance(key_string, str):
+        key_string = str(key_string)
 
     # remove leading and trailing whitespace, go to lowercase
     key_string = key_string.strip().lower()

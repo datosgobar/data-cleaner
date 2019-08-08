@@ -12,4 +12,5 @@ pyyaml
 recommonmark>=0.4.0
 travis-sphinx>=1.4.1
 vcrpy
-
+mock
+nose

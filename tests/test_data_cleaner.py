@@ -7,22 +7,19 @@ Unit tests for `data_cleaner.py` module. Si los tests no corren, correr desde
 la línea de comandos: `chmod 644 test_data_cleaner.py`
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import with_statement
 import unittest
 import nose
 import os
 import pandas as pd
 import vcr
 import geopandas as gpd
-import sys
-sys.path.insert(0, '')
 from data_cleaner import DataCleaner
 from data_cleaner.data_cleaner import DuplicatedField
 from .rules.integration import rules
 import csv
-import six
+
+import sys
+sys.path.insert(0, '')
 
 BASE_DIR = os.path.dirname(__file__)
 VCR = vcr.VCR(path_transformer=vcr.VCR.ensure_suffix('.yaml'),
@@ -49,13 +46,13 @@ def nan_safe_list(iterable):
     for element in iterable:
         if pd.isnull(element):
             safe_list.append(None)
-        elif isinstance(element, six.string_types):
+        elif isinstance(element, str):
             if element == "None":
                 safe_list.append(None)
             else:
                 safe_list.append(element)
         else:
-            safe_list.append(six.text_type(int(element)))
+            safe_list.append(str(int(element)))
 
     return safe_list
 
@@ -101,7 +98,7 @@ class DataCleanerShapefileConversionTestCase(unittest.TestCase):
         csv_df = pd.read_csv(output_path)
         self.assertEqual(set(csv_df.columns), set(dc.df.columns))
 
-    @unittest.skip("skip")
+    # @unittest.skip("skip")
     def test_shapefile_to_geojson(self):
         output_path = BASE_DIR + '/output/localidades.geojson'
 
@@ -113,7 +110,7 @@ class DataCleanerShapefileConversionTestCase(unittest.TestCase):
 
     # Se saltea por error al ejecutar la conversión a KML.
     # _save_to_kml usa subprocess.call y corre localmente pero no en Travis-CI.
-    @unittest.skip("skip")
+    # @unittest.skip("skip")
     def test_shapefile_to_kml(self):
         output_path = BASE_DIR + '/output/localidades.kml'
 
@@ -474,7 +471,6 @@ class DataCleanerSingleMethodsTestCase(unittest.TestCase):
         res = list(series)
         # cargo el csv limpio para comparar
         df = pd.read_csv(output_path, encoding="utf-8")
-        print(series)
         exp = list(df["lugar_audiencia"])
         self.assertEqual(res, exp)
 
@@ -570,7 +566,6 @@ class NormalizarUnidadTerritorialTestCase(unittest.TestCase):
         input_path = get_input('normalize_unidad_territorial')
         dc = DataCleaner(input_path)
         res = dc._get_api_response(entity, data_test)
-        print(res)
         self.assertEqual(res_test, res)
 
 
@@ -587,6 +582,7 @@ class DataCleanerDataIntegrityTestCase(unittest.TestCase):
         raw_input = raw_csv(self.input_path)
         raw_output = raw_csv(output_path)
         self.assertEqual(raw_input, raw_output)
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

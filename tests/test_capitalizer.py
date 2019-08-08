@@ -6,17 +6,14 @@
 Tests for `capitalizer.py` module.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import with_statement
 import unittest
 import nose
 
-import sys
-sys.path.insert(0, '')
-
 from data_cleaner.capitalizer import normalize_word
 from data_cleaner.capitalizer import capitalize
+
+import sys
+sys.path.insert(0, '')
 
 
 class CapitalizerIntegrationTestCase(unittest.TestCase):

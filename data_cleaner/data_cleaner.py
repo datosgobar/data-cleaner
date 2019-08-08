@@ -7,9 +7,6 @@ La clase DataCleaner permite limpiar archivos CSVs con datos a partir de la
 aplicación de reglas de limpieza.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import with_statement
 import pandas as pd
 import geopandas as gpd
 import pycrs
@@ -22,10 +19,9 @@ import cchardet
 import warnings
 import inspect
 import re
+import os
 import subprocess
 from functools import partial
-from future.utils import iteritems
-import six
 
 from .fingerprint_keyer import group_fingerprint_strings
 from .fingerprint_keyer import get_best_replacements, replace_by_key
@@ -95,7 +91,8 @@ class DataCleaner(object):
 
         # lee el CSV a limpiar
         elif input_path.endswith('.csv'):
-            self.df = pd.read_csv(input_path, dtype=six.text_type, **default_args)
+            self.df = pd.read_csv(
+                input_path, dtype=str, **default_args)
 
         # lee el XLSX a limpiar
         elif input_path.endswith('.xlsx'):
@@ -163,8 +160,8 @@ class DataCleaner(object):
         Returns:
             str: Nombre de campo o sufijo de datset normalizado.
         """
-        if not isinstance(field, six.string_types):
-            field = six.text_type(field)
+        if not isinstance(field, str):
+            field = str(field)
 
         # reemplaza caracteres que no sean unicode
         norm_field = unidecode(field).strip()
@@ -215,8 +212,8 @@ Método que llamó al normalizador de campos: {}
 
     @staticmethod
     def _remove_line_breaks(value, replace_char=" "):
-        if isinstance(value, six.string_types):
-            return six.text_type(value).replace('\n', replace_char)
+        if isinstance(value, str):
+            return str(value).replace('\n', replace_char)
         else:
             return value
 
@@ -338,7 +335,8 @@ Método que llamó al normalizador de campos: {}
         if all_fields:
             removed_df = self.df.drop_duplicates().reset_index(drop=True)
         else:
-            removed_df = self.df.drop_duplicates(subset=fields).reset_index(drop=True)
+            removed_df = self.df.drop_duplicates(
+                subset=fields).reset_index(drop=True)
 
         if inplace:
             self.df = removed_df
@@ -459,7 +457,7 @@ Método que llamó al normalizador de campos: {}
         field = self._normalize_field(field)
         series = self.df[field]
 
-        for new_value, old_values in iteritems(replacements):
+        for new_value, old_values in replacements.items():
             series = series.replace(old_values, new_value)
 
         if inplace:
@@ -485,7 +483,7 @@ Método que llamó al normalizador de campos: {}
         field = self._normalize_field(field)
         series = self.df[field]
 
-        for new_value, old_values in iteritems(replacements):
+        for new_value, old_values in replacements.items():
             # for old_value in sorted(old_values, key=len, reverse=True):
             for old_value in old_values:
                 replace_function = partial(self._safe_replace,
@@ -505,7 +503,7 @@ Método que llamó al normalizador de campos: {}
         if pd.isnull(string):
             return pd.np.nan
         else:
-            return six.text_type(string).replace(old_value, new_value)
+            return str(string).replace(old_value, new_value)
 
     def fecha_completa(self, field, time_format, keep_original=False,
                        inplace=False):
@@ -557,9 +555,11 @@ Método que llamó al normalizador de campos: {}
         try:
             datetime = arrow.get(
                 value, time_format,
-                tzinfo=tz.gettz("America/Argentina/Buenos Aires"), locale='es')
+                tzinfo=tz.gettz("America/Argentina/Buenos Aires"))
+            print(value, time_format, datetime, "funciona")
             return datetime.isoformat()
         except:
+            print(value, time_format, "no funciona")
             return ""
 
     @staticmethod
@@ -593,13 +593,17 @@ Método que llamó al normalizador de campos: {}
         field_names = [self._normalize_field(field[0]) for field in fields]
         time_format = " ".join([field[1] for field in fields])
 
+        # print(time_format)
+        # print(self.df[field_names])
         concat_series = self.df[field_names].apply(
-            lambda x: ' '.join(x.map(six.text_type)),
+            lambda x: ' '.join(x.map(str)),
             axis=1
         )
+        print(concat_series)
 
         parsed_series = concat_series.apply(self._parse_datetime,
                                             args=(time_format,))
+        print(parsed_series)
 
         if inplace:
             self.df["isodatetime_" + new_field_name] = parsed_series
@@ -643,12 +647,12 @@ Método que llamó al normalizador de campos: {}
     def _split(value, separators):
         values = []
         for separator in separators:
-            if separator in six.text_type(value):
-                values = [six.text_type(split_value) for split_value in
+            if separator in str(value):
+                values = [str(split_value) for split_value in
                           value.split(separator)]
                 break
 
-        return pd.Series([six.text_type(value).strip() for value in values
+        return pd.Series([str(value).strip() for value in values
                           if pd.notnull(value)])
 
     def string_regex_split(self, field, pattern, new_field_names,
@@ -711,7 +715,7 @@ Método que llamó al normalizador de campos: {}
         except:
             values = []
 
-        values = [six.text_type(split_value) for split_value in values]
+        values = [str(split_value) for split_value in values]
 
         return pd.Series(values)
 
@@ -798,7 +802,7 @@ Método que llamó al normalizador de campos: {}
                 print(res['error'])
 
             if keep_original:
-                field_normalized = six.text_type(field + '_normalized')
+                field_normalized = str(field + '_normalized')
                 self._update_column(field_normalized, NAME, entity_level, res)
             else:
                 self._update_column(field, NAME, entity_level, res)
@@ -816,16 +820,19 @@ Método que llamó al normalizador de campos: {}
             if add_parents:
                 for parent in add_parents:
                     if entity_level not in PROV and parent in PROV:
-                        self._update_column(PROV_ID, PROV_ID, entity_level, res)
+                        self._update_column(
+                            PROV_ID, PROV_ID, entity_level, res)
                         self._update_column(PROV_NAM, PROV_NAM, entity_level,
                                             res)
                     if parent in DEPT and entity_level in [MUN, LOC]:
-                        self._update_column(DEPT_ID, DEPT_ID, entity_level, res)
+                        self._update_column(
+                            DEPT_ID, DEPT_ID, entity_level, res)
                         self._update_column(DEPT_NAM, DEPT_NAM, entity_level,
                                             res)
                     if parent in MUN and entity_level in LOC:
                         self._update_column(MUN_ID, MUN_ID, entity_level, res)
-                        self._update_column(MUN_NAM, MUN_NAM, entity_level, res)
+                        self._update_column(
+                            MUN_NAM, MUN_NAM, entity_level, res)
 
             return self.df
         else:
@@ -849,7 +856,7 @@ Método que llamó al normalizador de campos: {}
         field_mun = MUN + '_field'
 
         # Verfica que se utilicen keywords válidos por entidad
-        for key, value in iteritems(filters):
+        for key, value in filters.items():
 
             if key not in [field_prov, field_dept, field_mun]:
                 print('"{}" no es un keyword válido.'.format(key))
@@ -919,11 +926,11 @@ Método que llamó al normalizador de campos: {}
 
         # Si existe el filtro y su valor no es 0 lo agrega al diccionario
         if field_prov in filters and row[filters[field_prov]]:
-                params.update({PROV: row[filters[field_prov]]})
+            params.update({PROV: row[filters[field_prov]]})
         if field_dept in filters and row[filters[field_dept]]:
-                params.update({DEPT: row[filters[field_dept]]})
+            params.update({DEPT: row[filters[field_dept]]})
         if field_mun in filters and row[filters[field_mun]]:
-                params.update({MUN: row[filters[field_mun]]})
+            params.update({MUN: row[filters[field_mun]]})
         return params
 
     @staticmethod

@@ -11,7 +11,7 @@ import shutil
 import os
 
 try:
-    from setuptools import setup
+    from setuptools import setup, Extension
 except ImportError:
     from distutils.core import setup
 
@@ -32,11 +32,14 @@ test_requirements = [
     "mock"
 ]
 
+long_description = readme + '\n\n' + history
+
 setup(
     name='data_cleaner',
-    version='0.2.0',
-    description="Paquete para limpieza de datos, según estándares del equipo de Datos Argentina",
-    long_description=readme + '\n\n' + history,
+    version='0.2.1',
+    description="Paquete para limpieza de datos, segun estandares del equipo de Datos Argentina",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author="Datos Argentina",
     author_email='datos@modernizacion.gob.ar',
     url='https://github.com/datosgobar/data-cleaner',

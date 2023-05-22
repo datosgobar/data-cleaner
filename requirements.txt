@@ -6,4 +6,4 @@ Unidecode==1.1.1
 unicodecsv==0.14.1
 xlrd==1.2.0
 PyCRS==1.0.1
-requests==2.22.0
+requests==2.31.0
